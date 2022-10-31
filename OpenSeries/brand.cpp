@@ -1593,7 +1593,7 @@ namespace brand {
 				}
 				if (settings::draws::rDamageText->get_bool()) {
 					auto bar_pos = target->get_hpbar_pos();
-					bar_pos = vector(bar_pos.x + 115, bar_pos.y -= 10);
+					bar_pos = vector(bar_pos.x + 115, bar_pos.y -= 40);
 					if (rDamageList[target->get_handle()].kills)
 					{
 						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "Killable -> %d %s", rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "bounces" : "bounce");
