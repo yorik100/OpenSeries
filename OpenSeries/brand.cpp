@@ -91,8 +91,7 @@ namespace brand {
 		buff_hash("ZedR"),
 		buff_hash("EkkoR"),
 		buff_hash("FizzE"),
-		buff_hash("FizzETwo"),
-		buff_hash("LissandraRSelf")
+		buff_hash("FizzETwo")
 	};
 
 	game_object_script bestETarget;
