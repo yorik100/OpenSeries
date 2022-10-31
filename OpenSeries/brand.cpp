@@ -794,7 +794,7 @@ namespace brand {
 		int count = 0;
 		for (const auto& enemy : entitylist->get_enemy_heroes())
 		{
-			if (enemy->get_handle() == target->get_handle()) {
+			if (enemy->get_handle() == target->get_handle() || godBuffTime[enemy->get_handle()] > 0) {
 				count++;
 				continue;
 			}
@@ -840,7 +840,7 @@ namespace brand {
 			auto rDelay = r->get_delay() + timeToReachTarget + getPing();
 			auto totalRange = BRAND_R_BOUNCE_RANGE;
 			auto distance = minion->get_position().distance(target->get_position());
-			auto isMinionChamp = minion->is_ai_hero();
+			auto isMinionChamp = minion->is_ai_hero() && godBuffTime[minion->get_handle()] <= 0;
 			auto predictedDistance = prediction->get_prediction(minion, rDelay).get_unit_position().distance(prediction->get_prediction(target, rDelay).get_unit_position());
 			if (distance <= totalRange && predictedDistance <= totalRange && (!isChampion || isMinionChamp) && (prioTarget == nullptr || distance < distanceFromTarget))
 			{
@@ -923,7 +923,7 @@ namespace brand {
 		last_tick = gametime->get_time();
 
 		// Manage auto attacks
-		orbwalker->set_attack((attackOrderTime > gametime->get_time() - 0.033) ? ((orbwalker->combo_mode()) ? false : true) : true);
+		orbwalker->set_attack((attackOrderTime > gametime->get_time() - 0.066) ? ((orbwalker->combo_mode()) ? false : true) : true);
 
 		// Allows casting a spell for this update
 		hasCasted = false;
