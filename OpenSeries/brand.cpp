@@ -50,10 +50,10 @@ namespace brand {
 	std::vector<particleData> particleList;
 	std::vector<eBounceTarget> eBounceTargets;
 	std::vector<particleStruct> particlePredList;
-	std::unordered_map<uint32_t, stasisStruct> stasisInfo;
 
 	std::unordered_map<uint32_t, prediction_output> qPredictionList;
 	std::unordered_map<uint32_t, prediction_output> wPredictionList;
+	std::unordered_map<uint32_t, stasisStruct> stasisInfo;
 	std::unordered_map<uint32_t, float> stunTime;
 	std::unordered_map<uint32_t, float> guardianReviveTime;
 	std::unordered_map<uint32_t, float> godBuffTime;
