@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="plugin_sdk">
+      <UniqueIdentifier>{bd2578a1-3ff5-40ed-adbc-4679e687d14c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugin_sdk\clipper.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="brand.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\plugin_sdk\cpplinq.h">
+      <Filter>plugin_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp">
+      <Filter>plugin_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugin_sdk\clipper.h">
+      <Filter>plugin_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="brand.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

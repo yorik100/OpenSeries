@@ -1,0 +1,60 @@
+#pragma once
+#include "../plugin_sdk/plugin_sdk.hpp"
+
+namespace brand
+{
+	float getGodBuffTime(const game_object_script& target);
+	float getNoKillBuffTime(const game_object_script& target);
+	float getStasisTime(const game_object_script& target);
+	float timeBeforeWHits(const game_object_script& target);
+	float timeBeforeWHitsLocation(vector& position);
+	float getPing();
+	float getGodBuffTime(const game_object_script& target);
+	float getNoKillBuffTime(const game_object_script& target);
+	float getStasisTime(const game_object_script& target);
+	bool couldDamageLater(const game_object_script& target, float time, float damage);
+	float getTimeToHit(prediction_input& input, prediction_output& predInfo, bool takePing);
+	hit_chance getPredIntFromSettings(int hitchance);
+	bool castQ(const game_object_script& target, char*);
+	bool castW(const game_object_script& target, char*);
+	bool castE(const game_object_script& target, char* mode);
+	bool castR(const game_object_script& target, char* mode);
+	prediction_output getQPred(const game_object_script& target);
+	prediction_output getWPred(const game_object_script& target);
+	float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted, const int passiveStacks);
+	float getQDamage(const game_object_script& target);
+	float getWDamage(const game_object_script& target);
+	float getW2Damage(const game_object_script& target);
+	float getEDamage(const game_object_script& target);
+	float getRDamage(const game_object_script& target);
+	float getTotalHP(const game_object_script& target);
+	void draw_dmg_rl(const game_object_script& target, float damage, unsigned long color);
+	void draw_dmg_lr(const game_object_script& target, float damage, unsigned long color);
+	bool rCollision(const game_object_script& target);
+	bool canRBounce(const game_object_script& target);
+	int rBounceCount(const game_object_script& target);
+	game_object_script findClosestMinion(const game_object_script& target);
+	bool isRecalling(const game_object_script& target);
+	bool isValidRecalling(const game_object_script& target);
+	bool customIsValid(const game_object_script& target, float range, const vector& from, bool invul);
+	void calcs();
+	bool debuffCantCast();
+	bool canCastSpells();
+	void targetSelectorSort();
+	void combo();
+	void harass();
+	void particleHandling();
+	void automatic();
+	void createMenu();
+	void on_update();
+	void on_draw();
+	void on_create(const game_object_script obj);
+	void on_delete(const game_object_script obj);
+	void on_buff_gain(game_object_script sender, buff_instance_script buff);
+	void on_buff_lose(game_object_script sender, buff_instance_script buff);
+	void on_buff(game_object_script& sender, buff_instance_script& buff, bool gain);
+	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process);
+	void on_process_spell_cast(game_object_script sender, spell_instance_script spell);
+	void load();
+	void unload();
+};

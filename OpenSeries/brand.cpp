@@ -1,0 +1,1768 @@
+#include "brand.h"
+#include <unordered_set>
+#include <unordered_map>
+
+namespace brand {
+
+	struct particleData {
+		game_object_script particle = {};
+		float creationTime = 0;
+	};
+
+	struct rDamageData {
+		float damage = 0;
+		int shots = 0;
+		bool kills = false;
+	};
+
+	struct eBounceTarget {
+		game_object_script target{};
+		bool extraRange = 0;
+		float priority = 0;
+		float distance = 0;
+	};
+
+	struct buffList {
+		float godBuff = 0;
+		float noKillBuff = 0;
+		float stasis = 0;
+	};
+
+	struct particleStruct {
+		game_object_script obj = {};
+		game_object_script target = {};
+		game_object_script owner = {};
+		float time = 0;
+		float castTime = 0;
+		vector castingPos = vector::zero;
+		vector nexusPos = vector::zero;
+		bool isZed = false;
+		bool isTeleport = false;
+	};
+
+	std::vector<game_object_script> targets;
+	std::vector<particleData> particleList;
+	std::vector<eBounceTarget> eBounceTargets;
+	std::vector<particleStruct> particlePredList;
+
+	std::unordered_map<uint32_t, prediction_output> qPredictionList;
+	std::unordered_map<uint32_t, prediction_output> wPredictionList;
+	std::unordered_map<uint32_t, float> stunTime;
+	std::unordered_map<uint32_t, float> guardianReviveTime;
+	std::unordered_map<uint32_t, float> godBuffTime;
+	std::unordered_map<uint32_t, float> noKillBuffTime;
+	std::unordered_map<uint32_t, float> stasisTime;
+	std::unordered_map<uint32_t, float> qDamageList;
+	std::unordered_map<uint32_t, float> wDamageList;
+	std::unordered_map<uint32_t, float> eDamageList;
+	std::unordered_map<uint32_t, rDamageData> rDamageList;
+
+	static std::unordered_set godBuffList{
+		buff_hash("KayleR"),
+		buff_hash("TaricR"),
+		buff_hash("SivirE"),
+		buff_hash("FioraW"),
+		buff_hash("NocturneShroudofDarkness"),
+		buff_hash("kindredrnodeathbuff"),
+		buff_hash("XinZhaoRRangedImmunity"),
+		buff_hash("PantheonE")
+	};
+
+	static std::unordered_set noKillBuffList{
+		buff_hash("UndyingRage"),
+		buff_hash("ChronoShift")
+	};
+
+	static std::unordered_set stasisBuffList{
+		buff_hash("ChronoRevive"),
+		buff_hash("BardRStasis"),
+		buff_hash("ZhonyasRingShield"),
+		buff_hash("LissandraRSelf")
+	};
+
+	static std::unordered_set immuneSpells = {
+		buff_hash("EvelynnR"),
+		buff_hash("ZedR"),
+		buff_hash("EkkoR"),
+		buff_hash("FizzE"),
+		buff_hash("FizzETwo")
+	};
+
+	game_object_script bestETarget;
+
+	script_spell* q;
+	script_spell* w;
+	script_spell* e;
+	script_spell* r;
+
+	TreeTab* mainMenu;
+	namespace settings {
+		namespace draws {
+			TreeEntry* wRadius;
+			TreeEntry* rDamage;
+			TreeEntry* rDamageText;
+			TreeEntry* particlePos;
+			namespace spellRanges {
+				TreeEntry* qRange;
+				TreeEntry* wRange;
+				TreeEntry* eRange;
+				TreeEntry* eExtraRange;
+				TreeEntry* rRange;
+			}
+		}
+		namespace combo {
+			TreeEntry* qCombo;
+			TreeEntry* wCombo;
+			TreeEntry* eCombo;
+			TreeEntry* eExtraCombo;
+			TreeEntry* rCombo;
+			TreeEntry* rComboLogic;
+			TreeEntry* rComboAoE;
+			TreeEntry* rComboAoEAmount;
+			TreeEntry* rComboKills;
+			TreeEntry* rComboMinionBounce;
+			TreeEntry* rComboBounces;
+		}
+		namespace harass {
+			TreeEntry* qHarass;
+			TreeEntry* wHarass;
+			TreeEntry* eHarass;
+			TreeEntry* eExtraHarass;
+		}
+		namespace automatic {
+			TreeEntry* qStun;
+			TreeEntry* wStun;
+			TreeEntry* qDash;
+			TreeEntry* wDash;
+			TreeEntry* qCast;
+			TreeEntry* wCast;
+			TreeEntry* qChannel;
+			TreeEntry* wChannel;
+			TreeEntry* qStasis;
+			TreeEntry* wStasis;
+			TreeEntry* qParticle;
+			TreeEntry* wParticle;
+		}
+		namespace hitchance {
+			TreeEntry* qHitchance;
+			TreeEntry* wHitchance;
+		}
+		TreeEntry* lowSpec;
+	}
+
+	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
+	static constexpr float BRAND_W_PARTICLE_TIME = 0.625f;
+	static constexpr float BRAND_Q_RANGE = 1040;
+	static constexpr float BRAND_W_RANGE = 900;
+	static constexpr float BRAND_E_RANGE = 660;
+	static constexpr float BRAND_E_MAX_BOUNCE_RANGE = 600;
+	static constexpr float BRAND_E_MIN_BOUNCE_RANGE = 300;
+	static constexpr float BRAND_R_RANGE = 750;
+	static constexpr float BRAND_R_BOUNCE_RANGE = 600;
+	static constexpr float BRAND_R_MIN_SPEED = 750;
+	//static constexpr float BRAND_R_MAX_SPEED = 3000;
+
+	bool hasCasted = false;
+	bool isQReady = false;
+	bool isWReady = false;
+	bool isEReady = false;
+	bool isRReady = false;
+	float last_tick = 0;
+	float attackOrderTime = 0;
+	float lastCast = 0;
+
+	float timeBeforeWHits(const game_object_script& target)
+	{
+		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
+		float returnTimeToHit = FLT_MAX;
+		for (const auto& particle : particleList) {
+			const auto& timeBeforeHit = particle.creationTime + BRAND_W_PARTICLE_TIME - gametime->get_time();
+			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
+			if (particle.particle->is_valid() && unitPositionDist <= w->get_radius() && returnTimeToHit > timeBeforeHit)
+				returnTimeToHit = timeBeforeHit;
+		}
+		return returnTimeToHit;
+	}
+
+	float timeBeforeWHitsLocation(vector& position)
+	{
+		// Get time to hit before any W particle hits a specific location (including ally W particles, useful in one for all)
+		float returnTimeToHit = FLT_MAX;
+		for (const auto& particle : particleList) {
+			const auto& timeBeforeHit = particle.creationTime + BRAND_W_PARTICLE_TIME - gametime->get_time();
+			const auto& unitPositionDist = position.distance(particle.particle->get_position());
+			if (particle.particle->is_valid() && unitPositionDist <= w->get_radius() && returnTimeToHit > timeBeforeHit)
+				returnTimeToHit = timeBeforeHit;
+		}
+		return returnTimeToHit;
+	}
+
+	float getPing()
+	{
+		// Get player's full ping (ping pong)
+		return ping->get_ping() / 1000;
+	}
+
+	float getGodBuffTime(const game_object_script& target)
+	{
+		// This function gets the god buff time (godmode && spellshield buffs) on a target, it's no use to attack them while they are immortal
+		float buffTime = 0;
+		for (auto&& buff : target->get_bufflist())
+		{
+			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
+
+			auto buffHash = buff->get_hash_name();
+			if (godBuffList.contains(buffHash))
+			{
+				auto isPantheonE = buffHash == buff_hash("PantheonE");
+				auto realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
+				if (buffTime < realRemainingTime && (!isPantheonE || target->is_facing(myhero)) && (buffHash != buff_hash("XinZhaoRRangedImmunity") || myhero->get_position().distance(target->get_position()) > 450))
+				{
+					buffTime = realRemainingTime;
+				}
+			}
+		}
+		return buffTime;
+	}
+
+	float getNoKillBuffTime(const game_object_script& target)
+	{
+		// This function gets the no kill buff time on a target, you don't want to try killing people with these buffs
+		float buffTime = 0;
+		for (auto&& buff : target->get_bufflist())
+		{
+			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
+			auto buffHash = buff->get_hash_name();
+			if (noKillBuffList.contains(buffHash))
+			{
+				if (buffTime < buff->get_remaining_time())
+				{
+					buffTime = buff->get_remaining_time();
+				}
+			}
+		}
+		return buffTime;
+	}
+
+	float getStasisTime(const game_object_script& target)
+	{
+		// This function gets the stasis time of a target
+		float buffTime = 0;
+		for (auto&& buff : target->get_bufflist())
+		{
+			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
+			auto buffHash = buff->get_hash_name();
+			if (stasisBuffList.contains(buffHash))
+			{
+				if (buffTime < buff->get_remaining_time())
+				{
+					buffTime = buff->get_remaining_time();
+				}
+			}
+		}
+		// Get guardian angel revive time if there is one
+		float GATime = (!target->is_targetable() && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		if (buffTime < GATime)
+		{
+			buffTime = GATime;
+		}
+		return buffTime;
+	}
+
+	buffList combinedBuffChecks(const game_object_script& target)
+	{
+		// This function gets every single buffs that are needed making the 3 functions above completely useless!
+		float godBuffTime = 0;
+		float noKillBuffTime = 0;
+		float stasisTime = 0;
+		for (auto&& buff : target->get_bufflist())
+		{
+			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
+
+			auto buffHash = buff->get_hash_name();
+			if (godBuffList.contains(buffHash))
+			{
+				auto isPantheonE = buffHash == buff_hash("PantheonE");
+				auto realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
+				if (godBuffTime < realRemainingTime && (!isPantheonE || target->is_facing(myhero)) && (buffHash != buff_hash("XinZhaoRRangedImmunity") || myhero->get_position().distance(target->get_position()) > 450))
+				{
+					godBuffTime = realRemainingTime;
+				}
+			}
+			else if (noKillBuffList.contains(buffHash))
+			{
+				if (noKillBuffTime < buff->get_remaining_time())
+				{
+					noKillBuffTime = buff->get_remaining_time();
+				}
+			}
+			else if (stasisBuffList.contains(buffHash))
+			{
+				if (stasisTime < buff->get_remaining_time())
+				{
+					stasisTime = buff->get_remaining_time();
+				}
+			}
+		}
+		// Get guardian angel revive time if there is one
+		float GATime = (!target->is_targetable() && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		if (stasisTime < GATime)
+		{
+			stasisTime = GATime;
+		}
+		buffList buffStruct = { .godBuff = godBuffTime, .noKillBuff = noKillBuffTime, .stasis = stasisTime };
+		return buffStruct;
+	}
+
+	bool couldDamageLater(const game_object_script& target, float time, float damage = -1)
+	{
+		// Check if the time to hit target is bigger than their godmode buff remaining time or if we'll kill a target that we shouldn't try to kill
+		if (!target->is_ai_hero()) return true;
+		auto totalTime = time + getPing();
+		if (damage >= 0 && damage < 100) damage = 100;
+		if (godBuffTime[target->get_handle()] <= totalTime && (godBuffTime[target->get_handle()] <= totalTime || damage < getTotalHP(target)))
+			return true;
+		return false;
+	}
+
+	float getTimeToHit(prediction_input& input, prediction_output& predInfo, bool takePing)
+	{
+		// Get time before spell hits
+		if (predInfo.get_cast_position() == vector::zero) return FLT_MAX;
+		auto timeToHit = (input._from.distance(predInfo.get_cast_position()) / input.speed) + input.delay + (takePing ? getPing() : 0);
+		return timeToHit;
+	}
+
+	hit_chance getPredIntFromSettings(int hitchance)
+	{
+		return static_cast<hit_chance>(hitchance + 3);
+	}
+
+	bool castQ(const game_object_script& target, std::string mode, bool eCombo, bool ignoreHitChance = false)
+	{
+		// Cast Q
+		if (hasCasted) return true;
+
+		auto p = qPredictionList[target->get_handle()];
+		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+
+		auto timeToHit = getTimeToHit(p.input, p, true);
+		auto trueTimeToHit = getTimeToHit(p.input, p, false);
+		auto pos = target->get_position();
+	 	auto wTime = !ignoreHitChance ? timeBeforeWHits(target) : timeBeforeWHitsLocation(pos) - 0.2;
+	 	auto ablazeBuff = target->get_buff(buff_hash("BrandAblaze"));
+		auto targetAblaze = (ablazeBuff && ablazeBuff->get_remaining_time() >= timeToHit + 0.2);
+		auto performECombo = (eCombo && couldDamageLater(target, e->get_delay() + 0.1, eDamageList[target->get_handle()]) && trueTimeToHit > 0.5 && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE && prediction->get_prediction(target, 0.25).get_unit_position().distance(myhero->get_position()) <= BRAND_E_RANGE && !targetAblaze);
+	 	auto isQStun = targetAblaze || (wTime < timeToHit - 0.2) || performECombo;
+	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int())) && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+	 	{
+	 		q->cast(p.get_cast_position());
+			if (performECombo)
+				e->cast(target);
+	 		hasCasted = true;
+			return true;
+	 	}
+		return false;
+	}
+
+	bool castW(const game_object_script& target, std::string mode, bool ignoreHitChance = false)
+	{
+		// Cast W
+		if (hasCasted) return true;
+
+		auto p = wPredictionList[target->get_handle()];
+		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+
+		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && couldDamageLater(target, w->get_delay() + 0.1, wDamageList[target->get_handle()]))
+		{
+			w->cast(p.get_cast_position());
+			hasCasted = true;
+			return true;
+		}
+		return false;
+	}
+
+	bool castE(const game_object_script& target, std::string mode)
+	{
+		// Cast E
+		if (hasCasted) return true;
+
+		if (couldDamageLater(target, e->get_delay() + 0.1, eDamageList[target->get_handle()])) {
+			e->cast(target);
+			return true;
+		}
+		return false;
+	}
+
+	bool castR(const game_object_script& target, std::string mode)
+	{
+		// Cast R
+		if (hasCasted) return true;
+
+		auto timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay();
+		if (couldDamageLater(target, timeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
+			r->cast(target);
+			return true;
+		}
+		return false;
+	}
+
+	prediction_output getQPred(const game_object_script& target)
+	{
+		// Get Q pred
+		auto totalRadius = target->get_bounding_radius();
+		q->set_range(BRAND_Q_RANGE + target->get_bounding_radius());
+		q->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
+		prediction_output p = q->get_prediction(target);
+		return p;
+	}
+
+	prediction_output getWPred(const game_object_script& target)
+	{
+		// Get W pred
+		prediction_output p = w->get_prediction(target);
+		return p;
+	}
+
+	bool qCanBeCasted(const game_object_script& target)
+	{
+		// Check if could cast Q in a near future
+		auto p = qPredictionList[target->get_handle()];
+		auto timeToHit = getTimeToHit(p.input, p, true);
+		auto trueTimeToHit = getTimeToHit(p.input, p, false);
+		auto wTime = timeBeforeWHits(target);
+		auto ablazeBuff = target->get_buff(buff_hash("BrandAblaze"));
+		auto targetAblaze = (ablazeBuff && ablazeBuff->get_remaining_time() >= timeToHit);
+		auto isQStun = targetAblaze || (wTime < timeToHit + 0.15);
+		auto qIsReady = isQReady && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]) && qPredictionList[target->get_handle()].hitchance > getPredIntFromSettings(settings::hitchance::qHitchance->get_int());
+		return isQStun && qIsReady;
+	}
+
+	float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted, const int passiveStacks)
+	{
+		// Get extra damage based off items && runes && drake souls
+		float damage = 0;
+		auto bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
+		auto level = myhero->get_level();
+		auto abilityPower = myhero->get_total_ability_power();
+		auto buff3 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrikeAvailable.lua"));
+		auto buff4 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrike.lua"));
+		auto targetMaxHealth = target->get_max_health();
+		if (shots <= 0)
+		{
+			auto buff1 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvest.lua"));
+			auto buff2 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvestCooldown.lua"));
+			auto buff5 = target->get_buff(buff_hash("SRX_DragonSoulBuffInfernal_Cooldown"));
+			auto buff6 = target->get_buff(buff_hash("SRX_DragonSoulBuffInfernal"));
+			auto buff7 = target->get_buff(buff_hash("SRX_DragonSoulBuffHextech"));
+			auto buff8 = target->get_buff(buff_hash("srx_dragonsoulbuffhextech_cd"));
+			auto buff9 = target->get_buff(buff_hash("ElderDragonBuff"));
+			auto buff10 = target->get_buff(buff_hash("BrandAblaze"));
+			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
+				auto harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
+				damage = damage + harvestDamage;
+			}
+			if (buff6 && !buff5) {
+				auto infernalDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275);
+				damage = damage + infernalDamage;
+			}
+			if (buff7 && !buff8)
+			{
+				damage = damage + 25 + 25 / 17 * (level - 1);
+			}
+			if (buff9)
+			{
+				auto amountOfMins = std::floor(gametime->get_time() / 60);
+				auto extraDamage = ((amountOfMins < 27) ? 75 : (amountOfMins < 45 ? (75 + ((amountOfMins - 25) / 2) * 15) : 225));
+				damage = damage + extraDamage;
+			}
+			auto passiveCount = buff10 ? buff10->get_count() : 0;
+			passiveCount = std::min(3, passiveCount + passiveStacks);
+			auto passiveDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, (targetMaxHealth * 0.025) * passiveCount);
+			damage = damage + passiveDamage;
+			if ((!buff10 || (buff10 && buff10->get_count() < 3)) && passiveCount == 3)
+			{
+				auto damagePercent = (std::min(0.13, 0.0875 + 0.0025 * level) + 0.025);
+				damage = damage + damagePercent;
+			}
+		}
+		bool hasRylai = false;
+		bool hasHorizon = false;
+		for (int i = 11; i >= 6; i--)
+		{
+			auto item = myhero->get_item((spellslot)i);
+			if (!item) continue;
+
+			switch (item->get_item_id())
+			{
+			case (int)ItemId::Ludens_Tempest:
+			{
+				auto ludensDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 100 + abilityPower * 0.1);
+				damage = damage + ludensDamage;
+				break;
+			}
+			case (int)ItemId::Hextech_Alternator:
+			{
+				auto alternatorDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + 75 / 17 * (level - 1));
+				damage = damage + alternatorDamage;
+				break;
+			}
+			case (int)ItemId::Liandrys_Anguish:
+			{
+				if (shots > 0) break;
+				auto liandrysDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04));
+				damage = damage + liandrysDamage;
+				break;
+			}
+			case (int)ItemId::Demonic_Embrace:
+			{
+				if (shots > 0) break;
+				auto demonicDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, targetMaxHealth * 0.04);
+				damage = damage + demonicDamage;
+				break;
+			}
+			case (int)ItemId::Horizon_Focus:
+			{
+				hasHorizon = true;
+				break;
+			}
+			case (int)ItemId::Rylais_Crystal_Scepter:
+			{
+				hasRylai = true;
+				break;
+			}
+			}
+		}
+		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
+		{
+			damage = damage + (damageDealt) * 0.1;
+		}
+		if (buff3 || buff4)
+		{
+			damage = damage + (damage + damageDealt) * 0.09;
+		}
+		return damage;
+	}
+
+	float getQDamage(const game_object_script& target)
+	{
+		// Get Q damage
+		auto spell = myhero->get_spell(spellslot::q);
+		if (spell->level() == 0) return 0;
+		if (myhero->get_spell_state(spellslot::q) != spell_state::Ready) return 0;
+		float damage = 50 + spell->level() * 30 + myhero->get_total_ability_power() * 0.55;
+		auto damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false, 1);
+	}
+
+	float getWDamage(const game_object_script& target)
+	{
+		// Get W normal damage
+		auto spell = myhero->get_spell(spellslot::w);
+		if (spell->level() == 0) return 0;
+		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		float damage = 30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60;
+		auto damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+	}
+
+	float getW2Damage(const game_object_script& target)
+	{
+		// Get W empowered damage
+		auto spell = myhero->get_spell(spellslot::w);
+		if (spell->level() == 0) return 0;
+		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		float damage = (30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.25;
+		auto damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+	}
+
+	float getEDamage(const game_object_script& target)
+	{
+		// Get E damage
+		auto spell = myhero->get_spell(spellslot::e);
+		if (spell->level() == 0) return 0;
+		if (myhero->get_spell_state(spellslot::e) != spell_state::Ready) return 0;
+		float damage = 45 + 25 * spell->level() + myhero->get_total_ability_power() * 0.45;
+		auto damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
+	}
+
+	float getRDamage(const game_object_script& target, int shots, float predictedHealth, bool firstShot, int passiveStacks)
+	{
+		// Get R damage
+		auto spell = myhero->get_spell(spellslot::r);
+		if (spell->level() == 0) return 0;
+		if (myhero->get_spell_state(spellslot::r) != spell_state::Ready) return 0;
+		float damage = 100 * spell->level() + myhero->get_total_ability_power() * 0.25;
+		auto damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
+	}
+
+	float getTotalHP(const game_object_script& target)
+	{
+		// Get total magic damage HP
+		return target->get_health() + target->get_all_shield() + target->get_magical_shield();
+	}
+
+	rDamageData getTotalRDamage(const game_object_script& target)
+	{
+		// Get total damage of R && returns damage, bounces needed to kill && if it kills
+		auto ElderBuff = target->get_buff(buff_hash("ElderDragonBuff"));
+		auto rDamage = 0.f;
+		auto shotsToKill = 0;
+		auto isFirstShot = true;
+		auto totalHP = getTotalHP(target);
+		auto rActive = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0;
+		if (rActive)
+		{
+			for (int i = 3; i > 0; i--)
+			{
+				auto calculatedRDamage = getRDamage(target, i, totalHP - rDamage, isFirstShot, shotsToKill + 1);
+				auto calculatedRMaxDamage = getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + 1);
+				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < (ElderBuff ? 0.2 : 0))
+				{
+					rDamage = rDamage + calculatedRMaxDamage;
+					shotsToKill = shotsToKill + 1;
+					break;
+				}
+				rDamage = rDamage + calculatedRDamage;
+				shotsToKill = shotsToKill + 1;
+				isFirstShot = false;
+			}
+			if (((totalHP)-rDamage) / target->get_max_health() < 0.2 && ElderBuff)
+				rDamage = totalHP;
+			auto canBeKilled = rDamage >= totalHP;
+			rDamageData rDataStruct = { .damage = rDamage, .shots = shotsToKill, .kills = canBeKilled };
+			return rDataStruct;
+		}
+		rDamageData rDataStruct = { .damage = 0, .shots = 0, .kills = false };
+		return rDataStruct;
+	}
+
+	void draw_dmg_rl(const game_object_script& target, float damage, unsigned long color)
+	{
+		// Draw damage on HP bar from right to left
+		if (target != nullptr && target->is_valid() && target->is_hpbar_recently_rendered())
+		{
+			auto bar_pos = target->get_hpbar_pos();
+
+			if (bar_pos.is_valid() && !target->is_dead() && target->is_visible())
+			{
+				const auto health = target->get_real_health();
+
+				bar_pos = vector(bar_pos.x + (105 * (health / target->get_max_health())), bar_pos.y -= 10);
+
+				auto damage_size = (105 * (damage / target->get_max_health()));
+
+				if (damage >= health)
+				{
+					damage_size = (105 * (health / target->get_max_health()));
+				}
+
+				if (damage_size > 105)
+				{
+					damage_size = 105;
+				}
+
+				const auto size = vector(bar_pos.x + (damage_size * -1), bar_pos.y + 11);
+
+				draw_manager->add_filled_rect(bar_pos, size, color);
+			}
+		}
+	}
+
+	void draw_dmg_lr(const game_object_script& target, float damage, unsigned long color)
+	{
+		// Draw damage on HP bar from left to right
+		if (target != nullptr && target->is_valid() && target->is_hpbar_recently_rendered())
+		{
+			auto bar_pos = target->get_hpbar_pos();
+
+			if (bar_pos.is_valid() && !target->is_dead() && target->is_visible())
+			{
+				const auto health = target->get_real_health();
+
+				bar_pos = vector(bar_pos.x, bar_pos.y -= 10);
+
+				auto damage_size = (105 * (damage / target->get_max_health()));
+
+				if (damage >= health)
+				{
+					damage_size = (105 * (health / target->get_max_health()));
+				}
+
+				if (damage_size > 105)
+				{
+					damage_size = 105;
+				}
+
+				const auto size = vector(bar_pos.x + damage_size, bar_pos.y + 11);
+
+				draw_manager->add_filled_rect(bar_pos, size, color);
+			}
+		}
+	}
+
+	bool isRecalling(const game_object_script& target)
+	{
+		// Get if target is recalling
+		auto isRecalling = target->is_teleporting() && (target->get_teleport_state() == "recall" || target->get_teleport_state() == "SuperRecall" || target->get_teleport_state() == "SummonerTeleport");
+		return isRecalling;
+	}
+
+	bool isValidRecalling(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero)
+	{
+		// Get valid recalling enemies in FoW
+		auto fromPos = from;
+		if (fromPos == vector::zero) fromPos = myhero->get_position();
+		auto isValid = (target->is_valid() && target->is_ai_hero() && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable() && isRecalling(target) && !target->is_dead() && fromPos.distance(target->get_position()) <= range);
+		return isValid;
+	}
+
+	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero, bool invul = false)
+	{
+		// Custom isValid
+		auto isCastingImmortalitySpell = target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
+		auto isValid = !isCastingImmortalitySpell && (target->is_valid_target(range, from, invul) || isValidRecalling(target, range, from));
+		return isValid;
+	}
+
+	bool rCollision(const game_object_script& target)
+	{
+		// Check if R collides with windwall from hero to target
+		auto collisionsFromHero = r->get_collision(myhero->get_position(), { target->get_position() });
+		auto blockedR = !collisionsFromHero.empty();
+		return blockedR;
+	}
+
+	bool canRBounce(const game_object_script& target)
+	{
+		// Check if R can bounce on something including yourself
+		if (myhero->get_position().distance(target->get_position()) <= BRAND_R_BOUNCE_RANGE) return true;
+		std::vector<game_object_script> minionList;
+		minionList.reserve(entitylist->get_enemy_minions().size() + entitylist->get_jugnle_mobs_minions().size() + entitylist->get_enemy_heroes().size() + entitylist->get_other_minion_objects().size());
+		minionList.insert(minionList.end(), entitylist->get_enemy_minions().begin(), entitylist->get_enemy_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_jugnle_mobs_minions().begin(), entitylist->get_jugnle_mobs_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_enemy_heroes().begin(), entitylist->get_enemy_heroes().end());
+		minionList.insert(minionList.end(), entitylist->get_other_minion_objects().begin(), entitylist->get_other_minion_objects().end());
+		minionList.erase(std::remove_if(minionList.begin(), minionList.end(), [](game_object_script x)
+			{
+				return !customIsValid(x, BRAND_E_RANGE) || x->is_ally();
+			}), minionList.end());
+		for (const auto& minion : minionList)
+		{
+			if (minion->get_handle() == target->get_handle()) continue;
+			auto collisions = r->get_collision(minion->get_position(), { target->get_position() });
+			auto isColliding = !collisions.empty();
+			if (isColliding) return false;
+
+			auto timeToReachTarget = r->get_delay() + (myhero->get_position().distance(minion->get_position()) + target->get_position().distance(minion->get_position())) / BRAND_R_MIN_SPEED;
+			auto rDelay = r->get_delay() + timeToReachTarget + getPing();
+			auto distance = minion->get_position().distance(target->get_position());
+			auto predictedDistance = prediction->get_prediction(minion, rDelay).get_unit_position().distance(prediction->get_prediction(target, rDelay).get_unit_position());
+			if (distance <= BRAND_R_BOUNCE_RANGE && predictedDistance <= BRAND_R_BOUNCE_RANGE)
+				return true;
+		}
+		return false;
+	}
+
+	int rBounceCount(const game_object_script& target)
+	{
+		// Get amount of targets that R can hit if it bounces on given target
+		int count = 0;
+		for (const auto& enemy : entitylist->get_enemy_heroes())
+		{
+			if (enemy->get_handle() == target->get_handle()) {
+				count++;
+				continue;
+			}
+			auto collisions = r->get_collision(target->get_position(), { enemy->get_position() });
+			auto isColliding = !collisions.empty();
+			if (isColliding) return 1;
+
+			auto timeToReachTarget = r->get_delay() + (myhero->get_position().distance(enemy->get_position()) + target->get_position().distance(enemy->get_position())) / BRAND_R_MIN_SPEED;
+			auto rDelay = r->get_delay() + timeToReachTarget + getPing();
+			auto distance = enemy->get_position().distance(target->get_position());
+			auto predictedDistance = prediction->get_prediction(enemy, rDelay).get_unit_position().distance(prediction->get_prediction(target, rDelay).get_unit_position());
+			if (distance <= BRAND_R_BOUNCE_RANGE && predictedDistance <= BRAND_R_BOUNCE_RANGE)
+				count++;
+		}
+		return count;
+	}
+
+	game_object_script findClosestMinion(const game_object_script& target)
+	{
+		// Find closest entity that R can bounce on (prio to champions)
+		game_object_script prioTarget = nullptr;
+		float distanceFromTarget = FLT_MAX;
+		bool isChampion = false;
+		std::vector<game_object_script> minionList;
+		minionList.reserve(entitylist->get_enemy_minions().size() + entitylist->get_jugnle_mobs_minions().size() + entitylist->get_enemy_heroes().size() + entitylist->get_other_minion_objects().size());
+		minionList.insert(minionList.end(), entitylist->get_enemy_minions().begin(), entitylist->get_enemy_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_jugnle_mobs_minions().begin(), entitylist->get_jugnle_mobs_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_enemy_heroes().begin(), entitylist->get_enemy_heroes().end());
+		minionList.insert(minionList.end(), entitylist->get_other_minion_objects().begin(), entitylist->get_other_minion_objects().end());
+		minionList.erase(std::remove_if(minionList.begin(), minionList.end(), [](game_object_script x)
+			{
+				return !customIsValid(x, BRAND_R_RANGE) || x->is_ally();
+			}), minionList.end());
+		for (const auto& minion : minionList)
+		{
+			if (!customIsValid(target, BRAND_R_BOUNCE_RANGE, minion->get_position()) || target->get_handle() == minion->get_handle()) continue;
+			auto collisionsFromHero = r->get_collision(myhero->get_position(), { minion->get_position() });
+			auto collisions = r->get_collision(minion->get_position(), { target->get_position() });
+			auto isColliding = !collisions.empty() || !collisionsFromHero.empty();
+			if (isColliding) continue;
+
+			auto timeToReachTarget = r->get_delay() + (myhero->get_position().distance(minion->get_position()) + target->get_position().distance(minion->get_position())) / BRAND_R_MIN_SPEED;
+			auto rDelay = r->get_delay() + timeToReachTarget + getPing();
+			auto totalRange = BRAND_R_BOUNCE_RANGE;
+			auto distance = minion->get_position().distance(target->get_position());
+			auto isMinionChamp = minion->is_ai_hero();
+			auto predictedDistance = prediction->get_prediction(minion, rDelay).get_unit_position().distance(prediction->get_prediction(target, rDelay).get_unit_position());
+			if (distance <= totalRange && predictedDistance <= totalRange && (!isChampion || isMinionChamp) && (prioTarget == nullptr || distance < distanceFromTarget))
+			{
+				prioTarget = minion;
+				distanceFromTarget = distance;
+				isChampion = isMinionChamp;
+			}
+		}
+		return prioTarget;
+	}
+
+	std::vector<eBounceTarget> getEBounceTargets()
+	{
+		// This function gets every possible targets to use E on to hit any enemy champion
+		std::vector<eBounceTarget> bounceTargets;
+		std::vector<game_object_script> minionList;
+		minionList.reserve(entitylist->get_enemy_minions().size() + entitylist->get_jugnle_mobs_minions().size() + entitylist->get_enemy_heroes().size() + entitylist->get_other_minion_objects().size());
+		minionList.insert(minionList.end(), entitylist->get_enemy_minions().begin(), entitylist->get_enemy_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_jugnle_mobs_minions().begin(), entitylist->get_jugnle_mobs_minions().end());
+		minionList.insert(minionList.end(), entitylist->get_enemy_heroes().begin(), entitylist->get_enemy_heroes().end());
+		minionList.insert(minionList.end(), entitylist->get_other_minion_objects().begin(), entitylist->get_other_minion_objects().end());
+		minionList.erase(std::remove_if(minionList.begin(), minionList.end(), [](game_object_script x)
+			{
+				return !customIsValid(x, BRAND_E_RANGE) || x->is_ally();
+			}), minionList.end());
+		for (const auto& minion : minionList)
+		{
+			for (const auto& target : entitylist->get_enemy_heroes())
+			{
+				if (!customIsValid(target, BRAND_E_MAX_BOUNCE_RANGE, minion->get_position()) || target->get_handle() == minion->get_handle()) continue;
+				auto collisions = e->get_collision(minion->get_position(), { target->get_position() });
+				auto isColliding = !collisions.empty();
+				if (isColliding) continue;
+
+				auto ablazeBuff = minion->get_buff(buff_hash("BrandAblaze"));
+				auto eDelay = e->get_delay() + getPing();
+				auto totalRange = (ablazeBuff && ablazeBuff->get_remaining_time() >= eDelay) ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE;
+				auto distance = minion->get_position().distance(target->get_position());
+				auto predictedDistance = prediction->get_prediction(minion, eDelay).get_unit_position().distance(prediction->get_prediction(target, eDelay).get_unit_position());
+				if (distance <= totalRange && predictedDistance <= totalRange)
+				{
+					bounceTargets.push_back({ .target = minion, .extraRange = totalRange==BRAND_E_MAX_BOUNCE_RANGE, .priority = target_selector->get_priority(target), .distance = predictedDistance-(ablazeBuff?300:0)});
+				}
+			}
+		}
+		return bounceTargets;
+	}
+
+	game_object_script getBestETarget(std::vector<eBounceTarget> bounceTargetList)
+	{
+		// This function gets best E target out of every targets given
+		game_object_script prioTarget = nullptr;
+		float distance = FLT_MAX;
+		float priority = 0;
+		for (const auto& target : eBounceTargets)
+		{
+			if (!customIsValid(target.target, BRAND_E_RANGE)) continue;
+
+			if (prioTarget == nullptr || target.priority > priority || (target.priority == priority && target.distance < distance))
+			{
+				prioTarget = target.target;
+				distance = target.distance;
+				priority = target.priority;
+			}
+		}
+		return prioTarget;
+	}
+
+	bool limitedTick(int msTime)
+	{
+		// Only execute once per msTime
+		if (gametime->get_time() - last_tick <= msTime/1000) return true;
+
+		return false;
+	}
+
+	void calcs()
+	{
+		// Register last time update triggered (for low spec mode)
+		last_tick = gametime->get_time();
+
+		// Manage auto attacks
+		orbwalker->set_attack((attackOrderTime > gametime->get_time() - 0.033) ? ((orbwalker->combo_mode()) ? false : true) : true);
+
+		// Allows casting a spell for this update
+		hasCasted = false;
+		isQReady = myhero->get_spell_state(spellslot::q) == spell_state::Ready;
+		isWReady = myhero->get_spell_state(spellslot::w) == spell_state::Ready;
+		isEReady = myhero->get_spell_state(spellslot::e) == spell_state::Ready;
+		isRReady = myhero->get_spell_state(spellslot::r) == spell_state::Ready;
+
+		// Get pred & damage of spells && a bunch of useful stuff on every enemies so you don't need to do it multiple times per update
+		for (const auto& target : entitylist->get_enemy_heroes())
+		{
+			if (!target->is_valid()) continue;
+
+			qPredictionList[target->get_handle()] = isQReady ? getQPred(target) : prediction_output {};
+			wPredictionList[target->get_handle()] = isWReady ? getWPred(target) : prediction_output {};
+			if (!target->is_visible()) continue;
+
+			stunTime[target->get_handle()] = target->get_immovibility_time();
+			qDamageList[target->get_handle()] = getQDamage(target);
+			wDamageList[target->get_handle()] = getW2Damage(target);
+			eDamageList[target->get_handle()] = getEDamage(target);
+			rDamageList[target->get_handle()] = getTotalRDamage(target);
+
+			// Remove guardian angel time if target finished revive
+			if (target->is_targetable())
+				guardianReviveTime[target->get_handle()] = -1;
+
+			// Get every important buff times
+			buffList listOfNeededBuffs = combinedBuffChecks(target);
+			godBuffTime[target->get_handle()] = listOfNeededBuffs.godBuff;
+			noKillBuffTime[target->get_handle()] = listOfNeededBuffs.noKillBuff;
+			stasisTime[target->get_handle()] = listOfNeededBuffs.stasis;
+		}
+
+		// Get every E bounce targets
+		eBounceTargets = getEBounceTargets();
+
+		// Get best E target
+		bestETarget = getBestETarget(eBounceTargets);
+
+	}
+
+	bool debuffCantCast()
+	{
+		// Check if player has any debuff that prevents spell casting
+		auto stunBuffList = { buff_type::Stun, buff_type::Silence, buff_type::Taunt, buff_type::Polymorph, buff_type::Fear, buff_type::Charm, buff_type::Suppression, buff_type::Knockup, buff_type::Knockback, buff_type::Asleep };
+		for (auto&& buff : myhero->get_bufflist())
+		{
+			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
+			for (const auto& buffType : stunBuffList)
+			{
+				if (buff->get_type() == buffType) return true;
+			}
+		}
+		return false;
+	}
+
+	bool canCastSpells()
+	{
+		if (myhero->is_dead()) return false;
+
+		if (!isQReady && !isWReady && !isEReady && !isRReady) return false;
+
+		if (debuffCantCast()) return false;
+
+		if (lastCast > gametime->get_time()) return false;
+
+		auto castTimeElapsed = myhero->get_active_spell() ? gametime->get_time() - myhero->get_active_spell()->cast_start_time() + myhero->get_active_spell()->get_attack_cast_delay() : 0;
+		auto castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack() && castingTime < 0.1 + getPing()) return false;
+
+		return true;
+	}
+
+	void targetSelectorSort()
+	{
+		// Sort targets based off TS prio
+		targets = entitylist->get_enemy_heroes();
+		std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
+			return target_selector->get_priority(a) > target_selector->get_priority(b);
+			}
+		);
+	}
+
+	void combo()
+	{
+		// Check if combo && if didn't cast yet
+		if (!orbwalker->combo_mode() || hasCasted) return;
+
+		// Loop through every sorted targets
+		for (const auto& target : targets)
+		{
+			// Valid target check
+			bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+			// If not valid then go to next target
+			if (!isValidTarget) continue;
+
+			// Check if X spells can be used on that target
+			auto dist = target->get_position().distance(myhero->get_position());
+			auto canUseQ = settings::combo::qCombo->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			auto canUseW = settings::combo::wCombo->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			auto canUseE = settings::combo::eCombo->get_bool() && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
+			auto rRange = settings::combo::rComboKills->get_bool() && settings::combo::rComboMinionBounce->get_bool() ? 1350 : BRAND_R_RANGE;
+			auto canUseR = settings::combo::rCombo->get_bool() && isRReady && dist <= rRange && target->is_visible();
+			auto couldUseQ = (canUseQ && qCanBeCasted(target));
+			auto couldUseE = settings::combo::eCombo->get_bool() && isEReady;
+
+			// If no spells can be used on that target then go to next target
+			if (!canUseQ && !canUseW && !canUseE && !canUseR) continue;
+
+			// Cancel autos if can E or if could Q
+			if (couldUseE || couldUseQ) attackOrderTime = gametime->get_time();
+
+			// Store data about R
+			auto isRBlocked = rCollision(target);
+			auto rCanBounce = !isRBlocked ? canRBounce(target) : false;
+			int rAoECount = !isRBlocked ? rBounceCount(target): 0;
+			auto rMinionBounce = rRange > BRAND_R_RANGE;
+			auto amountOfShots = rCanBounce ? std::min((rMinionBounce ? 2 : 3), settings::combo::rComboBounces->get_int()) : 1;
+			bool rKills = settings::combo::rComboKills->get_bool() && rDamageList[target->get_handle()].shots > 0 && rDamageList[target->get_handle()].shots <= amountOfShots;
+			// Store useful info to use in logic
+			auto ccTime = stunTime[target->get_handle()];
+			auto qp = qPredictionList[target->get_handle()];
+			auto qLandingTime = getTimeToHit(qp.input, qp, true);
+			auto shouldBreak = false;
+
+			// Q cast
+			if (canUseQ && (ccTime - getPing() - 0.3) < qLandingTime && castQ(target, "combo", canUseE)) break;
+
+			// W cast
+			if (canUseW && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]))
+			{
+				shouldBreak = true;
+				if (castW(target, "combo")) break;
+			}
+
+			// E cast
+			if (canUseE && !couldUseQ)
+			{
+				if (target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE)
+				{
+					if (castE(target, "combo")) break;
+				}
+				else if (bestETarget)
+				{
+					if (castE(bestETarget, "combobounce")) break;
+				}
+			}
+
+			// R cast
+			if (canUseR)
+			{
+				if (dist <= BRAND_R_RANGE && !isRBlocked)
+				{
+					if (settings::combo::rComboAoE->get_bool() && rAoECount >= settings::combo::rComboAoEAmount->get_int())
+					{
+						if (castR(target, "comboaoe")) break;
+					}
+					if (rKills && (!settings::combo::rComboLogic || prediction->get_prediction(target, 0.5).get_unit_position().distance(myhero->get_position()) > BRAND_R_RANGE))
+					{
+						if (castR(target, "combokill")) break;
+					}
+				}
+				else if (rMinionBounce && rKills)
+				{
+					auto prioTarget = findClosestMinion(target);
+					if (prioTarget)
+						if (castR(prioTarget, "combobouncekill")) break;
+				}
+			}
+
+			if (shouldBreak) break;
+
+		}
+	}
+
+	void harass()
+	{
+		// Check if harass && if didn't cast yet
+		if (!orbwalker->harass() || hasCasted) return;
+
+		// Loop through every sorted targets
+		for (const auto& target : targets)
+		{
+			// Valid target check
+			bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+			// If not valid then go to next target
+			if (!isValidTarget) continue;
+
+			// Check if X spells can be used on that target
+			auto dist = target->get_position().distance(myhero->get_position());
+			auto canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			auto canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			auto canUseE = settings::harass::eHarass->get_bool() && isEReady && (dist <= BRAND_E_RANGE || (settings::harass::eExtraHarass->get_bool() ? bestETarget : nullptr)) && target->is_visible();
+			auto couldUseQ = (canUseQ && qCanBeCasted(target));
+
+			// If no spells can be used on that target then go to next target
+			if (!canUseQ && !canUseW && !canUseE) continue;
+
+			// Store useful info to use in logic
+			auto ccTime = stunTime[target->get_handle()];
+			auto qp = qPredictionList[target->get_handle()];
+			auto shouldBreak = false;
+
+			// Q cast
+			if ((ccTime - getPing() - 0.3) && canUseQ && castQ(target, "harass", canUseE)) break;
+
+			// W cast
+			if (canUseW && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]))
+			{
+				shouldBreak = true;
+				if (castW(target, "harass")) break;
+			}
+
+			// E cast
+			if (canUseE && !couldUseQ)
+			{
+				if (target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE)
+				{
+					if (castE(target, "harass")) break;
+				}
+				else if (bestETarget)
+				{
+					if (castE(bestETarget, "harassbounce")) break;
+				}
+			}
+
+			if (shouldBreak) break;
+
+		}
+	}
+
+	void particleHandling()
+	{
+		// Store particle settings
+		auto particleQ = settings::automatic::qParticle->get_bool() && isQReady;
+		auto particleW = settings::automatic::wParticle->get_bool() && isWReady;
+
+		// Loop through every pred particles
+		int key = 0;
+		for (const auto& obj : particlePredList)
+		{
+			// Checking if particles are valid, if it's not, delete is from the list
+			auto currentKey = key++;
+			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) {
+				particlePredList.erase(particlePredList.begin() + currentKey);
+				continue;
+			};
+
+			if (hasCasted || (!particleQ && !particleW)) continue;
+
+			// Getting the final cast position
+			auto castPos = obj.castingPos;
+			if (obj.isTeleport && obj.target)
+			{
+				castPos = obj.obj->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+			}
+			else if (obj.isZed)
+			{
+				castPos = obj.target->get_position() + (obj.owner->get_direction() * (obj.target->get_bounding_radius() + obj.owner->get_bounding_radius()));
+			}
+
+			// Check if cast position isn't too far enough
+			if ((myhero->get_position().distance(castPos) - obj.owner->get_bounding_radius()) > BRAND_Q_RANGE) continue;
+
+			// Gathering enough data to cast on particles
+			auto distance = myhero->get_position().distance(castPos) - (obj.owner->get_bounding_radius() + q->get_radius());
+			auto qLandingTime = std::max(q->get_delay(), (distance / q->get_speed()) + q->get_delay());
+			auto particleTime = (obj.time + obj.castTime) - gametime->get_time();
+			auto qCanDodge = obj.owner->get_move_speed() * ((qLandingTime - particleTime) + getPing()) > q->get_radius() + obj.owner->get_bounding_radius();
+			auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
+			auto collisionList = q->get_collision(myhero->get_position(), { castPos });
+			auto canQ = particleQ && !qCanDodge && timeBeforeWHitsLocation(castPos) < FLT_MAX && collisionList.empty();
+			auto canW = particleW && !wCanDodge && myhero->get_position().distance(castPos) <= w->range();
+
+			// Try to cast Q if possible
+			if (canQ && (particleTime - getPing() + 0.2 <= qLandingTime))
+			{
+				q->cast(castPos);
+				hasCasted = true;
+				// Not breaking because this list also removes invalid particles
+			}
+			// Try to cast W if possible
+			else if (canW && (particleTime - getPing() + 0.1) <= 0.875)
+			{
+				w->cast(castPos);
+				hasCasted = true;
+				// Not breaking because this list also removes invalid particles
+			}
+		}
+	}
+
+	void automatic()
+	{
+		// Check if you didn't already cast
+		if (hasCasted) return;
+
+		// Store every settings
+		auto ccQ = settings::automatic::qStun->get_bool() && isQReady;
+		auto ccW = settings::automatic::wStun->get_bool() && isWReady;
+		auto dashQ = settings::automatic::qDash->get_bool() && isQReady;
+		auto dashW = settings::automatic::wDash->get_bool() && isWReady;
+		auto castingQ = settings::automatic::qCast->get_bool() && isQReady;
+		auto castingW = settings::automatic::wCast->get_bool() && isWReady;
+		auto channelQ = settings::automatic::qChannel->get_bool() && isQReady;
+		auto channelW = settings::automatic::wChannel->get_bool() && isWReady;
+		auto stasisQ = settings::automatic::qStasis->get_bool() && isQReady;
+		auto stasisW = settings::automatic::wStasis->get_bool() && isWReady;
+
+		// Stop if player doesn't want to use any auto stuff
+		if (!ccQ && !ccW && !dashQ && !dashW && !castingQ && !castingW && !channelQ && !channelQ && !stasisQ && !stasisW && particlePredList.empty()) return;
+
+		// Loop through every sorted targets
+		for (const auto& target : targets)
+		{
+			auto stasisDuration = stasisTime[target->get_handle()];
+			// Valid target check
+			bool isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
+			// If not valid then go to next target
+			if (!isValidTarget) continue;
+
+			auto dashing = target->is_dashing();
+			auto ccTime = stunTime[target->get_handle()];
+			auto channelingSpell = (target->get_active_spell() && target->get_active_spell()->is_channeling() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling()) || isRecalling(target);
+			auto castTimeElapsed = target->get_active_spell() ? gametime->get_time() - target->get_active_spell()->cast_start_time() + target->get_active_spell()->get_attack_cast_delay() : 0;
+			auto castingTime = target->get_active_spell() && !channelingSpell ? target->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
+			auto ccCast = ccTime > 0 && (ccQ || ccW);
+			auto dashingCast = dashing && (dashQ || dashW);
+			auto castingCast = castingTime > 0 && (castingQ || castingW);
+			auto channelingCast = channelingSpell && (channelQ || channelW);
+			auto stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
+			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
+
+			auto qp = qPredictionList[target->get_handle()];
+			auto qLandingTime = getTimeToHit(qp.input, qp, true);
+			auto canE = isEReady && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE;
+
+			// Cast on stasis targets
+			if (stasisCast)
+			{
+				// Cast Q on stasis
+				if (stasisQ && (stasisDuration) < qLandingTime)
+					if (castQ(target, "stasis", false, true)) break;
+				// Cast W on stasis
+				if (stasisW && (stasisDuration + 0.2) < w->get_delay())
+					if (castW(target, "stasis", true)) break;
+			}
+
+			// Next part shouldn't cast on stasis targets
+			if (stasisDuration > 0) continue;
+
+			// Cast on stun logic
+			if (ccCast) {
+				// Cast Q on stun
+				if (ccQ)
+				{
+					// Chain CC logic
+					if ((ccTime - getPing() - 0.3) >= qLandingTime && !castQ(target, "stun", canE))
+					{
+						if (isQReady && canE && castE(target, "stun")) break;
+					}
+					else
+					{
+						break;
+					}
+				}
+				// Cast W on stun
+				if (ccW)
+					if (castW(target, "stun")) break;
+			}
+
+			// Cast on dash logic
+			if (dashingCast) {
+				// Cast Q on dash
+				if (dashQ)
+				{
+					if (!castQ(target, "dash", canE))
+					{
+						if (isQReady && canE && castE(target, "dash")) break;
+					}
+					else
+					{
+						break;
+					}
+				}
+				// Cast W on dash
+				if (dashW)
+					if (castW(target, "dash")) break;
+			}
+
+			// Cast on casting logic
+			if (castingCast) {
+				// Cast Q on casting
+				if (castingQ)
+				{
+					if (!castQ(target, "casting", canE))
+					{
+						if (isQReady && canE && castE(target, "casting")) break;
+					}
+					else
+					{
+						break;
+					}
+				}
+				// Cast W on casting
+				if (castingW)
+					if (castW(target, "casting")) break;
+			}
+
+			// Cast on channeling logic
+			if (channelingCast) {
+				// Cast Q on channel
+				if (channelQ)
+				{
+					if (!castQ(target, "channeling", canE))
+					{
+						if (isQReady && canE && castE(target, "channeling")) break;
+					}
+					else
+					{
+						break;
+					}
+				}
+				// Cast W on channel
+				if (channelW)
+					if (castW(target, "channeling")) break;
+			}
+
+		}
+		// Particle pred handling
+		if (!particlePredList.empty())
+			particleHandling();
+	}
+
+	void createMenu()
+	{
+		// Main tab
+		mainMenu = menu->create_tab("openbrand", "OpenBrand");
+		mainMenu->set_texture(myhero->get_square_icon_portrait());
+
+		// Combo settings
+		const auto comboTab = mainMenu->add_tab("openbrandcombo", "Combo");
+		settings::combo::qCombo = comboTab->add_checkbox("openbrandqcombo", "Q combo", true);
+		settings::combo::qCombo->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+		settings::combo::wCombo = comboTab->add_checkbox("openbrandwcombo", "W combo", true);
+		settings::combo::wCombo->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+		settings::combo::eCombo = comboTab->add_checkbox("openbrandecombo", "E combo", true);
+		settings::combo::eCombo->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+		settings::combo::eExtraCombo = comboTab->add_checkbox("openbrandeextracombo", "^ Cast on minions to hit champions", true);
+		settings::combo::rCombo = comboTab->add_checkbox("openbrandrcombo", "R combo", true);
+		settings::combo::rCombo->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+		settings::combo::rComboAoE = comboTab->add_checkbox("openbrandrcomboaoe", "^ AoE cast?", true);
+		settings::combo::rComboAoE->add_property_change_callback([](TreeEntry* entry){
+				if (entry->get_bool())
+				{
+					settings::combo::rComboAoEAmount->is_hidden() = false;
+				}
+				else
+				{
+					settings::combo::rComboAoEAmount->is_hidden() = true;
+				}
+			}
+		);
+		settings::combo::rComboAoEAmount = comboTab->add_slider("openbrandrcomboaoeamount", "R AoE amount", 2, 2, 5);
+		if (!settings::combo::rComboAoE->get_bool())
+		{
+			settings::combo::rComboAoEAmount->is_hidden() = true;
+		}
+		settings::combo::rComboKills = comboTab->add_checkbox("openbrandrcombokills", "^ If killable", false);
+		settings::combo::rComboKills->add_property_change_callback([](TreeEntry* entry) {
+			if (entry->get_bool())
+			{
+				settings::combo::rComboLogic->is_hidden() = false;
+			}
+			else
+			{
+				settings::combo::rComboLogic->is_hidden() = true;
+			}
+			}
+		);
+		settings::combo::rComboLogic = comboTab->add_checkbox("openbrandrcombologic", "^ Try to avoid wasting?", true);
+		settings::combo::rComboKills->add_property_change_callback([](TreeEntry* entry) {
+			if (entry->get_bool())
+			{
+				settings::combo::rComboMinionBounce->is_hidden() = false;
+			}
+			else
+			{
+				settings::combo::rComboMinionBounce->is_hidden() = true;
+			}
+			}
+		);
+		settings::combo::rComboMinionBounce = comboTab->add_checkbox("openbrandrcombominionbounce", "^ Cast on minions to kill champions", true);
+		settings::combo::rComboKills->add_property_change_callback([](TreeEntry* entry) {
+				if (entry->get_bool())
+				{
+					settings::combo::rComboBounces->is_hidden() = false;
+				}
+				else
+				{
+					settings::combo::rComboBounces->is_hidden() = true;
+				}
+			}
+		);
+		settings::combo::rComboBounces = comboTab->add_slider("openbrandrcombobounces", "Bounces to kill", 2, 1, 3);
+		if (!settings::combo::rComboKills->get_bool())
+		{
+			settings::combo::rComboLogic->is_hidden() = true;
+			settings::combo::rComboMinionBounce->is_hidden() = true;
+			settings::combo::rComboBounces->is_hidden() = true;
+		}
+
+		// Harass settings
+		const auto harassTab = mainMenu->add_tab("openbrandharass", "Harass");
+		settings::harass::qHarass = harassTab->add_checkbox("openbrandqharass", "Q harass", true);
+		settings::harass::qHarass->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+		settings::harass::wHarass = harassTab->add_checkbox("openbrandwharass", "W harass", true);
+		settings::harass::wHarass->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+		settings::harass::eHarass = harassTab->add_checkbox("openbrandeharass", "E harass", true);
+		settings::harass::eHarass->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+		settings::harass::eExtraHarass = harassTab->add_checkbox("openbrandeextraharass", "^ Cast on minions to hit champions", true);
+
+		// Draw settings
+		const auto drawTab = mainMenu->add_tab("openbranddraws", "Drawings");
+
+		// Draw spellrange tab
+		const auto drawRangeTab = drawTab->add_tab("openbranddrawsranges", "Spell ranges");
+		settings::draws::spellRanges::qRange = drawRangeTab->add_checkbox("openbranddrawsqrange", "Draw Q range", true);
+		settings::draws::spellRanges::qRange->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+		settings::draws::spellRanges::wRange = drawRangeTab->add_checkbox("openbranddrawswrange", "Draw W range", true);
+		settings::draws::spellRanges::wRange->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+		settings::draws::spellRanges::eRange = drawRangeTab->add_checkbox("openbranddrawserange", "Draw E range", true);
+		settings::draws::spellRanges::eRange->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+		settings::draws::spellRanges::eExtraRange = drawRangeTab->add_checkbox("openbranddrawseextrarange", "^ Draw bounce range", true);
+		settings::draws::spellRanges::rRange = drawRangeTab->add_checkbox("openbranddrawsrrange", "Draw R Range", true);
+		settings::draws::spellRanges::rRange->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+
+		// Normal draws
+		settings::draws::wRadius = drawTab->add_checkbox("openbranddrawswradius", "Draw W on ground", true);
+		settings::draws::rDamage = drawTab->add_checkbox("openbranddrawsrdamage", "Draw R damage", true);
+		settings::draws::rDamageText = drawTab->add_checkbox("openbranddrawsrdamagetext", "Draw R damage text", true);
+		settings::draws::particlePos = drawTab->add_checkbox("openbranddrawsparticlepos", "Draw particle pred positions", true);
+
+		// Hitchance tab
+		const auto hitchanceTab = mainMenu->add_tab("openbrandhitchance", "Hitchance");
+		std::vector<std::pair<std::string, void*>> combo_elements = {};
+		for (int i = 3; i < 9; i++)
+		{
+			const auto hitchance = static_cast<hit_chance>(i);
+
+			std::string hitchance_str;
+			switch (hitchance)
+			{
+			case hit_chance::immobile:
+				hitchance_str = "Immobile";
+				break;
+			case hit_chance::dashing:
+				hitchance_str = "Dashing";
+				break;
+			case hit_chance::very_high:
+				hitchance_str = "Very High";
+				break;
+			case hit_chance::high:
+				hitchance_str = "High";
+				break;
+			case hit_chance::medium:
+				hitchance_str = "Medium";
+				break;
+			case hit_chance::low:
+				hitchance_str = "Low";
+				break;
+			case hit_chance::impossible:
+				hitchance_str = "Impossible";
+				break;
+			case hit_chance::out_of_range:
+				hitchance_str = "Out Of Range";
+				break;
+			case hit_chance::collision:
+				hitchance_str = "Collision";
+				break;
+			}
+
+			combo_elements.emplace_back(hitchance_str, nullptr);
+		}
+		settings::hitchance::qHitchance = hitchanceTab->add_combobox("openbrandqhitchance", "Q Hitchance", combo_elements, 2);
+		settings::hitchance::wHitchance = hitchanceTab->add_combobox("openbrandwhitchance", "W Hitchance", combo_elements, 2);
+
+		// Misc tab
+		const auto miscTab = mainMenu->add_tab("openbrandmisc", "Misc");
+		settings::automatic::qStun = miscTab->add_checkbox("openbrandmiscqstun", "Auto Q on stun", true);
+		settings::automatic::wStun = miscTab->add_checkbox("openbrandmiscwstun", "Auto W on stun", true);
+		settings::automatic::qDash = miscTab->add_checkbox("openbrandmiscqdash", "Auto Q on dash", true);
+		settings::automatic::wDash = miscTab->add_checkbox("openbrandmiscwdash", "Auto W on dash", true);
+		settings::automatic::qCast = miscTab->add_checkbox("openbrandmiscqcast", "Auto Q on cast", true);
+		settings::automatic::wCast = miscTab->add_checkbox("openbrandmiscwcast", "Auto W on cast", true);
+		settings::automatic::qChannel = miscTab->add_checkbox("openbrandmiscqchannel", "Auto Q on channel", true);
+		settings::automatic::wChannel = miscTab->add_checkbox("openbrandmiscwchannel", "Auto W on channel", true);
+		settings::automatic::qStasis = miscTab->add_checkbox("openbrandmiscqstasis", "Auto Q on stasis", true);
+		settings::automatic::wStasis = miscTab->add_checkbox("openbrandmiscwstasis", "Auto W on stasis", true);
+		settings::automatic::qParticle = miscTab->add_checkbox("openbrandmiscqparticle", "Auto Q on particle", true);
+		settings::automatic::wParticle = miscTab->add_checkbox("openbrandmiscwparticle", "Auto W on particle", true);
+
+		// Misc
+		settings::lowSpec = mainMenu->add_checkbox("openbrandlowspec", "Low spec mode (tick limiter)", false);
+	}
+
+	void on_update()
+	{
+		// Limit ticks (for low spec mode)
+		if (settings::lowSpec->get_bool() && limitedTick(SERVER_TICKRATE)) return;
+		// Pred, damage && other calcs needed for many things
+		calcs();
+		// Check if player can cast spells
+		if (!canCastSpells()) return;
+		// Sort targets
+		targetSelectorSort();
+		// Combo mode
+		combo();
+		// Harass mode
+		harass();
+		// Auto cast
+		automatic();
+	}
+
+	void on_draw()
+	{
+		// Spellranges
+		
+		// Q
+		if (settings::draws::spellRanges::qRange->get_bool()) {
+			auto alpha = isQReady ? 255 : 50;
+			draw_manager->add_circle(myhero->get_position(), BRAND_Q_RANGE, MAKE_COLOR(204, 127, 0, alpha), 2);
+		}
+
+		// W
+		if (settings::draws::spellRanges::wRange->get_bool()) {
+			auto alpha = isWReady ? 255 : 50;
+			draw_manager->add_circle(myhero->get_position(), BRAND_W_RANGE, MAKE_COLOR(255, 0, 0, alpha), 2);
+		}
+
+		// E
+		if (settings::draws::spellRanges::eRange->get_bool()) {
+			auto alpha = isEReady ? 255 : 50;
+			draw_manager->add_circle(myhero->get_position(), BRAND_E_RANGE, MAKE_COLOR(0, 127, 255, alpha), 2);
+		}
+
+		// ExtraE
+		if (settings::draws::spellRanges::eExtraRange->get_bool() && isEReady)
+		{
+			for (const auto& target : eBounceTargets)
+			{
+				if (!customIsValid(target.target, BRAND_E_RANGE)) continue;
+
+				auto isMainTarget = bestETarget && target.target->get_handle() == bestETarget->get_handle();
+				draw_manager->add_circle(target.target->get_position(), target.extraRange ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE, MAKE_COLOR(0, 127, 255, isMainTarget ? 160 : 75), 2);
+			}
+		}
+
+		// R
+		if (settings::draws::spellRanges::rRange->get_bool()) {
+			auto alpha = isRReady ? 255 : 50;
+			draw_manager->add_circle(myhero->get_position(), BRAND_R_RANGE, MAKE_COLOR(255, 127, 0, alpha), 2);
+		}
+
+		// Draw W on ground
+		if (settings::draws::wRadius->get_bool()) {
+			for (const auto& particle : particleList) {
+				draw_manager->add_circle(particle.particle->get_position(), w->get_radius(), MAKE_COLOR(255, 0, 0, 255), 2);
+				draw_manager->add_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 255), 2);
+			}
+		}
+
+		// Draw R damage & damage text
+		for (const auto& target : entitylist->get_enemy_heroes())
+		{
+			if (!target->is_visible_on_screen() || !target->is_hpbar_recently_rendered() || target->is_dead()) continue;
+			if (rDamageList[target->get_handle()].damage > 0) {
+				if (settings::draws::rDamage->get_bool()) {
+					draw_dmg_rl(target, rDamageList[target->get_handle()].damage, MAKE_COLOR(255, 170, 0, 150));
+				}
+				if (settings::draws::rDamageText->get_bool()) {
+					auto bar_pos = target->get_hpbar_pos();
+					bar_pos = vector(bar_pos.x + 115, bar_pos.y -= 10);
+					if (rDamageList[target->get_handle()].kills)
+					{
+						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "Killable -> %d %s", rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "bounces" : "bounce");
+					}
+					else
+					{
+						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "%.0f", std::round(getTotalHP(target) - rDamageList[target->get_handle()].damage));
+					}
+				}
+			}
+		}
+
+		// Draw particle pred positions
+		for (const auto& obj : particlePredList)
+		{
+			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) continue;
+
+			draw_manager->add_circle(obj.obj->get_position(), obj.target->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
+			draw_manager->add_circle(obj.obj->get_position(), obj.target->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
+		}
+
+	}
+
+	void on_create(const game_object_script obj)
+	{
+		auto emitterHash = obj->get_emitter_resources_hash();
+
+		// Get Brand W particle & store it
+		if (emitterHash == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
+			particleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
+
+		// Get particles to cast on
+		if (!obj->get_emitter() || !obj->get_emitter()->is_enemy()) return;
+
+		if (emitterHash == buff_hash("TwistedFate_R_Gatemarker_Red"))
+		{
+			particleStruct particleData = {.obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position()};
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("Ekko_R_ChargeIndicator"))
+		{
+			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("Pantheon_R_Update_Indicator_Enemy"))
+		{
+			auto castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
+			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("Galio_R_Tar_Ground_Enemy"))
+		{
+			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("Evelynn_R_Landing"))
+		{
+			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("TahmKench_W_ImpactWarning_Enemy"))
+		{
+			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
+			particlePredList.push_back(particleData);
+		}
+		else if (emitterHash == buff_hash("Zed_R_tar_TargetMarker") && obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->get_handle() == myhero->get_handle())
+		{
+			particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = obj->get_position(), .isZed = true };
+			particlePredList.push_back(particleData);
+		}
+		else if (obj->get_name() == "global_ss_teleport_turret_red.troy")
+		{
+			auto target = obj->get_particle_attachment_object();
+			auto nexusPos = vector::zero;
+			for (const auto& value : entitylist->get_all_nexus())
+				if (value->is_enemy()) {
+					nexusPos = value->get_position();
+					break;
+				}
+			if (nexusPos != vector::zero)
+			{
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = obj->get_position(), .nexusPos = nexusPos, .isTeleport = true };
+				particlePredList.push_back(particleData);
+			}
+		}
+		else if (obj->get_name() == "global_ss_teleport_target_red.troy")
+		{
+			auto target = obj->get_particle_target_attachment_object();
+			auto nexusPos = vector::zero;
+			for (const auto& value : entitylist->get_all_nexus())
+				if (value->is_enemy()) {
+					nexusPos = value->get_position();
+					break;
+				}
+			if (nexusPos != vector::zero)
+			{
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = obj->get_position(), .nexusPos = nexusPos, .isTeleport = true };
+				particlePredList.push_back(particleData);
+			}
+		}
+	}
+
+	void on_delete(const game_object_script obj)
+	{
+		// Delete Brand W in list when a W particle gets deleted with handle comparison
+		if (obj->get_emitter_resources_hash() == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
+			std::erase_if(particleList, [obj](particleData& particle) {return particle.particle->get_handle() == obj->get_handle(); });
+	}
+
+	void on_buff_gain(game_object_script sender, buff_instance_script buff)
+	{
+		// Grouping on buff gain && on buff lose together
+		on_buff(sender, buff, true);
+	}
+
+	void on_buff_lose(game_object_script sender, buff_instance_script buff)
+	{
+		// Grouping on buff gain && on buff lose together
+		on_buff(sender, buff, false);
+	}
+
+	void on_buff(game_object_script& sender, buff_instance_script& buff, bool gain)
+	{
+		// Detect if someone is reviving from Guardian Angel
+		if (!gain && sender->is_valid() && !sender->is_targetable() && buff->get_hash_name() == buff_hash("willrevive") && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
+		{
+			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
+		}
+	}
+
+	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process)
+	{
+		lastCast = gametime->get_time() + 0.133 + getPing();
+	}
+
+	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
+	{
+		if (sender->get_handle() == myhero->get_handle()) lastCast = 0;
+	}
+
+	void load()
+	{
+		// Spell registering
+		
+		// Q
+		q = plugin_sdk->register_spell(spellslot::q, BRAND_Q_RANGE);
+		q->set_skillshot(0.25f, 60.f, 1600.f, { collisionable_objects::minions, collisionable_objects::heroes, collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		q->set_spell_lock(false);
+
+		// W
+		w = plugin_sdk->register_spell(spellslot::w, BRAND_W_RANGE);
+		w->set_skillshot(0.825f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_spell_lock(false);
+
+		// E
+		e = plugin_sdk->register_spell(spellslot::e, BRAND_E_RANGE);
+		e->set_skillshot(0.25f, 30.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		e->set_spell_lock(false);
+
+		// R
+		r = plugin_sdk->register_spell(spellslot::r, BRAND_R_RANGE);
+		r->set_skillshot(0.25f, 60.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		r->set_spell_lock(false);
+
+		// Call menu creation function
+		createMenu();
+
+		// Add events
+		event_handler<events::on_update>::add_callback(on_update);
+		event_handler<events::on_draw>::add_callback(on_draw);
+		event_handler<events::on_create_object>::add_callback(on_create);
+		event_handler<events::on_delete_object>::add_callback(on_delete);
+		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
+		event_handler<events::on_buff_lose>::add_callback(on_buff_lose);
+		event_handler<events::on_cast_spell>::add_callback(on_cast_spell);
+		event_handler<events::on_process_spell_cast>::add_callback(on_process_spell_cast);
+
+	}
+
+}
