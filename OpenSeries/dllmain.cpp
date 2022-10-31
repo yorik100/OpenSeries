@@ -3,6 +3,7 @@
 
 PLUGIN_NAME("OpenBrand");
 
+PLUGIN_TYPE(plugin_type::champion);
 SUPPORTED_CHAMPIONS(champion_id::Brand);
 
 PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
@@ -22,6 +23,7 @@ PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
         console->print("Champion %s is not supported!", myhero->get_model_cstr());
         return false;
     }
+    return true;
 }
 
 PLUGIN_API void on_sdk_unload( )

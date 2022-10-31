@@ -40,6 +40,14 @@ namespace brand {
 		bool isTeleport = false;
 	};
 
+	enum class mode_228 : std::int32_t
+	{
+		combo,
+		lasthit,
+		last2,
+		last3
+	};
+
 	std::vector<game_object_script> targets;
 	std::vector<particleData> particleList;
 	std::vector<eBounceTarget> eBounceTargets;
@@ -914,7 +922,7 @@ namespace brand {
 		// Get pred & damage of spells && a bunch of useful stuff on every enemies so you don't need to do it multiple times per update
 		for (const auto& target : entitylist->get_enemy_heroes())
 		{
-			if (!target->is_valid()) continue;
+			if (!target->is_valid() || target->is_dead()) continue;
 
 			qPredictionList[target->get_handle()] = isQReady ? getQPred(target) : prediction_output {};
 			wPredictionList[target->get_handle()] = isWReady ? getWPred(target) : prediction_output {};
@@ -1593,7 +1601,7 @@ namespace brand {
 				}
 				if (settings::draws::rDamageText->get_bool()) {
 					auto bar_pos = target->get_hpbar_pos();
-					bar_pos = vector(bar_pos.x + 115, bar_pos.y -= 40);
+					bar_pos = vector(bar_pos.x + 120, bar_pos.y -= 40);
 					if (rDamageList[target->get_handle()].kills)
 					{
 						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "Killable -> %d %s", rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "bounces" : "bounce");
