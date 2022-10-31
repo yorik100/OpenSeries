@@ -1143,7 +1143,7 @@ namespace brand {
 
 		// Loop through every pred particles
 		int key = 0;
-		for (const auto& obj : particlePredList)
+		for (auto& obj : particlePredList)
 		{
 			// Checking if particles are valid, if it's not, delete is from the list
 			auto currentKey = key++;
@@ -1155,40 +1155,39 @@ namespace brand {
 			if (hasCasted || (!particleQ && !particleW)) continue;
 
 			// Getting the final cast position
-			auto castPos = obj.castingPos;
 			if (obj.isTeleport && obj.target)
 			{
-				castPos = obj.obj->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+				obj.castingPos = obj.target->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
 			}
 			else if (obj.isZed)
 			{
-				castPos = obj.target->get_position() + (obj.owner->get_direction() * (obj.target->get_bounding_radius() + obj.owner->get_bounding_radius()));
+				obj.castingPos = obj.target->get_position() + (obj.owner->get_direction() * (obj.target->get_bounding_radius() + obj.owner->get_bounding_radius()));
 			}
 
 			// Check if cast position isn't too far enough
-			if ((myhero->get_position().distance(castPos) - obj.owner->get_bounding_radius()) > BRAND_Q_RANGE) continue;
+			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > BRAND_Q_RANGE) continue;
 
 			// Gathering enough data to cast on particles
-			auto distance = myhero->get_position().distance(castPos) - (obj.owner->get_bounding_radius() + q->get_radius());
+			auto distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius() + q->get_radius());
 			auto qLandingTime = std::max(q->get_delay(), (distance / q->get_speed()) + q->get_delay());
 			auto particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			auto qCanDodge = obj.owner->get_move_speed() * ((qLandingTime - particleTime) + getPing()) > q->get_radius() + obj.owner->get_bounding_radius();
 			auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
-			auto collisionList = q->get_collision(myhero->get_position(), { castPos });
-			auto canQ = particleQ && !qCanDodge && timeBeforeWHitsLocation(castPos) < FLT_MAX && collisionList.empty();
-			auto canW = particleW && !wCanDodge && myhero->get_position().distance(castPos) <= w->range();
+			auto collisionList = q->get_collision(myhero->get_position(), { obj.castingPos });
+			auto canQ = particleQ && !qCanDodge && timeBeforeWHitsLocation(obj.castingPos) < FLT_MAX && collisionList.empty();
+			auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 
 			// Try to cast Q if possible
 			if (canQ && (particleTime - getPing() + 0.2 <= qLandingTime))
 			{
-				q->cast(castPos);
+				q->cast(obj.castingPos);
 				hasCasted = true;
 				// Not breaking because this list also removes invalid particles
 			}
 			// Try to cast W if possible
 			else if (canW && (particleTime - getPing() + 0.1) <= 0.875)
 			{
-				w->cast(castPos);
+				w->cast(obj.castingPos);
 				hasCasted = true;
 				// Not breaking because this list also removes invalid particles
 			}
@@ -1601,10 +1600,10 @@ namespace brand {
 		// Draw particle pred positions
 		for (const auto& obj : particlePredList)
 		{
-			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) continue;
+			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
 
-			draw_manager->add_circle(obj.obj->get_position(), obj.owner->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
-			draw_manager->add_circle(obj.obj->get_position(), obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
+			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
+			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
 		}
 
 	}
@@ -1653,7 +1652,7 @@ namespace brand {
 		}
 		else if (emitterHash == buff_hash("Zed_R_tar_TargetMarker") && obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->get_handle() == myhero->get_handle())
 		{
-			particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = obj->get_position(), .isZed = true };
+			particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = vector::zero, .isZed = true };
 			particlePredList.push_back(particleData);
 		}
 		else if (obj->get_name() == "global_ss_teleport_turret_red.troy")
@@ -1667,7 +1666,7 @@ namespace brand {
 				}
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = obj->get_position(), .nexusPos = nexusPos, .isTeleport = true };
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
 				particlePredList.push_back(particleData);
 			}
 		}
@@ -1682,7 +1681,7 @@ namespace brand {
 				}
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = obj->get_position(), .nexusPos = nexusPos, .isTeleport = true };
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
 				particlePredList.push_back(particleData);
 			}
 		}
