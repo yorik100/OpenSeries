@@ -1603,8 +1603,8 @@ namespace brand {
 		{
 			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) continue;
 
-			draw_manager->add_circle(obj.obj->get_position(), obj.target->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
-			draw_manager->add_circle(obj.obj->get_position(), obj.target->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
+			draw_manager->add_circle(obj.obj->get_position(), obj.owner->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
+			draw_manager->add_circle(obj.obj->get_position(), obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
 		}
 
 	}
