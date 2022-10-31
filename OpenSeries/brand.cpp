@@ -347,10 +347,10 @@ namespace brand {
 		return timeToHit;
 	}
 
-	int alliesAroundTarget(const game_object_script& target)
+	int alliesAroundTarget(const game_object_script& target, float range = FLT_MAX)
 	{
 		// Get amount of allies near target
-		return myhero->get_position().distance(target->get_position()) >= 500 ? target->count_enemies_in_range(500) : target->count_enemies_in_range(500) - 1;
+		return myhero->get_position().distance(target->get_position()) >= range ? target->count_enemies_in_range(range) : target->count_enemies_in_range(500) - 1;
 	}
 
 	hit_chance getPredIntFromSettings(int hitchance)
@@ -1087,7 +1087,7 @@ namespace brand {
 					}
 					auto comboLogic = !settings::combo::rComboLogic
 						|| prediction->get_prediction(target, 0.5).get_unit_position().distance(myhero->get_position()) > BRAND_R_RANGE
-						|| ((!canUseQ && !canUseW && !canUseE) && alliesAroundTarget(target) < 1
+						|| ((!canUseQ && !canUseW && !canUseE) && alliesAroundTarget(target, 500) < 1
 							&& ((target->get_health() - health_prediction->get_incoming_damage(target, 3, true) > 100)
 								|| (myhero->get_health() - health_prediction->get_incoming_damage(myhero, 3, true) < 150)));
 					if (rKills && comboLogic)
