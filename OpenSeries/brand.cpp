@@ -40,14 +40,6 @@ namespace brand {
 		bool isTeleport = false;
 	};
 
-	enum class mode_228 : std::int32_t
-	{
-		combo,
-		lasthit,
-		last2,
-		last3
-	};
-
 	std::vector<game_object_script> targets;
 	std::vector<particleData> particleList;
 	std::vector<eBounceTarget> eBounceTargets;
