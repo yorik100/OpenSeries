@@ -1,0 +1,3 @@
+[submodule "plugin_sdk"]
+	path = plugin_sdk
+	url = https://github.com/BGXGG/SDK.git
