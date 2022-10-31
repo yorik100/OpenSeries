@@ -1778,4 +1778,16 @@ namespace brand {
 
 	}
 
+	void unload()
+	{
+		event_handler< events::on_update >::remove_handler(on_update);
+		event_handler< events::on_draw >::remove_handler(on_draw);
+		event_handler< events::on_create_object >::remove_handler(on_create);
+		event_handler< events::on_delete_object >::remove_handler(on_delete);
+		event_handler< events::on_buff_gain >::remove_handler(on_buff_gain);
+		event_handler< events::on_buff_lose >::remove_handler(on_buff_lose);
+		event_handler< events::on_cast_spell >::remove_handler(on_cast_spell);
+		event_handler< events::on_process_spell_cast >::remove_handler(on_process_spell_cast);
+	}
+
 }
