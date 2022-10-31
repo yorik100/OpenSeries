@@ -10,12 +10,12 @@ PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
     DECLARE_GLOBALS( plugin_sdk_good );
 
     brand::load();
-    brand::unload();
 
     return true;
 }
 
 PLUGIN_API void on_sdk_unload( )
 {
+    brand::unload();
 
 }
