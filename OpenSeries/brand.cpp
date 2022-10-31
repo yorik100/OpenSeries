@@ -979,6 +979,8 @@ namespace brand {
 	{
 		if (myhero->is_dead()) return false;
 
+		if (myhero->is_recalling()) return false;
+
 		if (!isQReady && !isWReady && !isEReady && !isRReady) return false;
 
 		if (debuffCantCast()) return false;
@@ -1038,6 +1040,7 @@ namespace brand {
 			auto rMinionBounce = rRange > BRAND_R_RANGE;
 			auto amountOfShots = rCanBounce ? std::min((rMinionBounce ? 2 : 3), settings::combo::rComboBounces->get_int()) : 1;
 			bool rKills = settings::combo::rComboKills->get_bool() && rDamageList[target->get_handle()].shots > 0 && rDamageList[target->get_handle()].shots <= amountOfShots;
+			
 			// Store useful info to use in logic
 			auto ccTime = stunTime[target->get_handle()];
 			auto qp = qPredictionList[target->get_handle()];
@@ -1076,7 +1079,13 @@ namespace brand {
 					{
 						if (castR(target, "comboaoe")) break;
 					}
-					if (rKills && (!settings::combo::rComboLogic || prediction->get_prediction(target, 0.5).get_unit_position().distance(myhero->get_position()) > BRAND_R_RANGE))
+					auto alliesAroundTarget = myhero->get_position().distance(target->get_position()) >= 500 ? target->count_enemies_in_range(500) : target->count_enemies_in_range(500) - 1;
+					auto comboLogic = !settings::combo::rComboLogic
+						|| prediction->get_prediction(target, 0.5).get_unit_position().distance(myhero->get_position()) > BRAND_R_RANGE
+						|| ((!canUseQ && !canUseW && !canUseE) && alliesAroundTarget < 1
+							&& ((target->get_health() - health_prediction->get_incoming_damage(target, 3, true) > 100)
+								|| (myhero->get_health() - health_prediction->get_incoming_damage(myhero, 3, true) < 150)));
+					if (rKills && comboLogic)
 					{
 						if (castR(target, "combokill")) break;
 					}
