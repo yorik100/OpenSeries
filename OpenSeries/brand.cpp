@@ -91,7 +91,8 @@ namespace brand {
 		buff_hash("ZedR"),
 		buff_hash("EkkoR"),
 		buff_hash("FizzE"),
-		buff_hash("FizzETwo")
+		buff_hash("FizzETwo"),
+		buff_hash("LissandraRSelf")
 	};
 
 	game_object_script bestETarget;
@@ -1281,7 +1282,7 @@ namespace brand {
 			if (stasisCast)
 			{
 				// Cast Q on stasis
-				if (stasisQ && (stasisDuration + 0.1) < qLandingTime)
+				if (stasisQ && (stasisDuration + 0.133) < qLandingTime)
 					if (castQ(target, "stasis", false, true)) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2) < w->get_delay())
@@ -1675,7 +1676,7 @@ namespace brand {
 			particleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
 
 		// Get particles to cast on
-		if (!obj->get_emitter() || !obj->get_emitter()->is_enemy()) return;
+		if (!obj->get_emitter() || !obj->get_emitter()->is_enemy() || !obj->get_emitter()->is_ai_hero()) return;
 
 		if (emitterHash == buff_hash("TwistedFate_R_Gatemarker_Red"))
 		{
