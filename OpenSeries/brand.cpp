@@ -350,7 +350,7 @@ namespace brand {
 	int alliesAroundTarget(const game_object_script& target, float range = FLT_MAX)
 	{
 		// Get amount of allies near target
-		return myhero->get_position().distance(target->get_position()) >= range ? target->count_enemies_in_range(range) : target->count_enemies_in_range(500) - 1;
+		return myhero->get_position().distance(target->get_position()) >= range ? target->count_enemies_in_range(range) : target->count_enemies_in_range(range) - 1;
 	}
 
 	hit_chance getPredIntFromSettings(int hitchance)
