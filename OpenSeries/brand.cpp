@@ -1206,7 +1206,7 @@ namespace brand {
 			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > BRAND_Q_RANGE) continue;
 
 			// Gathering enough data to cast on particles
-			auto distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius() + q->get_radius());
+			auto distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius());
 			auto qLandingTime = std::max(q->get_delay(), (distance / q->get_speed()) + q->get_delay());
 			auto particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			auto qCanDodge = obj.owner->get_move_speed() * ((qLandingTime - particleTime) + getPing()) > q->get_radius() + obj.owner->get_bounding_radius();
@@ -1281,7 +1281,7 @@ namespace brand {
 			if (stasisCast)
 			{
 				// Cast Q on stasis
-				if (stasisQ && (stasisDuration) < qLandingTime)
+				if (stasisQ && (stasisDuration + 0.1) < qLandingTime)
 					if (castQ(target, "stasis", false, true)) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2) < w->get_delay())
