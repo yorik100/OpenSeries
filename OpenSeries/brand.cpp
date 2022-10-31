@@ -22,10 +22,16 @@ namespace brand {
 		float distance = 0;
 	};
 
+	struct stasisStruct {
+		float stasisTime = 0;
+		float stasisStart = 0;
+		float stasisEnd = 0;
+	};
+
 	struct buffList {
 		float godBuff = 0;
 		float noKillBuff = 0;
-		float stasis = 0;
+		stasisStruct stasis = {};
 	};
 
 	struct particleStruct {
@@ -44,14 +50,14 @@ namespace brand {
 	std::vector<particleData> particleList;
 	std::vector<eBounceTarget> eBounceTargets;
 	std::vector<particleStruct> particlePredList;
+	std::unordered_map<uint32_t, stasisStruct> stasisInfo;
 
 	std::unordered_map<uint32_t, prediction_output> qPredictionList;
 	std::unordered_map<uint32_t, prediction_output> wPredictionList;
 	std::unordered_map<uint32_t, float> stunTime;
 	std::unordered_map<uint32_t, float> guardianReviveTime;
 	std::unordered_map<uint32_t, float> godBuffTime;
-	std::unordered_map<uint32_t, float> noKillBuffTime;
-	std::unordered_map<uint32_t, float> stasisTime;
+	std::unordered_map<uint32_t, float> noKillBuffTime;;
 	std::unordered_map<uint32_t, float> qDamageList;
 	std::unordered_map<uint32_t, float> wDamageList;
 	std::unordered_map<uint32_t, float> eDamageList;
@@ -102,6 +108,7 @@ namespace brand {
 			TreeEntry* rDamage;
 			TreeEntry* rDamageText;
 			TreeEntry* particlePos;
+			TreeEntry* stasisPos;
 			namespace spellRanges {
 				TreeEntry* qRange;
 				TreeEntry* wRange;
@@ -275,6 +282,8 @@ namespace brand {
 		float godBuffTime = 0;
 		float noKillBuffTime = 0;
 		float stasisTime = 0;
+		float stasisStart = 0;
+		float stasisEnd = 0;
 		for (auto&& buff : target->get_bufflist())
 		{
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
@@ -301,6 +310,8 @@ namespace brand {
 				if (stasisTime < buff->get_remaining_time())
 				{
 					stasisTime = buff->get_remaining_time();
+					stasisStart = buff->get_start();
+					stasisEnd = buff->get_end();
 				}
 			}
 		}
@@ -309,8 +320,11 @@ namespace brand {
 		if (stasisTime < GATime)
 		{
 			stasisTime = GATime;
+			stasisStart = guardianReviveTime[target->get_handle()] - 4;
+			stasisEnd = guardianReviveTime[target->get_handle()];
 		}
-		buffList buffStruct = { .godBuff = godBuffTime, .noKillBuff = noKillBuffTime, .stasis = stasisTime };
+		stasisStruct stasisInfo = { .stasisTime = stasisTime, .stasisStart = stasisStart, .stasisEnd = stasisEnd };
+		buffList buffStruct = { .godBuff = godBuffTime, .noKillBuff = noKillBuffTime, .stasis = stasisInfo };
 		return buffStruct;
 	}
 
@@ -935,7 +949,7 @@ namespace brand {
 			buffList listOfNeededBuffs = combinedBuffChecks(target);
 			godBuffTime[target->get_handle()] = listOfNeededBuffs.godBuff;
 			noKillBuffTime[target->get_handle()] = listOfNeededBuffs.noKillBuff;
-			stasisTime[target->get_handle()] = listOfNeededBuffs.stasis;
+			stasisInfo[target->get_handle()] = listOfNeededBuffs.stasis;
 		}
 
 		// Get every E bounce targets
@@ -1227,7 +1241,7 @@ namespace brand {
 		// Loop through every sorted targets
 		for (const auto& target : targets)
 		{
-			auto stasisDuration = stasisTime[target->get_handle()];
+			auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
 			bool isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
@@ -1454,6 +1468,7 @@ namespace brand {
 		settings::draws::rDamage = drawTab->add_checkbox("openbranddrawsrdamage", "Draw R damage", true);
 		settings::draws::rDamageText = drawTab->add_checkbox("openbranddrawsrdamagetext", "Draw R damage text", true);
 		settings::draws::particlePos = drawTab->add_checkbox("openbranddrawsparticlepos", "Draw particle pred positions", true);
+		settings::draws::stasisPos = drawTab->add_checkbox("openbranddrawsstasispos", "Draw stasis pred positions", true);
 
 		// Hitchance tab
 		const auto hitchanceTab = mainMenu->add_tab("openbrandhitchance", "Hitchance");
@@ -1587,7 +1602,19 @@ namespace brand {
 		// Draw R damage & damage text
 		for (const auto& target : entitylist->get_enemy_heroes())
 		{
+			if (!target->is_valid()) continue;
+
+			// Draw stasis pred pos
+			auto stasisData = stasisInfo[target->get_handle()];
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0)
+			{
+				draw_manager->add_circle(target->get_position(), target->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
+				auto castTime = stasisData.stasisEnd - stasisData.stasisStart;
+				draw_manager->add_circle(target->get_position(), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), MAKE_COLOR(255, 127, 0, 255), 2);
+			}
+
 			if (!target->is_visible_on_screen() || !target->is_hpbar_recently_rendered() || target->is_dead()) continue;
+
 			if (rDamageList[target->get_handle()].damage > 0) {
 				if (settings::draws::rDamage->get_bool()) {
 					draw_dmg_rl(target, rDamageList[target->get_handle()].damage, MAKE_COLOR(255, 170, 0, 150));
@@ -1608,19 +1635,21 @@ namespace brand {
 		}
 
 		// Draw particle pred positions
-		for (const auto& obj : particlePredList)
+		if (settings::draws::particlePos->get_bool())
 		{
-			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
+			for (const auto& obj : particlePredList)
+			{
+				if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
 
-			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
-			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
-			vector screenPos;
-			renderer->world_to_screen(obj.castingPos, screenPos);
-			const auto size = vector(30.f, 30.f);
-			const auto sizeMod = size / 2;
-			draw_manager->add_image(obj.owner->get_square_icon_portrait(), { screenPos.x - sizeMod.x, screenPos.y - sizeMod.y }, size);
+				draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius(), MAKE_COLOR(138, 43, 226, 255), 2);
+				draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 0, 255, 255), 2);
+				vector screenPos;
+				renderer->world_to_screen(obj.castingPos, screenPos);
+				const auto size = vector(30.f, 30.f);
+				const auto sizeMod = size / 2;
+				draw_manager->add_image(obj.owner->get_square_icon_portrait(), { screenPos.x - sizeMod.x, screenPos.y - sizeMod.y }, size);
+			}
 		}
-
 	}
 
 	void on_create(const game_object_script obj)
