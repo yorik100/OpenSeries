@@ -1155,9 +1155,18 @@ namespace brand {
 			if (hasCasted || (!particleQ && !particleW)) continue;
 
 			// Getting the final cast position
-			if (obj.isTeleport && obj.target)
+			if (obj.isTeleport)
 			{
-				obj.castingPos = obj.target->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+				obj.target = obj.obj->get_particle_attachment_object();
+				if (!obj.target)
+					obj.target = obj.obj->get_particle_target_attachment_object();
+				if (obj.target && obj.obj->get_position().distance(obj.target->get_position()) <= 0) {
+					obj.castingPos = obj.target->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+				}
+				else
+				{
+					obj.castingPos = obj.obj->get_position();
+				}
 			}
 			else if (obj.isZed)
 			{
@@ -1604,6 +1613,11 @@ namespace brand {
 
 			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius(), MAKE_COLOR(255, 255, 150, 255), 2);
 			draw_manager->add_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 127, 0, 255), 2);
+			vector screenPos;
+			renderer->world_to_screen(obj.castingPos, screenPos);
+			const auto size = vector(30.f, 30.f);
+			const auto sizeMod = size / 2;
+			draw_manager->add_image(obj.owner->get_square_icon_portrait(), { screenPos.x - sizeMod.x, screenPos.y - sizeMod.y }, size);
 		}
 
 	}
