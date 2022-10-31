@@ -335,6 +335,7 @@ namespace brand {
 
 	hit_chance getPredIntFromSettings(int hitchance)
 	{
+		// Get hitchance from settings value
 		return static_cast<hit_chance>(hitchance + 3);
 	}
 
