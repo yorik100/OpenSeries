@@ -1392,7 +1392,7 @@ namespace brand {
 			}
 			}
 		);
-		settings::combo::rComboLogic = comboTab->add_checkbox("openbrandrcombologic", "^ Try to avoid wasting?", true);
+		settings::combo::rComboLogic = comboTab->add_checkbox("openbrandrcombologic", "^ Try to avoid wasting", true);
 		settings::combo::rComboKills->add_property_change_callback([](TreeEntry* entry) {
 			if (entry->get_bool())
 			{
