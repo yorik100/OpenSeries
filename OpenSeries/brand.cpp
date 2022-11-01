@@ -1672,7 +1672,10 @@ namespace brand {
 
 		// Get Brand W particle & store it
 		if (emitterHash == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
+		{
 			particleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
+			return;
+		}
 
 		// Get particles to cast on
 		if (!obj->get_emitter() || !obj->get_emitter()->is_enemy() || !obj->get_emitter()->is_ai_hero()) return;
