@@ -1695,7 +1695,7 @@ namespace brand {
 
 	void on_create(const game_object_script obj)
 	{
-		auto emitterHash = obj->get_emitter_resources_hash();
+		auto emitterHash = obj->get_emitter() ? obj->get_emitter_resources_hash() : 0;
 
 		// Get Brand W particle & store it
 		if (emitterHash == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
