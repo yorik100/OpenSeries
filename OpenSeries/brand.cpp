@@ -725,6 +725,17 @@ namespace brand {
 		}
 	}
 
+	bool isYuumiAttached(const game_object_script& target)
+	{
+		// Check if the target is Yuumi and if it's attached to someone
+		if (target->get_champion() == champion_id::Yuumi)
+		{
+			auto yuumiBuff = target->get_buff(buff_hash("YuumiWAttach"));
+			if (yuumiBuff && yuumiBuff->get_caster()->get_handle() == target->get_handle()) return true;
+		}
+		return false;
+	}
+
 	bool isRecalling(const game_object_script& target)
 	{
 		// Get if target is recalling
@@ -744,6 +755,7 @@ namespace brand {
 	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
+		if (isYuumiAttached(target)) return false;
 		auto isCastingImmortalitySpell = target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 		auto isValid = !isCastingImmortalitySpell && (target->is_valid_target(range, from, invul) || isValidRecalling(target, range, from));
 		return isValid;
@@ -1638,7 +1650,7 @@ namespace brand {
 				draw_manager->add_circle(target->get_position(), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), MAKE_COLOR(255, 127, 0, 255), 2);
 			}
 
-			if (!target->is_visible_on_screen() || !target->is_hpbar_recently_rendered() || target->is_dead()) continue;
+			if (!target->is_visible_on_screen() || !target->is_hpbar_recently_rendered() || target->is_dead() || isYuumiAttached(target)) continue;
 
 			if (rDamageList[target->get_handle()].damage > 0) {
 				if (settings::draws::rDamage->get_bool()) {
