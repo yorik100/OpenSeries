@@ -41,7 +41,6 @@ namespace brand {
 		float time = 0;
 		float castTime = 0;
 		vector castingPos = vector::zero;
-		vector nexusPos = vector::zero;
 		bool isZed = false;
 		bool isTeleport = false;
 	};
@@ -169,6 +168,7 @@ namespace brand {
 	static constexpr float BRAND_R_MIN_SPEED = 750;
 	//static constexpr float BRAND_R_MAX_SPEED = 3000;
 
+	auto nexusPos = vector::zero;
 	bool hasCasted = false;
 	bool isQReady = false;
 	bool isWReady = false;
@@ -1207,7 +1207,7 @@ namespace brand {
 				if (!obj.target)
 					obj.target = obj.obj->get_particle_target_attachment_object();
 				if (obj.target && obj.obj->get_position().distance(obj.target->get_position()) <= 0) {
-					obj.castingPos = obj.target->get_position().extend(obj.nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+					obj.castingPos = obj.target->get_position().extend(nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
 				}
 				else
 				{
@@ -1759,15 +1759,9 @@ namespace brand {
 		if (obj->get_name() == "global_ss_teleport_turret_red.troy")
 		{
 			auto target = obj->get_particle_attachment_object();
-			auto nexusPos = vector::zero;
-			for (const auto& value : entitylist->get_all_nexus())
-				if (value->is_enemy()) {
-					nexusPos = value->get_position();
-					break;
-				}
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
@@ -1775,15 +1769,9 @@ namespace brand {
 		else if (obj->get_name() == "global_ss_teleport_target_red.troy")
 		{
 			auto target = obj->get_particle_target_attachment_object();
-			auto nexusPos = vector::zero;
-			for (const auto& value : entitylist->get_all_nexus())
-				if (value->is_enemy()) {
-					nexusPos = value->get_position();
-					break;
-				}
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
+				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
@@ -1852,6 +1840,15 @@ namespace brand {
 		r = plugin_sdk->register_spell(spellslot::r, BRAND_R_RANGE);
 		r->set_skillshot(0.25f, 60.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
 		r->set_spell_lock(false);
+
+		// Get enemy Nexus pos
+
+		auto nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](game_object_script x) {
+			return x->is_enemy();
+			}
+		);
+		auto nexusEntity = *nexusPosIt;
+		nexusPos = nexusEntity->get_position();
 
 		// Call menu creation function
 		createMenu();
