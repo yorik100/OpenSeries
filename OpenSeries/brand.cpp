@@ -1677,43 +1677,56 @@ namespace brand {
 		// Get particles to cast on
 		if (!obj->get_emitter() || !obj->get_emitter()->is_enemy() || !obj->get_emitter()->is_ai_hero()) return;
 
-		if (emitterHash == buff_hash("TwistedFate_R_Gatemarker_Red"))
+		switch (emitterHash)
 		{
-			particleStruct particleData = {.obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position()};
-			particlePredList.push_back(particleData);
+			case buff_hash("TwistedFate_R_Gatemarker_Red"):
+			{
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("Ekko_R_ChargeIndicator"):
+			{
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("Pantheon_R_Update_Indicator_Enemy"):
+			{
+				auto castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("Galio_R_Tar_Ground_Enemy"):
+			{
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("Evelynn_R_Landing"):
+			{
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("TahmKench_W_ImpactWarning_Enemy"):
+			{
+				particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
+			case buff_hash("Zed_R_tar_TargetMarker"):
+			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->get_handle() == myhero->get_handle()) {
+				particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = vector::zero, .isZed = true };
+				particlePredList.push_back(particleData);
+				return;
+			}
 		}
-		else if (emitterHash == buff_hash("Ekko_R_ChargeIndicator"))
-		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
-			particlePredList.push_back(particleData);
-		}
-		else if (emitterHash == buff_hash("Pantheon_R_Update_Indicator_Enemy"))
-		{
-			auto castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
-			particlePredList.push_back(particleData);
-		}
-		else if (emitterHash == buff_hash("Galio_R_Tar_Ground_Enemy"))
-		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
-			particlePredList.push_back(particleData);
-		}
-		else if (emitterHash == buff_hash("Evelynn_R_Landing"))
-		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
-			particlePredList.push_back(particleData);
-		}
-		else if (emitterHash == buff_hash("TahmKench_W_ImpactWarning_Enemy"))
-		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
-			particlePredList.push_back(particleData);
-		}
-		else if (emitterHash == buff_hash("Zed_R_tar_TargetMarker") && obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->get_handle() == myhero->get_handle())
-		{
-			particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = vector::zero, .isZed = true };
-			particlePredList.push_back(particleData);
-		}
-		else if (obj->get_name() == "global_ss_teleport_turret_red.troy")
+
+		if (obj->get_emitter()->get_teleport_state() != "SummonerTeleport") return;
+
+		if (obj->get_name() == "global_ss_teleport_turret_red.troy")
 		{
 			auto target = obj->get_particle_attachment_object();
 			auto nexusPos = vector::zero;
