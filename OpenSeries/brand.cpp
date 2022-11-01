@@ -1187,17 +1187,17 @@ namespace brand {
 		auto particleQ = settings::automatic::qParticle->get_bool() && isQReady;
 		auto particleW = settings::automatic::wParticle->get_bool() && isWReady;
 
+		// Checking if particles are valid, if they're not, delete them from the list
+		particlePredList.erase(std::remove_if(particlePredList.begin(), particlePredList.end(), [](particleStruct x)
+			{
+				return !x.obj->is_valid() || x.owner->is_dead() || x.time + x.castTime <= gametime->get_time();
+			}
+		),
+		particlePredList.end());
+
 		// Loop through every pred particles
-		int key = 0;
 		for (auto& obj : particlePredList)
 		{
-			// Checking if particles are valid, if they're not, delete them from the list
-			auto currentKey = key++;
-			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) {
-				particlePredList.erase(particlePredList.begin() + currentKey);
-				continue;
-			};
-
 			if (hasCasted || (!particleQ && !particleW)) continue;
 
 			// Getting the final cast position
@@ -1237,14 +1237,14 @@ namespace brand {
 			{
 				q->cast(obj.castingPos);
 				hasCasted = true;
-				// Not breaking because this list also removes invalid particles
+				break;
 			}
 			// Try to cast W if possible
 			else if (canW && (particleTime - getPing() + 0.1) <= 0.875)
 			{
 				w->cast(obj.castingPos);
 				hasCasted = true;
-				// Not breaking because this list also removes invalid particles
+				break;
 			}
 		}
 	}
@@ -1692,7 +1692,7 @@ namespace brand {
 		}
 
 	}
-
+	
 	void on_create(const game_object_script obj)
 	{
 		auto emitterHash = obj->get_emitter_resources_hash();
