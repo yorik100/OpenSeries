@@ -375,7 +375,8 @@ namespace brand {
 		auto targetAblaze = (ablazeBuff && ablazeBuff->get_remaining_time() >= timeToHit + 0.2);
 		auto performECombo = (eCombo && couldDamageLater(target, e->get_delay() + 0.1, eDamageList[target->get_handle()]) && trueTimeToHit > 0.5 && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE && prediction->get_prediction(target, 0.25).get_unit_position().distance(myhero->get_position()) <= BRAND_E_RANGE && !targetAblaze);
 	 	auto isQStun = targetAblaze || (wTime < timeToHit - 0.2) || performECombo;
-	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int())) && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0;
+	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int())) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 	 	{
 	 		q->cast(p.get_cast_position());
 			if (performECombo)
@@ -394,7 +395,8 @@ namespace brand {
 		auto p = wPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
-		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && couldDamageLater(target, w->get_delay() + 0.1, wDamageList[target->get_handle()]))
+		auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, w->get_delay() + 0.1, true) > 0;
+		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && aliveWhenLanding && couldDamageLater(target, w->get_delay() + 0.1, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -408,6 +410,7 @@ namespace brand {
 		// Cast E
 		if (hasCasted) return true;
 
+		auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.1, true) > 0;
 		if (couldDamageLater(target, e->get_delay() + 0.1, eDamageList[target->get_handle()])) {
 			e->cast(target);
 			return true;
@@ -421,6 +424,7 @@ namespace brand {
 		if (hasCasted) return true;
 
 		auto timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay();
+		auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0;
 		if (couldDamageLater(target, timeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
 			r->cast(target);
 			return true;
