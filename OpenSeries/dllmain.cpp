@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "brand.h"
 
-PLUGIN_NAME("OpenBrand");
+PLUGIN_NAME("OpenSeries");
 
 PLUGIN_TYPE(plugin_type::champion);
 SUPPORTED_CHAMPIONS(champion_id::Brand);

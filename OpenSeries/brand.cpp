@@ -1174,7 +1174,7 @@ namespace brand {
 		int key = 0;
 		for (auto& obj : particlePredList)
 		{
-			// Checking if particles are valid, if it's not, delete is from the list
+			// Checking if particles are valid, if they're not, delete them from the list
 			auto currentKey = key++;
 			if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time()) {
 				particlePredList.erase(particlePredList.begin() + currentKey);
@@ -1752,6 +1752,15 @@ namespace brand {
 			std::erase_if(particleList, [obj](particleData& particle) {return particle.particle->get_handle() == obj->get_handle(); });
 	}
 
+	void on_buff(game_object_script& sender, buff_instance_script& buff, bool gain)
+	{
+		// Detect if someone is reviving from Guardian Angel
+		if (!gain && sender->is_valid() && !sender->is_targetable() && buff->get_hash_name() == buff_hash("willrevive") && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
+		{
+			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
+		}
+	}
+
 	void on_buff_gain(game_object_script sender, buff_instance_script buff)
 	{
 		// Grouping on buff gain && on buff lose together
@@ -1762,15 +1771,6 @@ namespace brand {
 	{
 		// Grouping on buff gain && on buff lose together
 		on_buff(sender, buff, false);
-	}
-
-	void on_buff(game_object_script& sender, buff_instance_script& buff, bool gain)
-	{
-		// Detect if someone is reviving from Guardian Angel
-		if (!gain && sender->is_valid() && !sender->is_targetable() && buff->get_hash_name() == buff_hash("willrevive") && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
-		{
-			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
-		}
 	}
 
 	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process)
@@ -1824,6 +1824,7 @@ namespace brand {
 
 	void unload()
 	{
+		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
 		event_handler< events::on_draw >::remove_handler(on_draw);
 		event_handler< events::on_create_object >::remove_handler(on_create);
