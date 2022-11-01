@@ -1059,9 +1059,9 @@ namespace brand {
 			auto isRBlocked = rCollision(target);
 			auto rCanBounce = !isRBlocked ? canRBounce(target) : false;
 			int rAoECount = !isRBlocked ? rBounceCount(target): 0;
-			auto rMinionBounce = rRange > BRAND_R_RANGE;
+			auto rMinionBounce = dist > BRAND_R_RANGE;
 			auto amountOfShots = rCanBounce ? std::min((rMinionBounce ? 2 : 3), settings::combo::rComboBounces->get_int()) : 1;
-			bool rKills = settings::combo::rComboKills->get_bool() && rDamageList[target->get_handle()].shots > 0 && rDamageList[target->get_handle()].shots <= amountOfShots;
+			bool rKills = settings::combo::rComboKills->get_bool() && rDamageList[target->get_handle()].kills && rDamageList[target->get_handle()].shots > 0 && rDamageList[target->get_handle()].shots <= amountOfShots;
 			
 			// Store useful info to use in logic
 			auto ccTime = stunTime[target->get_handle()];
