@@ -755,7 +755,10 @@ namespace brand {
 	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
+
+		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
+
 		auto isCastingImmortalitySpell = target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 		auto isValid = !isCastingImmortalitySpell && (target->is_valid_target(range, from, invul) || isValidRecalling(target, range, from));
 		return isValid;
