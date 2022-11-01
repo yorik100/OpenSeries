@@ -1020,6 +1020,7 @@ namespace brand {
 		{
 			// Valid target check
 			bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
@@ -1054,13 +1055,13 @@ namespace brand {
 			auto shouldBreak = false;
 
 			// Q cast
-			if (canUseQ && (ccTime - getPing() - 0.3) < qLandingTime && castQ(target, "combo", canUseE)) break;
+			if (canUseQ && (ccTime - getPing() - 0.3) < qLandingTime && castQ(target, "combo", canUseE)) return;
 
 			// W cast
 			if (canUseW && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]))
 			{
 				shouldBreak = true;
-				if (castW(target, "combo")) break;
+				if (castW(target, "combo")) return;
 			}
 
 			// E cast
@@ -1068,11 +1069,11 @@ namespace brand {
 			{
 				if (target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE)
 				{
-					if (castE(target, "combo")) break;
+					if (castE(target, "combo")) return;
 				}
 				else if (bestETarget)
 				{
-					if (castE(bestETarget, "combobounce")) break;
+					if (castE(bestETarget, "combobounce")) return;
 				}
 			}
 
@@ -1083,7 +1084,7 @@ namespace brand {
 				{
 					if (settings::combo::rComboAoE->get_bool() && rAoECount >= settings::combo::rComboAoEAmount->get_int())
 					{
-						if (castR(target, "comboaoe")) break;
+						if (castR(target, "comboaoe")) return;
 					}
 					auto comboLogic = !settings::combo::rComboLogic
 						|| prediction->get_prediction(target, 0.5).get_unit_position().distance(myhero->get_position()) > BRAND_R_RANGE
@@ -1092,14 +1093,14 @@ namespace brand {
 								|| (myhero->get_health() - health_prediction->get_incoming_damage(myhero, 3, true) < 150)));
 					if (rKills && comboLogic)
 					{
-						if (castR(target, "combokill")) break;
+						if (castR(target, "combokill")) return;
 					}
 				}
 				else if (rMinionBounce && rKills)
 				{
 					auto prioTarget = findClosestMinion(target);
 					if (prioTarget)
-						if (castR(prioTarget, "combobouncekill")) break;
+						if (castR(prioTarget, "combobouncekill")) return;
 				}
 			}
 
@@ -1118,6 +1119,7 @@ namespace brand {
 		{
 			// Valid target check
 			bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
@@ -1137,13 +1139,13 @@ namespace brand {
 			auto shouldBreak = false;
 
 			// Q cast
-			if ((ccTime - getPing() - 0.3) && canUseQ && castQ(target, "harass", canUseE)) break;
+			if ((ccTime - getPing() - 0.3) && canUseQ && castQ(target, "harass", canUseE)) return;
 
 			// W cast
 			if (canUseW && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]))
 			{
 				shouldBreak = true;
-				if (castW(target, "harass")) break;
+				if (castW(target, "harass")) return;
 			}
 
 			// E cast
@@ -1151,11 +1153,11 @@ namespace brand {
 			{
 				if (target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE)
 				{
-					if (castE(target, "harass")) break;
+					if (castE(target, "harass")) return;
 				}
 				else if (bestETarget)
 				{
-					if (castE(bestETarget, "harassbounce")) break;
+					if (castE(bestETarget, "harassbounce")) return;
 				}
 			}
 
@@ -1369,9 +1371,11 @@ namespace brand {
 			}
 
 		}
+
 		// Particle pred handling
 		if (!particlePredList.empty())
 			particleHandling();
+
 	}
 
 	void createMenu()
@@ -1551,18 +1555,25 @@ namespace brand {
 	{
 		// Limit ticks (for low spec mode)
 		if (settings::lowSpec->get_bool() && limitedTick(SERVER_TICKRATE)) return;
+
 		// Pred, damage && other calcs needed for many things
 		calcs();
+
 		// Check if player can cast spells
 		if (!canCastSpells()) return;
+
 		// Sort targets
 		targetSelectorSort();
+
 		// Combo mode
 		combo();
+
 		// Harass mode
 		harass();
+
 		// Auto cast
 		automatic();
+
 	}
 
 	void on_draw()
@@ -1664,6 +1675,7 @@ namespace brand {
 				draw_manager->add_image(obj.owner->get_square_icon_portrait(), { screenPos.x - sizeMod.x, screenPos.y - sizeMod.y }, size);
 			}
 		}
+
 	}
 
 	void on_create(const game_object_script obj)
@@ -1742,6 +1754,7 @@ namespace brand {
 			{
 				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
 				particlePredList.push_back(particleData);
+				return;
 			}
 		}
 		else if (obj->get_name() == "global_ss_teleport_target_red.troy")
@@ -1757,6 +1770,7 @@ namespace brand {
 			{
 				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .nexusPos = nexusPos, .isTeleport = true };
 				particlePredList.push_back(particleData);
+				return;
 			}
 		}
 	}
@@ -1774,6 +1788,7 @@ namespace brand {
 		if (!gain && sender->is_valid() && !sender->is_targetable() && buff->get_hash_name() == buff_hash("willrevive") && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
 		{
 			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
+			return;
 		}
 	}
 
