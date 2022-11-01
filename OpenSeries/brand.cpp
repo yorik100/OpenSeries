@@ -1500,7 +1500,8 @@ namespace brand {
 		settings::draws::wRadius = drawTab->add_checkbox("openbranddrawswradius", "Draw W on ground", true);
 		settings::draws::rDamage = drawTab->add_checkbox("openbranddrawsrdamage", "Draw R damage", true);
 		settings::draws::rDamageText = drawTab->add_checkbox("openbranddrawsrdamagetext", "Draw R damage text", true);
-		settings::draws::particlePos = drawTab->add_checkbox("openbranddrawsparticlepos", "Draw particle pred positions", true);
+		settings::draws::particlePos = drawTab->add_checkbox("openbranddrawsparticlepos", "Draw particle pred positions", false);
+		settings::draws::particlePos->set_tooltip("Keep it disabled if you use OpenUtilities teleport tracker");
 		settings::draws::stasisPos = drawTab->add_checkbox("openbranddrawsstasispos", "Draw stasis pred positions", true);
 
 		// Hitchance tab
