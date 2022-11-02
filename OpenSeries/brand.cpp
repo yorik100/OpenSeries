@@ -439,6 +439,12 @@ namespace brand {
 		q->set_range(BRAND_Q_RANGE + target->get_bounding_radius());
 		q->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
 		prediction_output p = q->get_prediction(target);
+		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
+
+		//Behind yourself collision detection
+		auto collisionsFromHero = q->get_collision(myhero->get_position().extend(target->get_position(), -q->get_radius()), { myhero->get_position().extend(p.get_cast_position(), myhero->get_position().distance(p.input.get_from())) });
+		if (!collisionsFromHero.empty()) return prediction_output{};
+
 		return p;
 	}
 
