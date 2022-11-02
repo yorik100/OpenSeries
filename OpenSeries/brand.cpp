@@ -1284,7 +1284,7 @@ namespace brand {
 
 			auto dashing = target->is_dashing();
 			auto ccTime = stunTime[target->get_handle()];
-			auto channelingSpell = (target->get_active_spell() && target->get_active_spell()->is_channeling() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling()) || isRecalling(target);
+			auto channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
 			auto castTimeElapsed = target->get_active_spell() ? gametime->get_time() - target->get_active_spell()->cast_start_time() + target->get_active_spell()->get_attack_cast_delay() : 0;
 			auto castingTime = target->get_active_spell() && !channelingSpell ? target->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
 			auto ccCast = ccTime > 0 && (ccQ || ccW);
