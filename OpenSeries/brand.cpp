@@ -168,12 +168,15 @@ namespace brand {
 	static constexpr float BRAND_R_MIN_SPEED = 750;
 	//static constexpr float BRAND_R_MAX_SPEED = 3000;
 
-	auto nexusPos = vector::zero;
+	vector nexusPos;
+	vector urfCannon;
+
 	bool hasCasted = false;
 	bool isQReady = false;
 	bool isWReady = false;
 	bool isEReady = false;
 	bool isRReady = false;
+
 	float last_tick = 0;
 	float attackOrderTime = 0;
 	float lastCast = 0;
@@ -1763,6 +1766,12 @@ namespace brand {
 				particlePredList.push_back(particleData);
 				return;
 			}
+			case 1882371666:
+			{
+				particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = obj->get_position().distance(urfCannon) / 2800, .castingPos = obj->get_position() };
+				particlePredList.push_back(particleData);
+				return;
+			}
 		}
 
 		if (obj->get_emitter()->get_teleport_state() != "SummonerTeleport") return;
@@ -1860,6 +1869,9 @@ namespace brand {
 		);
 		auto nexusEntity = *nexusPosIt;
 		nexusPos = nexusEntity->get_position();
+
+		// Get URF cannon pos
+		urfCannon = myhero->get_team() == game_object_team::order ? vector(13018.f, 14026.f) : vector(1506.f, 676.f);
 
 		// Call menu creation function
 		createMenu();
