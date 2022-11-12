@@ -161,12 +161,14 @@
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
     <ClCompile Include="brand.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="xerath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
     <ClInclude Include="brand.h" />
+    <ClInclude Include="xerath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

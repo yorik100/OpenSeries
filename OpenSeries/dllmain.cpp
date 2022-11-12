@@ -1,10 +1,11 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "brand.h"
+#include "xerath.h"
 
 PLUGIN_NAME("OpenSeries");
 
 PLUGIN_TYPE(plugin_type::champion);
-SUPPORTED_CHAMPIONS(champion_id::Brand);
+SUPPORTED_CHAMPIONS( champion_id::Brand );
 
 PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
 {
@@ -16,6 +17,11 @@ PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
         // Load Brand script
         //
         brand::load();
+        break;
+    case champion_id::Xerath:
+        // Load Xerath script
+        //
+        xerath::load();
         break;
     default:
         // We don't support this champ, print message and return false (core will not load this plugin and on_sdk_unload will be never called)
@@ -29,5 +35,6 @@ PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
 PLUGIN_API void on_sdk_unload( )
 {
     brand::unload();
+    xerath::unload();
 
 }

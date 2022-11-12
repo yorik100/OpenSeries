@@ -22,6 +22,9 @@
     <ClCompile Include="brand.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="xerath.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -34,6 +37,9 @@
       <Filter>plugin_sdk</Filter>
     </ClInclude>
     <ClInclude Include="brand.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="xerath.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
