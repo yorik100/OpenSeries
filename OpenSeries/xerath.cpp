@@ -132,6 +132,7 @@ namespace xerath {
 			TreeEntry* wCombo;
 			TreeEntry* wComboCenter;
 			TreeEntry* eCombo;
+			TreeEntry* rCombo;
 		}
 		namespace harass {
 			TreeEntry* qHarass;
@@ -1105,6 +1106,7 @@ namespace xerath {
 			// Storing useful info
 			const auto& canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
 			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing() + 0.2) < r->get_delay() && ultBuff;
+			const auto& rCombo = settings::combo::rCombo->get_bool() && orbwalker->combo_mode();
 
 			// If can't do anything on target, go next target
 			if (!canUseE && !canUseR) continue;
@@ -1119,7 +1121,7 @@ namespace xerath {
 				if (hud->get_hud_input_logic()->get_game_cursor_position().distance(target->get_position()) <= rRange)
 				{
 					rTarget = target;
-					if (isRReady && settings::automatic::manualRKey->get_bool() && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible)
+					if (isRReady && (settings::automatic::manualRKey->get_bool() || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible)
 						castR(target, "manual");
 					hasCasted = true;
 					return;
@@ -1458,6 +1460,8 @@ namespace xerath {
 		settings::combo::wComboCenter = comboTab->add_checkbox("open.xerath.combo.wComboCenter", "^ Try to hit center?", true);
 		settings::combo::eCombo = comboTab->add_checkbox("open.xerath.combo.ecombo", "E combo", true);
 		settings::combo::eCombo->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+		settings::combo::rCombo = comboTab->add_checkbox("open.xerath.combo.rcombo", "R2 combo", true);
+		settings::combo::rCombo->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 
 		// Harass settings
 		const auto harassTab = mainMenu->add_tab("open.xerath.harass", "Harass");
