@@ -806,7 +806,7 @@ namespace xerath {
 	rDamageData getTotalRDamage(const game_object_script& target)
 	{
 		// Get total damage of R & returns damage, shots needed to kill & if it kills
-		const auto& ElderBuff = target->get_buff(buff_hash("ElderDragonBuff"));
+		const auto& ElderBuff = myhero->get_buff(buff_hash("ElderDragonBuff"));
 		auto rDamage = 0.f;
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
