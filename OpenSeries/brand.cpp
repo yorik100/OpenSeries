@@ -490,18 +490,18 @@ namespace brand {
 		const auto& bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
 		const auto& level = myhero->get_level();
 		const auto& abilityPower = myhero->get_total_ability_power();
-		const auto& buff3 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrikeAvailable.lua"));
-		const auto& buff4 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrike.lua"));
+		const auto& buff3 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrikeAvailable.lua"));
+		const auto& buff4 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrike.lua"));
 		const auto& targetMaxHealth = target->get_max_health();
 		if (shots <= 0)
 		{
-			const auto& buff1 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvest.lua"));
-			const auto& buff2 = target->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvestCooldown.lua"));
-			const auto& buff5 = target->get_buff(buff_hash("SRX_DragonSoulBuffInfernal_Cooldown"));
-			const auto& buff6 = target->get_buff(buff_hash("SRX_DragonSoulBuffInfernal"));
-			const auto& buff7 = target->get_buff(buff_hash("SRX_DragonSoulBuffHextech"));
-			const auto& buff8 = target->get_buff(buff_hash("srx_dragonsoulbuffhextech_cd"));
-			const auto& buff9 = target->get_buff(buff_hash("ElderDragonBuff"));
+			const auto& buff1 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvest.lua"));
+			const auto& buff2 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvestCooldown.lua"));
+			const auto& buff5 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffInfernal_Cooldown"));
+			const auto& buff6 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffInfernal"));
+			const auto& buff7 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffHextech"));
+			const auto& buff8 = myhero->get_buff(buff_hash("srx_dragonsoulbuffhextech_cd"));
+			const auto& buff9 = myhero->get_buff(buff_hash("ElderDragonBuff"));
 			const auto& buff10 = target->get_buff(buff_hash("BrandAblaze"));
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
