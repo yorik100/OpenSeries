@@ -987,6 +987,10 @@ namespace xerath {
 		ultBuff = myhero->get_buff(buff_hash("xerathrshots"));
 		qBuff = myhero->get_buff(buff_hash("XerathArcanopulseChargeUp"));
 
+		// Disable Orb in ult
+		orbwalker->set_movement(!ultBuff);
+		orbwalker->set_attack(!ultBuff);
+
 		// Changing charging Q range
 		q2->set_range(charged_range(1500, 750, 1.5));
 
@@ -1100,7 +1104,7 @@ namespace xerath {
 
 			// Storing useful info
 			const auto& canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing() + 0.2) < 0.6 && ultBuff;
+			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing() + 0.2) < r->get_delay() && ultBuff;
 
 			// If can't do anything on target, go next target
 			if (!canUseE && !canUseR) continue;
@@ -1323,7 +1327,7 @@ namespace xerath {
 				break;
 			}
 			// Try to cast W if possible
-			else if (canW && !canE && (particleTime - getPing() + 0.1) <= w->get_delay())
+			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
 				w->cast(obj.castingPos);
 				hasCasted = true;
@@ -1480,6 +1484,7 @@ namespace xerath {
 		settings::draws::spellRanges::rRange->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 		settings::draws::spellRanges::rMinimapRange = drawRangeTab->add_checkbox("open.xerath.draws.ranges.rminimaprange", "Draw R range on minimap", true);
 		settings::draws::spellRanges::rNearMouseRange = drawRangeTab->add_checkbox("open.xerath.draws.ranges.rnearmouserange", "Draw near mouse R range", true);
+		settings::draws::spellRanges::rNearMouseRange->set_tooltip("Set to 0 to disable near mouse feature");
 
 		// Normal draws
 		settings::draws::wRadius = drawTab->add_checkbox("open.xerath.draws.wradius", "Draw W on ground", true);
