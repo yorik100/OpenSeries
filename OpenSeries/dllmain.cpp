@@ -5,7 +5,7 @@
 PLUGIN_NAME("OpenSeries");
 
 PLUGIN_TYPE(plugin_type::champion);
-SUPPORTED_CHAMPIONS( champion_id::Brand );
+SUPPORTED_CHAMPIONS( champion_id::Brand, champion_id::Xerath );
 
 PLUGIN_API bool on_sdk_load( plugin_sdk_core* plugin_sdk_good )
 {

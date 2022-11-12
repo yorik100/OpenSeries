@@ -1332,11 +1332,9 @@ namespace brand {
 			const auto& dashing = target->is_dashing();
 			const auto& ccTime = stunTime[target->get_handle()];
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
-			const auto& castTimeElapsed = target->get_active_spell() ? gametime->get_time() - target->get_active_spell()->cast_start_time() + target->get_active_spell()->get_attack_cast_delay() : 0;
-			const auto& castingTime = target->get_active_spell() && !channelingSpell ? target->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
-			const auto& castingCast = castingTime > 0 && (castingQ || castingW);
+			const auto& castingCast = target->get_active_spell() && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && !channelingSpell && (castingQ || castingW);
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;

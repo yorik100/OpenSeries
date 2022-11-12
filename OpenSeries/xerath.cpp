@@ -229,7 +229,7 @@ namespace xerath {
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
-			e->set_delay(-getPing());
+			e->set_delay(- getPing() - 0.066);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
@@ -416,7 +416,7 @@ namespace xerath {
 
 		if (buff != nullptr && buff->is_valid() && buff->is_alive())
 		{
-			return (fmaxf(0.f, fminf(1.f, (gametime->get_time() - buff->get_start() + getPing() + 0.1) / spell_charge_duration)));
+			return (fmaxf(0.f, fminf(1.f, (gametime->get_time() - buff->get_start() + getPing() + 0.033) / spell_charge_duration)));
 		}
 
 		return 0;
@@ -1112,7 +1112,7 @@ namespace xerath {
 			const auto& rRange = settings::automatic::rRange->get_int() > 0 ? settings::automatic::rRange->get_int() : FLT_MAX;
 			if (canUseR)
 			{
-				if (hud->get_hud_input_logic()->get_game_cursor_position().distance(target) <= rRange)
+				if (hud->get_hud_input_logic()->get_game_cursor_position().distance(target->get_position()) <= rRange)
 				{
 					rTarget = target;
 					if (isRReady && settings::automatic::manualRKey->get_bool() && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible)
@@ -1159,13 +1159,18 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				qTarget = target;
 				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
 				{
-					castQLong(target, "combo");
+					if (castQLong(target, "combo")) return;
 				}
-				hasCasted = true;
-				return;
+				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= 1500)
+				{
+					qTarget = target;
+					hasCasted = true;
+					break;
+				}
+				else
+					continue;
 			}
 
 			// E cast
@@ -1223,13 +1228,18 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				qTarget = target;
 				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
 				{
-					castQLong(target, "harass");
+					if (castQLong(target, "harass")) return;
 				}
-				hasCasted = true;
-				return;
+				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= 1500)
+				{
+					qTarget = target;
+					hasCasted = true;
+					break;
+				}
+				else
+					continue;
 			}
 
 			// E cast
@@ -1354,11 +1364,9 @@ namespace xerath {
 			const auto& dashing = target->is_dashing();
 			const auto& ccTime = stunTime[target->get_handle()];
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
-			const auto& castTimeElapsed = target->get_active_spell() ? gametime->get_time() - target->get_active_spell()->cast_start_time() + target->get_active_spell()->get_attack_cast_delay() : 0;
-			const auto& castingTime = target->get_active_spell() && !channelingSpell ? target->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
 			const auto& dashingCast = dashing && (dashE || dashW);
-			const auto& castingCast = castingTime > 0 && (castingE || castingW);
+			const auto& castingCast = target->get_active_spell() && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW);
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
@@ -1423,7 +1431,7 @@ namespace xerath {
 	{
 		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
 		{
-			glow->apply_glow(qTarget, MAKE_COLOR(255, 255, 0, 255), 3, 0);
+			glow->apply_glow(qTarget, MAKE_COLOR(255, 127, 0, 255), 3, 0);
 		}
 		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
 		{
@@ -1703,8 +1711,8 @@ namespace xerath {
 		// Target indicators management
 		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
 		{
-			draw_manager->add_circle(qTarget->get_position(), 50 + qTarget->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
-			draw_manager->add_circle(qTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + qTarget->get_bounding_radius())), MAKE_COLOR(255, 255, 0, 255), 2);
+			draw_manager->add_circle(qTarget->get_position(), 50 + qTarget->get_bounding_radius(), MAKE_COLOR(255, 127, 0, 255), 2);
+			draw_manager->add_circle(qTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + qTarget->get_bounding_radius())), MAKE_COLOR(255, 127, 0, 255), 2);
 		}
 		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
 		{
