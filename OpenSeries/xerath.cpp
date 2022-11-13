@@ -1105,7 +1105,7 @@ namespace xerath {
 
 			// Storing useful info
 			const auto& canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && ((stasisDuration - getPing() + 1.5) < r->get_delay() || stasisDuration <= 0) && ultBuff;
+			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing()) < 2 - r->get_delay() && ultBuff;
 			const auto& rCombo = settings::combo::rCombo->get_bool() && orbwalker->combo_mode();
 
 			// If can't do anything on target, go next target
