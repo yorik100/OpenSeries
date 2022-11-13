@@ -1334,7 +1334,7 @@ namespace brand {
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
-			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() > gametime->get_time();
+			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() <= gametime->get_time();
 			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW);
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
