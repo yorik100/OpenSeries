@@ -975,7 +975,7 @@ namespace xerath {
 		if (qTarget->is_valid())
 			glow->remove_glow(qTarget);
 		if (rTarget->is_valid())
-		glow->remove_glow(rTarget);
+			glow->remove_glow(rTarget);
 		qTarget = game_object_script{};
 		rTarget = game_object_script{};
 
@@ -1105,7 +1105,7 @@ namespace xerath {
 
 			// Storing useful info
 			const auto& canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing() + 1.5) < r->get_delay() && ultBuff;
+			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && ((stasisDuration - getPing() + 1.5) < r->get_delay() || stasisDuration <= 0) && ultBuff;
 			const auto& rCombo = settings::combo::rCombo->get_bool() && orbwalker->combo_mode();
 
 			// If can't do anything on target, go next target
@@ -1489,7 +1489,6 @@ namespace xerath {
 		settings::draws::spellRanges::rRange->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 		settings::draws::spellRanges::rMinimapRange = drawRangeTab->add_checkbox("open.xerath.draws.ranges.rminimaprange", "Draw R range on minimap", true);
 		settings::draws::spellRanges::rNearMouseRange = drawRangeTab->add_checkbox("open.xerath.draws.ranges.rnearmouserange", "Draw near mouse R range", true);
-		settings::draws::spellRanges::rNearMouseRange->set_tooltip("Set to 0 to disable near mouse feature");
 
 		// Normal draws
 		settings::draws::wRadius = drawTab->add_checkbox("open.xerath.draws.wradius", "Draw W on ground", true);
@@ -1552,7 +1551,8 @@ namespace xerath {
 		const auto miscTab = mainMenu->add_tab("open.xerath.misc", "Misc");
 		settings::automatic::manualEKey = miscTab->add_hotkey("open.xerath.misc.manuale", "Manual E key", TreeHotkeyMode::Hold, 0x4A, false);
 		settings::automatic::manualRKey = miscTab->add_hotkey("open.xerath.misc.manualr", "Manual R key", TreeHotkeyMode::Hold, 0x54, false);
-		settings::automatic::rRange = miscTab->add_slider("open.xerath.misc.manualrrange", "Ult near mouse range", 750, 0, 1500);
+		settings::automatic::rRange = miscTab->add_slider("open.xerath.misc.manualrrange", "Ult near mouse range", 0, 0, 1500);
+		settings::automatic::rRange->set_tooltip("Set to 0 to disable near mouse feature");
 		settings::automatic::manualREnable = miscTab->add_checkbox("open.xerath.misc.manualrenable", "Start channeling R with manual R key", false);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.qstun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
