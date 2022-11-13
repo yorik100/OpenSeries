@@ -1316,11 +1316,11 @@ namespace xerath {
 
 			// Gathering enough data to cast on particles
 			const auto& distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius());
-			const auto& eLandingTime = std::max(q->get_delay(), (distance / e->get_speed()) + e->get_delay());
+			const auto& eLandingTime = std::max(e->get_delay(), (distance / e->get_speed()) + e->get_delay());
 			const auto& particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			const auto& eCanDodge = obj.owner->get_move_speed() * ((eLandingTime - particleTime) + getPing()) > e->get_radius() + obj.owner->get_bounding_radius();
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
-			const auto& collisionList = q->get_collision(myhero->get_position(), { obj.castingPos });
+			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
 			const auto& canE = particleE && !eCanDodge && timeBeforeWHitsLocation(obj.castingPos) < FLT_MAX && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 
