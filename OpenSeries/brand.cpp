@@ -1044,7 +1044,7 @@ namespace brand {
 		// Check if we're already casting a spell
 		const auto& castTimeElapsed = myhero->get_active_spell() ? gametime->get_time() - myhero->get_active_spell()->cast_start_time() + myhero->get_active_spell()->get_attack_cast_delay() : 0;
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack() && castingTime < 0.1 + getPing()) return true;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack() && castingTime < 0.033 + getPing()) return true;
 		return false;
 	}
 
