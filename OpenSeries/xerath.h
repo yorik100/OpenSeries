@@ -3,6 +3,7 @@
 
 namespace xerath
 {
+	inline bool isMoving(const game_object_script& target);
 	inline float timeBeforeWHits(const game_object_script& target);
 	inline float timeBeforeWHitsLocation(vector& position);
 	inline bool willGetHitByE(const game_object_script& target);

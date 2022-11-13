@@ -198,6 +198,11 @@ namespace xerath {
 	float lastCast = 0;
 	int rShots = 0;
 
+	bool isMoving(const game_object_script& target)
+	{
+		return target->get_path_controller() && !target->get_path_controller()->is_dashing() && target->get_path_controller()->get_path_count() > 1;
+	}
+
 	float timeBeforeWHits(const game_object_script& target)
 	{
 		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
@@ -464,7 +469,7 @@ namespace xerath {
 		const auto& timeToHit = q->get_delay() + getPing();
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && !willGetHitByE(target) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
@@ -485,7 +490,7 @@ namespace xerath {
 		const auto& timeToHit = q->get_delay() + getPing();
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance > hit_chance::impossible && !willGetHitByE(target) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance > hit_chance::impossible && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
@@ -506,7 +511,7 @@ namespace xerath {
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance > hit_chance::impossible && aliveWhenLanding && !willGetHitByE(target) && wTime >= timeToHit && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance > hit_chance::impossible && aliveWhenLanding && (!willGetHitByE(target) || !isMoving(target)) && wTime >= timeToHit && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
@@ -526,7 +531,7 @@ namespace xerath {
 		const auto& timeToHit = w->get_delay() + getPing();
 		const auto& trueTimeToHit = w->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && !willGetHitByE(target) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, wDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -546,7 +551,7 @@ namespace xerath {
 		const auto& timeToHit = getTimeToHit(p.input, p, true);
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && !willGetHitByE(target) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, eDamageList[target->get_handle()])) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
 			return true;
 		}
@@ -565,7 +570,7 @@ namespace xerath {
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && !willGetHitByE(target) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
 			return true;
 		}
@@ -631,10 +636,8 @@ namespace xerath {
 		const float tempRange = q2->range();
 		if (q2->range() < 1500)
 		{
-			if (target->get_path_controller() && !target->get_path_controller()->is_dashing() && target->get_path_controller()->get_path_count() > 1)
-			{
+			if (isMoving(target))
 				q2->set_range(q2->range() - std::min(250.f, (target->get_move_speed() * (q2->get_delay() + getPing()))));
-			}
 			q2->set_range(q2->range() - 50);
 		}
 		const prediction_output& p = q2->get_prediction(target);
