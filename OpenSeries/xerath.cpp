@@ -1461,7 +1461,7 @@ namespace xerath {
 		settings::combo::qCombo->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 		settings::combo::wCombo = comboTab->add_checkbox("open.xerath.combo.wcombo", "W combo", true);
 		settings::combo::wCombo->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-		settings::combo::wComboCenter = comboTab->add_checkbox("open.xerath.combo.wComboCenter", "^ Try to hit center?", true);
+		settings::combo::wComboCenter = comboTab->add_checkbox("open.xerath.combo.wComboCenter", "^ Try to hit center?", false);
 		settings::combo::eCombo = comboTab->add_checkbox("open.xerath.combo.ecombo", "E combo", true);
 		settings::combo::eCombo->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 		settings::combo::rCombo = comboTab->add_checkbox("open.xerath.combo.rcombo", "R2 combo", true);
@@ -1473,7 +1473,7 @@ namespace xerath {
 		settings::harass::qHarass->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 		settings::harass::wHarass = harassTab->add_checkbox("open.xerath.combo.wharass", "W harass", true);
 		settings::harass::wHarass->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-		settings::harass::wHarassCenter = harassTab->add_checkbox("open.xerath.harass.wComboCenter", "^ Try to hit center?", true);
+		settings::harass::wHarassCenter = harassTab->add_checkbox("open.xerath.harass.wComboCenter", "^ Try to hit center?", false);
 		settings::harass::eHarass = harassTab->add_checkbox("open.xerath.combo.eharass", "E harass", true);
 		settings::harass::eHarass->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 
