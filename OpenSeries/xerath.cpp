@@ -753,7 +753,7 @@ namespace xerath {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::q) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false);
@@ -764,7 +764,7 @@ namespace xerath {
 		// Get W normal damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -775,7 +775,7 @@ namespace xerath {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -786,7 +786,7 @@ namespace xerath {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::e) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -797,7 +797,7 @@ namespace xerath {
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::r) != spell_state::Ready && ultParticleList.empty() && !ultBuff) return 0;
+		if (spell->cooldown() > 0 && ultParticleList.empty() && !ultBuff) return 0;
 		const float& damage = 150 + 50 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -811,7 +811,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && isRReady);
+		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0);
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
@@ -1048,7 +1048,7 @@ namespace xerath {
 		// Check if we're already casting a spell
 		const auto& castTimeElapsed = myhero->get_active_spell() ? gametime->get_time() - myhero->get_active_spell()->cast_start_time() + myhero->get_active_spell()->get_attack_cast_delay() : 0;
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack() && castingTime < 0.033 + getPing()) return true;
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack() && !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta() && castingTime > 0.033 + getPing()) return true;
 		return false;
 	}
 

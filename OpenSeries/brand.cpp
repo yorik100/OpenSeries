@@ -604,7 +604,7 @@ namespace brand {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::q) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + spell->level() * 30 + myhero->get_total_ability_power() * 0.55;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false, 1);
@@ -615,7 +615,7 @@ namespace brand {
 		// Get W normal damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
@@ -626,7 +626,7 @@ namespace brand {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::w) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = (30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.25;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
@@ -637,7 +637,7 @@ namespace brand {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::e) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 45 + 25 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
@@ -648,7 +648,7 @@ namespace brand {
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
-		if (myhero->get_spell_state(spellslot::r) != spell_state::Ready) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 100 * spell->level() + myhero->get_total_ability_power() * 0.25;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
@@ -1044,7 +1044,7 @@ namespace brand {
 		// Check if we're already casting a spell
 		const auto& castTimeElapsed = myhero->get_active_spell() ? gametime->get_time() - myhero->get_active_spell()->cast_start_time() + myhero->get_active_spell()->get_attack_cast_delay() : 0;
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->get_attack_cast_delay() - castTimeElapsed : 0;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack() && castingTime < 0.033 + getPing()) return true;
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack() && !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta() && castingTime > 0.033 + getPing()) return true;
 		return false;
 	}
 
