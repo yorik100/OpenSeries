@@ -1950,7 +1950,7 @@ namespace xerath {
 
 		// R
 		r = plugin_sdk->register_spell(spellslot::r, XERATH_R_RANGE);
-		r->set_skillshot(0.6f, 200.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		r->set_skillshot(0.6f, 200.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
 		r->set_spell_lock(false);
 
 		// Q dummy
