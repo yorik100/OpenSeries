@@ -610,7 +610,7 @@ namespace xerath {
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
 
 		//Behind yourself collision detection
-		const auto& collisionsFromHero = e->get_collision(myhero->get_position().extend(target->get_position(), -e->get_radius()), { myhero->get_position().extend(p.get_cast_position(), myhero->get_position().distance(p.input.get_from())) });
+		const auto& collisionsFromHero = e->get_collision(myhero->get_position().extend(target->get_position(), -e->get_radius()), { p.input.get_from() });
 		if (!collisionsFromHero.empty()) return prediction_output{};
 
 		return p;

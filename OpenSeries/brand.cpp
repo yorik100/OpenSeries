@@ -456,7 +456,7 @@ namespace brand {
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
 
 		//Behind yourself collision detection
-		const auto& collisionsFromHero = q->get_collision(myhero->get_position().extend(target->get_position(), -q->get_radius()), { myhero->get_position().extend(p.get_cast_position(), myhero->get_position().distance(p.input.get_from())) });
+		const auto& collisionsFromHero = q->get_collision(myhero->get_position().extend(target->get_position(), -q->get_radius()), { p.input.get_from() });
 		if (!collisionsFromHero.empty()) return prediction_output{};
 
 		return p;
@@ -960,21 +960,6 @@ namespace brand {
 		return false;
 	}
 
-	bool eSpam() {
-		// Spams the fuck out of E for Q-E combo
-		if (!spamETarget || !isEReady) return false;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spellslot() == q->get_slot())
-		{
-			e->cast(spamETarget);
-			return true;
-		}
-		else
-		{
-			spamETarget = nullptr;
-		}
-		return false;
-	}
-
 	void calcs()
 	{
 		// Register last time update triggered (for low spec mode)
@@ -1022,6 +1007,21 @@ namespace brand {
 		// Get best E target
 		bestETarget = getBestETarget(eBounceTargets);
 
+	}
+
+	bool eSpam() {
+		// Spams the fuck out of E for Q-E combo
+		if (!spamETarget || !isEReady) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spellslot() == q->get_slot())
+		{
+			e->cast(spamETarget);
+			return true;
+		}
+		else
+		{
+			spamETarget = nullptr;
+		}
+		return false;
 	}
 
 	bool debuffCantCast()
