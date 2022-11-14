@@ -1286,11 +1286,11 @@ namespace xerath {
 		),
 			particlePredList.end());
 
+		if (hasCasted || (!particleE && !particleW)) return;
+
 		// Loop through every pred particles
 		for (auto& obj : particlePredList)
 		{
-			if (hasCasted || (!particleE && !particleW)) continue;
-
 			// Getting the final cast position
 			if (obj.isTeleport)
 			{
@@ -1326,16 +1326,16 @@ namespace xerath {
 			// Try to cast E if possible
 			if (canE && (particleTime - getPing() + 0.05 <= eLandingTime))
 			{
-				q->cast(obj.castingPos);
+				e->cast(obj.castingPos);
 				hasCasted = true;
-				break;
+				return;
 			}
 			// Try to cast W if possible
 			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
 				w->cast(obj.castingPos);
 				hasCasted = true;
-				break;
+				return;
 			}
 		}
 	}

@@ -955,7 +955,7 @@ namespace brand {
 	bool limitedTick(float msTime)
 	{
 		// Only execute once per msTime
-		if (gametime->get_time() - last_tick <= msTime/1000) return true;
+		if (gametime->get_time() - last_tick <= msTime / 1000) return true;
 
 		return false;
 	}
@@ -1245,11 +1245,11 @@ namespace brand {
 		),
 		particlePredList.end());
 
+		if (hasCasted || (!particleQ && !particleW)) return;
+
 		// Loop through every pred particles
 		for (auto& obj : particlePredList)
 		{
-			if (hasCasted || (!particleQ && !particleW)) continue;
-
 			// Getting the final cast position
 			if (obj.isTeleport)
 			{
@@ -1287,14 +1287,14 @@ namespace brand {
 			{
 				q->cast(obj.castingPos);
 				hasCasted = true;
-				break;
+				return;
 			}
 			// Try to cast W if possible
 			else if (canW && (particleTime - getPing() + 0.1) <= w->get_delay())
 			{
 				w->cast(obj.castingPos);
 				hasCasted = true;
-				break;
+				return;
 			}
 		}
 	}
