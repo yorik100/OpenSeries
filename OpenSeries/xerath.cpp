@@ -946,7 +946,7 @@ namespace xerath {
 		return isValid;
 	}
 
-	bool limitedTick(int msTime)
+	bool limitedTick(float msTime)
 	{
 		// Only execute once per msTime
 		if (gametime->get_time() - last_tick <= msTime / 1000) return true;
@@ -1076,7 +1076,7 @@ namespace xerath {
 		// Sort targets based off TS prio
 		targets = entitylist->get_enemy_heroes();
 		std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
-			return target_selector->get_priority(a) > target_selector->get_priority(b);
+			return target_selector->get_priority(a) > target_selector->get_priority(b) || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
 			}
 		);
 	}
