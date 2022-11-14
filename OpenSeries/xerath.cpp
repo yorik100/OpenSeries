@@ -490,7 +490,7 @@ namespace xerath {
 		const auto& timeToHit = q->get_delay() + getPing();
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance > hit_chance::impossible && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
@@ -1157,7 +1157,7 @@ namespace xerath {
 			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible && !qBuff;
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canChargeQ = !canUseQ && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			const auto& canChargeQ = !canUseQ && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
@@ -1222,7 +1222,7 @@ namespace xerath {
 			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible && !qBuff;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canReleaseQ = settings::harass::qHarass->get_bool() && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
@@ -1321,10 +1321,10 @@ namespace xerath {
 			const auto& eCanDodge = obj.owner->get_move_speed() * ((eLandingTime - particleTime) + getPing()) > e->get_radius() + obj.owner->get_bounding_radius();
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
-			const auto& canE = particleE && !eCanDodge && timeBeforeWHitsLocation(obj.castingPos) < FLT_MAX && collisionList.empty();
+			const auto& canE = particleE && !eCanDodge && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 
-			// Try to cast Q if possible
+			// Try to cast E if possible
 			if (canE && (particleTime - getPing() + 0.05 <= eLandingTime))
 			{
 				q->cast(obj.castingPos);
@@ -1388,7 +1388,7 @@ namespace xerath {
 			// Cast on stasis targets
 			if (stasisCast)
 			{
-				// Cast Q on stasis
+				// Cast E on stasis
 				if (stasisE && (stasisDuration + 0.05) < eLandingTime && castE(target, "stasis")) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
@@ -1399,7 +1399,7 @@ namespace xerath {
 
 			// Cast on stun logic
 			if (ccCast) {
-				// Cast Q on stun with chain CC logic
+				// Cast E on stun with chain CC logic
 				if (ccE && (ccTime - 0.3) < eLandingTime && castE(target, "stun")) break;
 				// Cast W on stun with chain CC logic
 				if (ccW && (ccTime - 0.3 - getPing()) < w->get_delay() && castW(target, "stun", wCenter)) break;
@@ -1407,7 +1407,7 @@ namespace xerath {
 
 			// Cast on dash logic
 			if (dashingCast) {
-				// Cast Q on dash
+				// Cast E on dash
 				if (dashE && castE(target, "dash")) break;
 				// Cast W on dash
 				if (dashW && castW(target, "dash", wCenter)) break;
@@ -1415,7 +1415,7 @@ namespace xerath {
 
 			// Cast on casting logic
 			if (castingCast) {
-				// Cast Q on casting
+				// Cast E on casting
 				if (castingE && castE(target, "casting")) break;
 				// Cast W on casting
 				if (castingW && castW(target, "casting", wCenter)) break;
@@ -1423,7 +1423,7 @@ namespace xerath {
 
 			// Cast on channeling logic
 			if (channelingCast) {
-				// Cast Q on channel
+				// Cast E on channel
 				if (channelE && !castE(target, "channeling")) break;
 				// Cast W on channel
 				if (channelW && castW(target, "channeling", wCenter)) break;
@@ -1958,7 +1958,7 @@ namespace xerath {
 
 		// Q dummy
 		qCharge = plugin_sdk->register_spell(spellslot::q, XERATH_MAX_Q_RANGE);
-		qCharge->set_skillshot(0.5f, 70.f, 1000, {}, skillshot_type::skillshot_line);
+		qCharge->set_skillshot(0.5f, 70.f, 1250, {}, skillshot_type::skillshot_line);
 		qCharge->set_spell_lock(false);
 
 		// Q charged
