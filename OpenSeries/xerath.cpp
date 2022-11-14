@@ -1097,7 +1097,7 @@ namespace xerath {
 			if (!isValidTarget) continue;
 
 			// Enable ult if manual R key is pressed
-			if (!ultBuff && isRReady && settings::automatic::manualRKey->get_bool() && settings::automatic::manualREnable->get_bool()) r->cast();
+			if (!ultBuff && isRReady && settings::automatic::manualRKey->get_bool() && settings::automatic::manualREnable->get_bool()) r->cast(hud->get_hud_input_logic()->get_game_cursor_position());
 
 			// Store useful info
 			auto ccTime = stunTime[target->get_handle()];
