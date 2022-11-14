@@ -1374,7 +1374,7 @@ namespace xerath {
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
 			const auto& dashingCast = dashing && (dashE || dashW);
-			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() <= gametime->get_time();
+			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() >= gametime->get_time();
 			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW);
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW);
