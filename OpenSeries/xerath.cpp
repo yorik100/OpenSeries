@@ -1076,7 +1076,11 @@ namespace xerath {
 		// Sort targets based off TS prio
 		targets = entitylist->get_enemy_heroes();
 		std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
-			return target_selector->get_priority(a) > target_selector->get_priority(b) || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
+			const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
+			const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
+			const auto& effectiveHPa = getTotalHP(a) / getMRPa;
+			const auto& effectiveHPb = getTotalHP(b) / getMRPb;
+			return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
 			}
 		);
 	}
