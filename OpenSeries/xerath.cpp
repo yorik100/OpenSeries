@@ -570,7 +570,6 @@ namespace xerath {
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
-		myhero->print_chat(0, willGetHitByR(target)?"True":"False");
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
 			return true;
