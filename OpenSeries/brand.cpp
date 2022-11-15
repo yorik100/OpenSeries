@@ -465,7 +465,9 @@ namespace brand {
 	prediction_output getWPred(const game_object_script& target)
 	{
 		// Get W pred
-		const prediction_output& p = w->get_prediction(target);
+		prediction_input input = w->get_prediction(target).input;
+		input.use_bounding_radius = false;
+		const prediction_output& p = prediction->get_prediction(&input);
 		return p;
 	}
 
