@@ -247,7 +247,7 @@ namespace xerath {
 	bool willGetHitByR(const game_object_script& target)
 	{
 		for (const auto& particle : ultParticleList) {
-			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME - gametime->get_time();
+			const auto& timeBeforeHit = particle.creationTime + XERATH_R_PARTICLE_TIME - gametime->get_time();
 			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
 			if (particle.particle->is_valid() && unitPositionDist <= r->get_radius())
 				return true;
@@ -570,6 +570,7 @@ namespace xerath {
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
+		myhero->print_chat(0, willGetHitByR(target)?"True":"False");
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
 			return true;
@@ -1075,14 +1076,36 @@ namespace xerath {
 	{
 		// Sort targets based off TS prio
 		targets = entitylist->get_enemy_heroes();
-		std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
-			const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
-			const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
-			const auto& effectiveHPa = getTotalHP(a) / getMRPa;
-			const auto& effectiveHPb = getTotalHP(b) / getMRPb;
-			return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
+		//std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
+		//	const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
+		//	const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
+		//	const auto& effectiveHPa = getTotalHP(a) / getMRPa;
+		//	const auto& effectiveHPb = getTotalHP(b) / getMRPb;
+		//	return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
+		//	}
+		//);
+		std::vector<game_object_script> dummyList;
+		const auto size = targets.size();
+		for (int i = 0; i < size; i++)
+		{
+			dummyList.push_back(target_selector->get_target(targets, damage_type::magical));
+			targets.erase(std::remove_if(targets.begin(), targets.end(), [dummyList](const game_object_script& x)
+				{
+					for (const auto& target : dummyList)
+					{
+						if (target->get_handle() == x->get_handle())
+							return true;
+					}
+					return false;
+				}
+			),
+				targets.end());
+		}
+		std::sort(dummyList.begin(), dummyList.end(), [](game_object_script a, game_object_script b) {
+			return target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle();
 			}
 		);
+		targets = dummyList;
 	}
 
 	void manualHandling()

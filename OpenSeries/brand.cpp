@@ -1068,14 +1068,36 @@ namespace brand {
 	{
 		// Sort targets based off TS prio
 		targets = entitylist->get_enemy_heroes();
-		std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
-			const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
-			const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
-			const auto& effectiveHPa = getTotalHP(a) / getMRPa;
-			const auto& effectiveHPb = getTotalHP(b) / getMRPb;
-			return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
+		//std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
+		//	const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
+		//	const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
+		//	const auto& effectiveHPa = getTotalHP(a) / getMRPa;
+		//	const auto& effectiveHPb = getTotalHP(b) / getMRPb;
+		//	return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
+		//	}
+		//);
+		std::vector<game_object_script> dummyList;
+		const auto size = targets.size();
+		for (int i = 0; i < size; i++)
+		{
+			dummyList.push_back(target_selector->get_target(targets, damage_type::magical));
+			targets.erase(std::remove_if(targets.begin(), targets.end(), [dummyList](const game_object_script& x)
+				{
+					for (const auto& target : dummyList)
+					{
+						if (target->get_handle() == x->get_handle())
+							return true;
+					}
+					return false;
+				}
+			),
+				targets.end());
+		}
+		std::sort(dummyList.begin(), dummyList.end(), [](game_object_script a, game_object_script b) {
+			return target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle();
 			}
 		);
+		targets = dummyList;
 	}
 
 	void combo()
