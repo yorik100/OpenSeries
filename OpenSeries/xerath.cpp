@@ -588,9 +588,7 @@ namespace xerath {
 	{
 		// Get W pred
 		w->set_radius(XERATH_W_OUTER_RADIUS);
-		prediction_input input = w->get_prediction(target).input;
-		input.use_bounding_radius = false;
-		const prediction_output& p = prediction->get_prediction(&input);
+		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
 
@@ -598,9 +596,7 @@ namespace xerath {
 	{
 		// Get W center pred
 		w->set_radius(XERATH_W_INNER_RADIUS);
-		prediction_input input = w->get_prediction(target).input;
-		input.use_bounding_radius = false;
-		const prediction_output& p = prediction->get_prediction(&input);
+		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
 
@@ -623,9 +619,7 @@ namespace xerath {
 	prediction_output getRPred(const game_object_script& target)
 	{
 		// Get R pred
-		prediction_input input = r->get_prediction(target).input;
-		input.use_bounding_radius = false;
-		const prediction_output& p = prediction->get_prediction(&input);
+		const prediction_output& p = r->get_prediction(target);
 		return p;
 	}
 
