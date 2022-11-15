@@ -1043,7 +1043,17 @@ namespace brand {
 	{
 		// Check if we're already casting a spell
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack() && !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta() && castingTime > 0.033 + getPing()) return true;
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack())
+		{
+			if (castingTime < 0.033 + getPing() && castingTime > 0)
+			{
+				return !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta();
+			}
+			else
+			{
+				lastCast = 0;
+			}
+		}
 		return false;
 	}
 
