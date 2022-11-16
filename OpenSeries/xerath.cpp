@@ -521,7 +521,7 @@ namespace xerath {
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance > hit_chance::impossible && aliveWhenLanding && (!willGetHitByE(target) || !isMoving(target)) && wTime >= timeToHit && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && aliveWhenLanding && (!willGetHitByE(target) || !isMoving(target)) && wTime >= timeToHit && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
