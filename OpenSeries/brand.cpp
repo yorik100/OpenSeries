@@ -18,7 +18,7 @@ namespace brand {
 	struct eBounceTarget {
 		game_object_script target{};
 		bool extraRange = 0;
-		float priority = 0;
+		int priority = 0;
 		float distance = 0;
 	};
 
@@ -52,6 +52,7 @@ namespace brand {
 
 	std::unordered_map<uint32_t, prediction_output> qPredictionList;
 	std::unordered_map<uint32_t, prediction_output> wPredictionList;
+	std::unordered_map<uint32_t, int> priorityList;
 	std::unordered_map<uint32_t, stasisStruct> stasisInfo;
 	std::unordered_map<uint32_t, float> stunTime;
 	std::unordered_map<uint32_t, float> guardianReviveTime;
@@ -925,7 +926,7 @@ namespace brand {
 				const auto& predictedDistance = prediction->get_prediction(minion, eDelay).get_unit_position().distance(prediction->get_prediction(target, eDelay).get_unit_position());
 				if (distance <= totalRange && predictedDistance <= totalRange)
 				{
-					bounceTargets.push_back({ .target = minion, .extraRange = totalRange==BRAND_E_MAX_BOUNCE_RANGE, .priority = target_selector->get_priority(target), .distance = predictedDistance-(ablazeBuff?300:0)});
+					bounceTargets.push_back({ .target = minion, .extraRange = totalRange==BRAND_E_MAX_BOUNCE_RANGE, .priority = priorityList[target->get_handle()], .distance = predictedDistance - (ablazeBuff ? 300 : 0)});
 				}
 			}
 		}
@@ -1088,9 +1089,13 @@ namespace brand {
 		//);
 		std::vector<game_object_script> dummyList;
 		const auto size = targets.size();
+		auto currentPrio = targets.size();
 		for (int i = 0; i < size; i++)
 		{
-			dummyList.push_back(target_selector->get_target(targets, damage_type::magical));
+			const auto& tsTarget = target_selector->get_target(targets, damage_type::magical);
+			dummyList.push_back(tsTarget);
+			priorityList[tsTarget->get_handle()] = currentPrio;
+			currentPrio--;
 			targets.erase(std::remove_if(targets.begin(), targets.end(), [dummyList](const game_object_script& x)
 				{
 					for (const auto& target : dummyList)
@@ -1643,6 +1648,9 @@ namespace brand {
 		// Limit ticks (for low spec mode)
 		if (settings::lowSpec->get_bool() && limitedTick(SERVER_TICKRATE)) return;
 
+		// Sort targets
+		targetSelectorSort();
+
 		// Pred, damage && other calcs needed for many things
 		calcs();
 
@@ -1651,9 +1659,6 @@ namespace brand {
 
 		// Check if player can cast spells
 		if (!canCastSpells()) return;
-
-		// Sort targets
-		targetSelectorSort();
 
 		// Combo mode
 		combo();

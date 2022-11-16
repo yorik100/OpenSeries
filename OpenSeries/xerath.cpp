@@ -1661,14 +1661,14 @@ namespace xerath {
 		// Limit ticks (for low spec mode)
 		if (settings::lowSpec->get_bool() && limitedTick(SERVER_TICKRATE)) return;
 
+		// Sort targets
+		targetSelectorSort();
+
 		// Pred, damage && other calcs needed for many things
 		calcs();
 
 		// Check if player can cast spells
 		if (!canCastSpells()) return;
-
-		// Sort targets
-		targetSelectorSort();
 
 		// Manual casts
 		manualHandling();
