@@ -1175,7 +1175,7 @@ namespace xerath {
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
 					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
-					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && (stasisDuration - getPing() + 0.2) < r->get_delay();
+					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
 					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
 					hasCasted = true;
