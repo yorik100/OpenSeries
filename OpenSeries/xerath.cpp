@@ -149,14 +149,24 @@ namespace xerath {
 			TreeEntry* wStun;
 			TreeEntry* eDash;
 			TreeEntry* wDash;
+			TreeEntry* qDash;
 			TreeEntry* eCast;
 			TreeEntry* wCast;
+			TreeEntry* qCast;
 			TreeEntry* eChannel;
 			TreeEntry* wChannel;
 			TreeEntry* eStasis;
 			TreeEntry* wStasis;
+			TreeEntry* qStasis;
 			TreeEntry* eParticle;
 			TreeEntry* wParticle;
+			TreeEntry* qParticle;
+		}
+		namespace ultimate {
+			TreeEntry* rImmobile;
+			TreeEntry* rDash;
+			TreeEntry* rCast;
+			TreeEntry* rStasis;
 		}
 		namespace hitchance {
 			TreeEntry* qHitchance;
@@ -1010,7 +1020,8 @@ namespace xerath {
 			if (ultBuff)
 				rPredictionList[target->get_handle()] = isRReady ? getRPred(target) : prediction_output{};
 			qDummyPredictionList[target->get_handle()] = isQReady ? getQDummyPred(target) : prediction_output{};
-			q2PredictionList[target->get_handle()] = isQReady ? getQ2Pred(target) : prediction_output{};
+			if (qBuff)
+				q2PredictionList[target->get_handle()] = isQReady ? getQ2Pred(target) : prediction_output{};
 			if (!target->is_visible()) continue;
 
 			stunTime[target->get_handle()] = target->get_immovibility_time();
@@ -1159,7 +1170,13 @@ namespace xerath {
 				if (hud->get_hud_input_logic()->get_game_cursor_position().distance(target->get_position()) <= rRange)
 				{
 					rTarget = target;
-					if (isRReady && (settings::automatic::manualRKey->get_bool() || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
+					const auto& manualKey = settings::automatic::manualRKey->get_bool();
+					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
+					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
+					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
+					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
+					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && (stasisDuration - getPing() + 0.2) < r->get_delay();
+					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
 					hasCasted = true;
 					return;
@@ -1313,6 +1330,7 @@ namespace xerath {
 		// Store particle settings
 		auto particleE = settings::automatic::eParticle->get_bool() && isEReady;
 		auto particleW = settings::automatic::wParticle->get_bool() && isWReady;
+		auto particleQ = settings::automatic::qParticle->get_bool() && isQReady && qBuff;
 
 		// Checking if particles are valid, if they're not, delete them from the list
 		particlePredList.erase(std::remove_if(particlePredList.begin(), particlePredList.end(), [](const particleStruct& x)
@@ -1322,7 +1340,7 @@ namespace xerath {
 		),
 			particlePredList.end());
 
-		if (hasCasted || (!particleE && !particleW)) return;
+		if (hasCasted || (!particleE && !particleW && !particleQ)) return;
 
 		// Loop through every pred particles
 		for (auto& obj : particlePredList)
@@ -1355,9 +1373,11 @@ namespace xerath {
 			const auto& particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			const auto& eCanDodge = obj.owner->get_move_speed() * ((eLandingTime - particleTime) + getPing()) > e->get_radius() + obj.owner->get_bounding_radius();
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
+			const auto& qCanDodge = obj.owner->get_move_speed() * ((q->get_delay() - particleTime) + getPing()) > q->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
 			const auto& canE = particleE && !eCanDodge && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
+			const auto& canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(1500, 750, 1.5) - 50;
 
 			// Try to cast E if possible
 			if (canE && (particleTime - getPing() + 0.05 <= eLandingTime))
@@ -1370,6 +1390,13 @@ namespace xerath {
 			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
 				w->cast(obj.castingPos);
+				hasCasted = true;
+				return;
+			}
+			// Try to cast Q if possible
+			else if (canQ && (particleTime - getPing() + 0.2) <= q2->get_delay())
+			{
+				myhero->update_charged_spell(q2->get_slot(), obj.castingPos, true);
 				hasCasted = true;
 				return;
 			}
@@ -1386,15 +1413,18 @@ namespace xerath {
 		auto ccW = settings::automatic::wStun->get_bool() && isWReady;
 		auto dashE = settings::automatic::eDash->get_bool() && isEReady;
 		auto dashW = settings::automatic::wDash->get_bool() && isWReady;
+		auto dashQ = settings::automatic::qDash->get_bool() && isQReady && qBuff;
 		auto castingE = settings::automatic::eCast->get_bool() && isEReady;
 		auto castingW = settings::automatic::wCast->get_bool() && isWReady;
+		auto castingQ = settings::automatic::qCast->get_bool() && isQReady && qBuff;
 		auto channelE = settings::automatic::eChannel->get_bool() && isEReady;
 		auto channelW = settings::automatic::wChannel->get_bool() && isWReady;
 		auto stasisE = settings::automatic::eStasis->get_bool() && isEReady;
 		auto stasisW = settings::automatic::wStasis->get_bool() && isWReady;
+		auto stasisQ = settings::automatic::qStasis->get_bool() && isQReady && qBuff;
 
 		// Stop if player doesn't want to use any auto stuff
-		if (!ccE && !ccW && !dashE && !dashW && !castingE && !castingW && !channelE && !channelW && !stasisE && !stasisW && particlePredList.empty()) return;
+		if (!ccE && !ccW && !dashE && !dashW && !dashQ && !castingE && !castingW && !castingQ && !channelE && !channelW && !stasisE && !stasisW  && !stasisQ && particlePredList.empty()) return;
 
 		// Loop through every sorted targets
 		for (const auto& target : targets)
@@ -1409,11 +1439,11 @@ namespace xerath {
 			const auto& ccTime = stunTime[target->get_handle()];
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
-			const auto& dashingCast = dashing && (dashE || dashW);
+			const auto& dashingCast = dashing && (dashE || dashW || dashQ);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ);
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
-			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW);
+			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW || stasisQ);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
 
 			auto& ep = ePredictionList[target->get_handle()];
@@ -1427,6 +1457,8 @@ namespace xerath {
 				if (stasisE && (stasisDuration + 0.05) < eLandingTime && castE(target, "stasis")) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
+				// Cast Q on stasis
+				if (stasisQ && (stasisDuration + 0.2 - getPing()) < q2->get_delay() && castQLong(target, "stasis")) break;
 			}
 
 			// Next part shouldn't cast on stasis targets
@@ -1446,6 +1478,8 @@ namespace xerath {
 				if (dashE && castE(target, "dash")) break;
 				// Cast W on dash
 				if (dashW && castW(target, "dash", wCenter)) break;
+				// Cast Q on dash
+				if (dashQ && castQLong(target, "dash")) break;
 			}
 
 			// Cast on casting logic
@@ -1454,6 +1488,8 @@ namespace xerath {
 				if (castingE && castE(target, "casting")) break;
 				// Cast W on casting
 				if (castingW && castW(target, "casting", wCenter)) break;
+				// Cast Q on casting
+				if (castingQ && castQLong(target, "casting")) break;
 			}
 
 			// Cast on channeling logic
@@ -1592,18 +1628,29 @@ namespace xerath {
 		settings::automatic::rRange = miscTab->add_slider("open.xerath.misc.manualrrange", "Ult near mouse range", 0, 0, 1500);
 		settings::automatic::rRange->set_tooltip("Set to 0 to disable near mouse feature");
 		settings::automatic::manualREnable = miscTab->add_checkbox("open.xerath.misc.manualrenable", "Start channeling R with manual R key", false);
-		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.qstun", "Auto E on stun", true);
+		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
-		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.qdash", "Auto E on dash", true);
+		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.edash", "Auto E on dash", true);
 		settings::automatic::wDash = miscTab->add_checkbox("open.xerath.misc.wdash", "Auto W on dash", true);
-		settings::automatic::eCast = miscTab->add_checkbox("open.xerath.misc.qcast", "Auto E on cast", true);
+		settings::automatic::qDash = miscTab->add_checkbox("open.xerath.misc.qdash", "Auto Q recast on dash", true);
+		settings::automatic::eCast = miscTab->add_checkbox("open.xerath.misc.ecast", "Auto E on cast", true);
 		settings::automatic::wCast = miscTab->add_checkbox("open.xerath.misc.wcast", "Auto W on cast", true);
-		settings::automatic::eChannel = miscTab->add_checkbox("open.xerath.misc.qchannel", "Auto E on channel", true);
+		settings::automatic::qCast = miscTab->add_checkbox("open.xerath.misc.qcast", "Auto Q recast on cast", false);
+		settings::automatic::eChannel = miscTab->add_checkbox("open.xerath.misc.echannel", "Auto E on channel", true);
 		settings::automatic::wChannel = miscTab->add_checkbox("open.xerath.misc.wchannel", "Auto W on channel", true);
-		settings::automatic::eStasis = miscTab->add_checkbox("open.xerath.misc.qstasis", "Auto E on stasis", true);
+		settings::automatic::eStasis = miscTab->add_checkbox("open.xerath.misc.estasis", "Auto E on stasis", true);
 		settings::automatic::wStasis = miscTab->add_checkbox("open.xerath.misc.wstasis", "Auto W on stasis", true);
-		settings::automatic::eParticle = miscTab->add_checkbox("open.xerath.misc.qparticle", "Auto E on particle", true);
+		settings::automatic::qStasis = miscTab->add_checkbox("open.xerath.misc.qstasis", "Auto Q recast on stasis", true);
+		settings::automatic::eParticle = miscTab->add_checkbox("open.xerath.misc.eparticle", "Auto E on particle", true);
 		settings::automatic::wParticle = miscTab->add_checkbox("open.xerath.misc.wparticle", "Auto W on particle", true);
+		settings::automatic::qParticle = miscTab->add_checkbox("open.xerath.misc.qparticle", "Auto Q recast on particle", true);
+
+		// Ult tab
+		const auto ultTab = mainMenu->add_tab("open.xerath.ultimate", "Ultimate");
+		settings::ultimate::rCast = ultTab->add_checkbox("open.xerath.ultimate.rcast", "Cast R2 on cast", true);
+		settings::ultimate::rDash = ultTab->add_checkbox("open.xerath.ultimate.rdash", "Cast R2 on dash", true);
+		settings::ultimate::rImmobile = ultTab->add_checkbox("open.xerath.ultimate.rimmobile", "Cast R2 on immobile", true);
+		settings::ultimate::rStasis = ultTab->add_checkbox("open.xerath.ultimate.rstasis", "Cast R2 on stasis", true);
 
 		// Misc
 		settings::lowSpec = mainMenu->add_checkbox("open.xerath.lowspec", "Low spec mode (tick limiter)", false);
