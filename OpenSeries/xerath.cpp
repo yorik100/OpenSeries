@@ -1495,7 +1495,7 @@ namespace xerath {
 			// Cast on channeling logic
 			if (channelingCast) {
 				// Cast E on channel
-				if (channelE && !castE(target, "channeling")) break;
+				if (channelE && castE(target, "channeling")) break;
 				// Cast W on channel
 				if (channelW && castW(target, "channeling", wCenter)) break;
 			}
