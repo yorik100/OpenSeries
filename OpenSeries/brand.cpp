@@ -1777,6 +1777,10 @@ namespace brand {
 	
 	void on_create(const game_object_script obj)
 	{
+		// Get object name hash
+		const auto& object_hash = spell_hash_real(obj->get_name_cstr());
+
+		// Get emitter hash
 		const auto& emitterHash = obj->get_emitter_resources_hash();
 
 		// Get Brand W particle & store it
@@ -1844,7 +1848,7 @@ namespace brand {
 
 		if (obj->get_emitter()->get_teleport_state() != "SummonerTeleport") return;
 
-		if (obj->get_name() == "global_ss_teleport_turret_red.troy")
+		if (object_hash == spell_hash("global_ss_teleport_turret_red.troy"))
 		{
 			const auto& target = obj->get_particle_attachment_object();
 			if (nexusPos != vector::zero)
@@ -1854,7 +1858,7 @@ namespace brand {
 				return;
 			}
 		}
-		else if (obj->get_name() == "global_ss_teleport_target_red.troy")
+		else if (object_hash == spell_hash("global_ss_teleport_target_red.troy"))
 		{
 			const auto& target = obj->get_particle_target_attachment_object();
 			if (nexusPos != vector::zero)

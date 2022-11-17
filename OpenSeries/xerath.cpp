@@ -1818,7 +1818,11 @@ namespace xerath {
 
 	void on_create(const game_object_script obj)
 	{
-		auto emitterHash = obj->get_emitter_resources_hash();
+		// Get object name hash
+		const auto& object_hash = spell_hash_real(obj->get_name_cstr());
+
+		// Get emitter hash
+		const auto& emitterHash = obj->get_emitter_resources_hash();
 
 		// Get Xerath W and R particles & store them
 		switch (emitterHash)
@@ -1858,50 +1862,50 @@ namespace xerath {
 		{
 		case buff_hash("TwistedFate_R_Gatemarker_Red"):
 		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Ekko_R_ChargeIndicator"):
 		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Pantheon_R_Update_Indicator_Enemy"):
 		{
-			auto castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
+			const auto& castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Galio_R_Tar_Ground_Enemy"):
 		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Evelynn_R_Landing"):
 		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("TahmKench_W_ImpactWarning_Enemy"):
 		{
-			particleStruct particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Zed_R_tar_TargetMarker"):
 			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->get_handle() == myhero->get_handle()) {
-				particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = vector::zero, .isZed = true };
+				const particleStruct& particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.95, .castingPos = vector::zero, .isZed = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
 		case 1882371666:
 		{
-			particleStruct particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = obj->get_position().distance(urfCannon) / 2800, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = obj->get_position().distance(urfCannon) / 2800, .castingPos = obj->get_position() };
 			particlePredList.push_back(particleData);
 			return;
 		}
@@ -1909,22 +1913,22 @@ namespace xerath {
 
 		if (obj->get_emitter()->get_teleport_state() != "SummonerTeleport") return;
 
-		if (obj->get_name() == "global_ss_teleport_turret_red.troy")
+		if (object_hash == spell_hash("global_ss_teleport_turret_red.troy"))
 		{
-			auto target = obj->get_particle_attachment_object();
+			const auto& target = obj->get_particle_attachment_object();
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
+				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
 		}
-		else if (obj->get_name() == "global_ss_teleport_target_red.troy")
+		else if (object_hash == spell_hash("global_ss_teleport_target_red.troy"))
 		{
-			auto target = obj->get_particle_target_attachment_object();
+			const auto& target = obj->get_particle_target_attachment_object();
 			if (nexusPos != vector::zero)
 			{
-				particleStruct particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
+				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
