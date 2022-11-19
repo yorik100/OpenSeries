@@ -119,6 +119,10 @@ namespace xerath {
 			TreeEntry* stasisPos;
 			TreeEntry* qIndicator;
 			TreeEntry* rIndicator;
+			TreeEntry* rKillList;
+			TreeEntry* rKillListRangeIgnore;
+			TreeEntry* killListYOffset;
+			TreeEntry* killListXOffset;
 			namespace spellRanges {
 				TreeEntry* qRange;
 				TreeEntry* wRange;
@@ -1570,6 +1574,10 @@ namespace xerath {
 		settings::draws::rRadius = drawTab->add_checkbox("open.xerath.draws.rradius", "Draw R on ground", true);
 		settings::draws::rDamage = drawTab->add_checkbox("open.xerath.draws.rdamage", "Draw R damage", true);
 		settings::draws::rDamageText = drawTab->add_checkbox("open.xerath.draws.rdamagetext", "Draw R damage text", true);
+		settings::draws::rKillList = drawTab->add_checkbox("open.xerath.draws.rkilllist", "Show R kill list", true);
+		settings::draws::rKillListRangeIgnore = drawTab->add_checkbox("open.xerath.draws.rkilllistrangeignore", "R kill list range ignore", false);
+		settings::draws::killListXOffset = drawTab->add_slider("open.xerath.draws.xoffset", "Horizontal position", 0, -2000, 2000);
+		settings::draws::killListYOffset = drawTab->add_slider("open.xerath.draws.yoffset", "Vertical position", 0, -2000, 2000);
 		settings::draws::rIndicator = drawTab->add_checkbox("open.xerath.draws.rindicator", "Show R target", true);
 		settings::draws::qIndicator = drawTab->add_checkbox("open.xerath.draws.qindicator", "Show Q target", true);
 		settings::draws::particlePos = drawTab->add_checkbox("open.xerath.draws.particlepos", "Draw particle pred positions", false);
@@ -1753,9 +1761,16 @@ namespace xerath {
 		}
 
 		// Draw R damage & damage text
+		int index = 0;
 		for (const auto& target : entitylist->get_enemy_heroes())
 		{
 			if (!target->is_valid()) continue;
+			if (settings::draws::rKillList->get_bool() && customIsValid(target) && rDamageList[target->get_handle()].kills && (settings::draws::rKillListRangeIgnore->get_bool() || target->get_position().distance(myhero->get_position()) <= r->range()))
+			{
+				const auto& key = index++;
+				const auto& position = vector(1350.f + settings::draws::killListXOffset->get_int(), 80.f + settings::draws::killListYOffset->get_int() + (key*50));
+				draw_manager->add_text_on_screen(position, MAKE_COLOR(255, 0, 0, 255), 22, "%s is killable in %i %s", target->get_model_cstr(), rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "shots" : "shot");
+			}
 
 			// Draw stasis pred pos
 			auto stasisData = stasisInfo[target->get_handle()];
