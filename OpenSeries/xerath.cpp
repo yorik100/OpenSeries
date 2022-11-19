@@ -97,7 +97,8 @@ namespace xerath {
 		buff_hash("ZedR"),
 		buff_hash("EkkoR"),
 		buff_hash("FizzE"),
-		buff_hash("FizzETwo")
+		buff_hash("FizzETwo"),
+		buff_hash("XayahR")
 	};
 
 	script_spell* q;
@@ -178,7 +179,7 @@ namespace xerath {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float XERATH_W_PARTICLE_TIME = 0.75f;
+	static constexpr float XERATH_W_PARTICLE_TIME = 0.8f;
 	static constexpr float XERATH_W_OUTER_RADIUS = 275.f;
 	static constexpr float XERATH_W_INNER_RADIUS = 100.f;
 	static constexpr float XERATH_R_PARTICLE_TIME = 0.6f;
@@ -972,7 +973,7 @@ namespace xerath {
 		// Getting rid of bad W particles
 		particleList.erase(std::remove_if(particleList.begin(), particleList.end(), [](const particleData& x)
 			{
-				return x.creationTime + 0.75 <= gametime->get_time();
+				return x.creationTime + 0.8 <= gametime->get_time();
 			}
 		),
 			particleList.end());
@@ -1758,7 +1759,7 @@ namespace xerath {
 
 			// Draw stasis pred pos
 			auto stasisData = stasisInfo[target->get_handle()];
-			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0)
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd <= gametime->get_time())
 			{
 				draw_manager->add_circle(target->get_position(), target->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
 				auto castTime = stasisData.stasisEnd - stasisData.stasisStart;
@@ -2029,7 +2030,7 @@ namespace xerath {
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, XERATH_W_RANGE);
-		w->set_skillshot(0.75f, 275.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(0.8f, 275.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
