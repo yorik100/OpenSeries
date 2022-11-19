@@ -190,9 +190,8 @@ namespace xerath {
 	static constexpr float XERATH_MAX_Q_RANGE = 1500;
 	static constexpr float XERATH_MIN_Q_RANGE = 750;
 	static constexpr float XERATH_W_RANGE = 1000;
-	static constexpr float XERATH_E_RANGE = 1065;
+	static constexpr float XERATH_E_RANGE = 1050;
 	static constexpr float XERATH_R_RANGE = 5000;
-
 
 	vector nexusPos;
 	vector urfCannon;
