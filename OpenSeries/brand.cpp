@@ -1138,8 +1138,8 @@ namespace brand {
 
 			// Check if X spells can be used on that target
 			const auto& dist = target->get_position().distance(myhero->get_position());
-			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, trueQLandingTime + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, trueQLandingTime + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, e->get_delay() + 0.5, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
 			const auto& rRange = settings::combo::rComboKills->get_bool() && settings::combo::rComboMinionBounce->get_bool() ? 1350 : BRAND_R_RANGE;
 			const auto& canUseR = settings::combo::rCombo->get_bool() && couldDamageLater(target, r->get_delay() + 0.5, rDamageList[target->get_handle()].damage) && isRReady && dist <= rRange && target->is_visible();
@@ -1233,8 +1233,8 @@ namespace brand {
 
 			// Check if X spells can be used on that target
 			const auto& dist = target->get_position().distance(myhero->get_position());
-			const auto& canUseQ = settings::harass::qHarass->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseW = settings::harass::wHarass->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			const auto& canUseQ = settings::harass::qHarass->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseW = settings::harass::wHarass->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && couldDamageLater(target, e->get_delay() + 0.5, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
 			const auto& couldUseQ = (canUseQ && qCanBeCasted(target));
 

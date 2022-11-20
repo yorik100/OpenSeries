@@ -214,7 +214,7 @@ namespace xerath {
 
 	bool isMoving(const game_object_script& target)
 	{
-		return target->get_path_controller() && !target->get_path_controller()->is_dashing() && target->get_path_controller()->get_path_count() > 1;
+		return target->get_path_controller() && !target->get_path_controller()->is_dashing() && target->is_moving();
 	}
 
 	float timeBeforeWHits(const game_object_script& target)
@@ -525,7 +525,7 @@ namespace xerath {
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && aliveWhenLanding && (!willGetHitByE(target) || !isMoving(target)) && wTime >= timeToHit && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit + 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
@@ -1210,10 +1210,10 @@ namespace xerath {
 			const auto& trueELandingTime = getTimeToHit(ep.input, ep, false);
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible && !qBuff;
-			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && !qBuff;
+			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady;
 			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
@@ -1275,10 +1275,10 @@ namespace xerath {
 			if (!isValidTarget) continue;
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::impossible && !qBuff;
-			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady && qDummyPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && !qBuff;
+			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
+			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady;
 			const auto& canReleaseQ = settings::harass::qHarass->get_bool() && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
