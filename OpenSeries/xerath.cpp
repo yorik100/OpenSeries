@@ -1369,7 +1369,7 @@ namespace xerath {
 			}
 
 			// Check if cast position isn't too far enough
-			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > XERATH_MAX_Q_RANGE) continue;
+			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > std::max(XERATH_MAX_Q_RANGE, ePredictionList[obj.owner->get_handle()].input.range)) continue;
 
 			// Gathering enough data to cast on particles
 			const auto& distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius());
@@ -1379,7 +1379,7 @@ namespace xerath {
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
 			const auto& qCanDodge = obj.owner->get_move_speed() * ((q->get_delay() - particleTime) + getPing()) > q->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
-			const auto& canE = particleE && !eCanDodge && myhero->get_position().distance(obj.castingPos) <= qPredictionList[obj.owner->get_handle()].input.range && collisionList.empty();
+			const auto& canE = particleE && !eCanDodge && myhero->get_position().distance(obj.castingPos) <= ePredictionList[obj.owner->get_handle()].input.range && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 			const auto& canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(1500, 750, 1.5) - 50;
 
