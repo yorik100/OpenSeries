@@ -1379,7 +1379,7 @@ namespace xerath {
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
 			const auto& qCanDodge = obj.owner->get_move_speed() * ((q->get_delay() - particleTime) + getPing()) > q->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
-			const auto& canE = particleE && !eCanDodge && collisionList.empty();
+			const auto& canE = particleE && !eCanDodge && myhero->get_position().distance(obj.castingPos) <= q->range() + obj.owner->get_bounding_radius() && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 			const auto& canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(1500, 750, 1.5) - 50;
 
