@@ -1751,7 +1751,9 @@ namespace brand {
 					}
 					else
 					{
-						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "%.0f", std::round(getTotalHP(target) - rDamageList[target->get_handle()].damage));
+						const auto& damagePercent = (rDamageList[target->get_handle()].damage / target->get_health());
+						const int& red = std::round(damagePercent * 255);
+						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, red, 255 - red, 255 - red), 20, "%.0f (%i%%)", std::round(getTotalHP(target) - rDamageList[target->get_handle()].damage), (int)std::round(damagePercent * 100));
 					}
 				}
 			}
