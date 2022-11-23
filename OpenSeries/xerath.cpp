@@ -98,7 +98,8 @@ namespace xerath {
 		buff_hash("EkkoR"),
 		buff_hash("FizzE"),
 		buff_hash("FizzETwo"),
-		buff_hash("XayahR")
+		buff_hash("XayahR"),
+		buff_hash("VladimirSanguinePool")
 	};
 
 	script_spell* q;
