@@ -1109,7 +1109,6 @@ namespace xerath {
 			targets.end());
 		std::vector<game_object_script> dummyList;
 		const auto size = targets.size();
-		auto currentPrio = targets.size();
 		for (int i = 0; i < size; i++)
 		{
 			const auto& tsTarget = target_selector->get_target(targets, damage_type::magical);
