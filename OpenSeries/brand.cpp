@@ -1102,7 +1102,7 @@ namespace brand {
 				{
 					for (const auto& target : dummyList)
 					{
-						if (target->get_handle() == x->get_handle())
+						if (!target || !target->is_valid() || target->get_handle() == x->get_handle())
 							return true;
 					}
 					return false;
