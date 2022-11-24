@@ -1081,34 +1081,35 @@ namespace brand {
 	{
 		// Sort targets based off TS prio
 		targets = entitylist->get_enemy_heroes();
-		//std::sort(targets.begin(), targets.end(), [](game_object_script a, game_object_script b) {
-		//	const auto& getMRPa = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
-		//	const auto& getMRPb = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
-		//	const auto& effectiveHPa = getTotalHP(a) / getMRPa;
-		//	const auto& effectiveHPb = getTotalHP(b) / getMRPb;
-		//	return effectiveHPa < effectiveHPb || (target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle());
-		//	}
-		//);
+		targets.erase(std::remove_if(targets.begin(), targets.end(), [](const game_object_script& x)
+			{
+				return !x || !x->is_valid();
+			}
+		),
+			targets.end());
 		std::vector<game_object_script> dummyList;
 		const auto size = targets.size();
 		auto currentPrio = targets.size();
 		for (int i = 0; i < size; i++)
 		{
 			const auto& tsTarget = target_selector->get_target(targets, damage_type::magical);
-			dummyList.push_back(tsTarget);
-			priorityList[tsTarget->get_handle()] = currentPrio;
-			currentPrio--;
-			targets.erase(std::remove_if(targets.begin(), targets.end(), [dummyList](const game_object_script& x)
-				{
-					for (const auto& target : dummyList)
+			if (tsTarget)
+			{
+				dummyList.push_back(tsTarget);
+				priorityList[tsTarget->get_handle()] = currentPrio;
+				currentPrio--;
+				targets.erase(std::remove_if(targets.begin(), targets.end(), [dummyList](const game_object_script& x)
 					{
-						if (!target || !target->is_valid() || target->get_handle() == x->get_handle())
-							return true;
+						for (const auto& target : dummyList)
+						{
+							if (target && x && target->get_handle() == x->get_handle())
+								return true;
+						}
+						return false;
 					}
-					return false;
-				}
-			),
-				targets.end());
+				),
+					targets.end());
+			}
 		}
 		std::sort(dummyList.begin(), dummyList.end(), [](game_object_script a, game_object_script b) {
 			return target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle();
