@@ -565,8 +565,9 @@ namespace xerath {
 
 		const auto& timeToHit = getTimeToHit(p.input, p, true);
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
+		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, eDamageList[target->get_handle()])) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
 			return true;
 		}
