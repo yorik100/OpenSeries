@@ -596,6 +596,7 @@ namespace xerath {
 	prediction_output getQShortPred(const game_object_script& target)
 	{
 		// Get Q short pred
+		q->set_range(700 + target->get_bounding_radius());
 		const prediction_output& p = q->get_prediction(target);
 		return p;
 	}
@@ -642,6 +643,7 @@ namespace xerath {
 	prediction_output getQDummyPred(const game_object_script& target)
 	{
 		// Get Q dummy pred
+		qCharge->set_range(1450 + target->get_bounding_radius());
 		const prediction_output& p = qCharge->get_prediction(target);
 		return p;
 	}
@@ -656,6 +658,7 @@ namespace xerath {
 				q2->set_range(q2->range() - std::min(250.f, (target->get_move_speed() * (q2->get_delay() + getPing()))));
 			q2->set_range(q2->range() - 50);
 		}
+		q2->set_range(q2->range() - 50 + target->get_bounding_radius());
 		const prediction_output& p = q2->get_prediction(target);
 		q2->set_range(tempRange);
 		return p;
@@ -1233,7 +1236,7 @@ namespace xerath {
 				{
 					if (castQLong(target, "combo")) return;
 				}
-				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= 1500)
+				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= 1450 + target->get_bounding_radius())
 				{
 					qTarget = target;
 					hasCasted = true;
