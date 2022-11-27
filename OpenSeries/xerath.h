@@ -35,9 +35,12 @@ namespace xerath
 	inline prediction_output getQ2Pred(const game_object_script& target);
 	inline float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted);
 	inline float getQDamage(const game_object_script& target);
+	inline float getQDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);
 	inline float getWDamage(const game_object_script& target);
 	inline float getW2Damage(const game_object_script& target);
+	inline float getW2DamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);
 	inline float getEDamage(const game_object_script& target);
+	inline float getEDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);
 	inline float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot);
 	inline void draw_dmg_rl(const game_object_script& target, const float damage, unsigned long color);
 	inline void draw_dmg_lr(const game_object_script& target, const float damage, unsigned long color);

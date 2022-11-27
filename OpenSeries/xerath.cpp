@@ -151,6 +151,7 @@ namespace xerath {
 			TreeEntry* manualRKey;
 			TreeEntry* rRange;
 			TreeEntry* manualREnable;
+			TreeEntry* avoidShields;
 			TreeEntry* eStun;
 			TreeEntry* wStun;
 			TreeEntry* eDash;
@@ -781,6 +782,17 @@ namespace xerath {
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false);
 	}
 
+	float getQDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot)
+	{
+		// Get Q damage
+		const auto& spell = myhero->get_spell(spellslot::q);
+		if (spell->level() == 0) return 0;
+		if (spell->cooldown() > 0) return 0;
+		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
+		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
+	}
+
 	float getWDamage(const game_object_script& target)
 	{
 		// Get W normal damage
@@ -803,6 +815,17 @@ namespace xerath {
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
 	}
 
+	float getW2DamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot)
+	{
+		// Get W empowered damage
+		const auto& spell = myhero->get_spell(spellslot::w);
+		if (spell->level() == 0) return 0;
+		if (spell->cooldown() > 0) return 0;
+		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
+		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
+	}
+
 	float getEDamage(const game_object_script& target)
 	{
 		// Get E damage
@@ -812,6 +835,17 @@ namespace xerath {
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
+	}
+
+	float getEDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot)
+	{
+		// Get E damage
+		const auto& spell = myhero->get_spell(spellslot::e);
+		if (spell->level() == 0) return 0;
+		if (spell->cooldown() > 0) return 0;
+		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
+		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
 	}
 
 	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot)
@@ -1113,7 +1147,6 @@ namespace xerath {
 			targets.end());
 		std::vector<game_object_script> dummyList;
 		const auto size = targets.size();
-		auto currentPrio = targets.size();
 		for (int i = 0; i < size; i++)
 		{
 			const auto& tsTarget = target_selector->get_target(targets, damage_type::magical);
@@ -1132,6 +1165,49 @@ namespace xerath {
 				),
 					targets.end());
 			}
+		}
+		if (settings::automatic::avoidShields->get_bool())
+		{
+			std::sort(dummyList.rbegin(), dummyList.rend(), [](game_object_script a, game_object_script b) {
+				float shieldValueA = (a->get_magical_shield() + a->get_all_shield()) * 2;
+				if (shieldValueA == 0)
+					return false;
+				float damageA = 0;
+				bool firstDamage = false;
+				int shots = 0;
+				if (isQReady)
+					shots++;
+				if (isWReady)
+					shots++;
+				if (isEReady)
+					shots++;
+				if (isQReady)
+				{
+					damageA += getQDamageAlternative(a, --shots, getTotalHP(a), true);
+					firstDamage = false;
+				}
+				if (isWReady)
+				{
+					damageA += getW2DamageAlternative(a, --shots, getTotalHP(a) - damageA, firstDamage);
+					firstDamage = false;
+				}
+				if (isEReady)
+				{
+					damageA += getEDamageAlternative(a, 0, getTotalHP(a) - damageA, firstDamage);
+					firstDamage = false;
+				}
+				if (ultBuff)
+				{
+					damageA += getRDamage(a, 0, getTotalHP(a) - damageA, true);
+				}
+				float resistanceA = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
+				float resistanceB = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
+				float shieldValueB = (b->get_magical_shield() + b->get_all_shield()) * 2;
+				float effectiveShieldA = shieldValueA / resistanceA;
+				float effectiveShieldB = shieldValueB / resistanceB;
+				return damageA < shieldValueA && effectiveShieldA > effectiveShieldB;
+				}
+			);
 		}
 		std::sort(dummyList.begin(), dummyList.end(), [](game_object_script a, game_object_script b) {
 			return target_selector->get_selected_target() && target_selector->get_selected_target()->get_handle() == a->get_handle();
@@ -1644,6 +1720,7 @@ namespace xerath {
 		settings::automatic::rRange = miscTab->add_slider("open.xerath.misc.manualrrange", "Ult near mouse range", 0, 0, 1500);
 		settings::automatic::rRange->set_tooltip("Set to 0 to disable near mouse feature");
 		settings::automatic::manualREnable = miscTab->add_checkbox("open.xerath.misc.manualrenable", "Start channeling R with manual R key", false);
+		settings::automatic::avoidShields = miscTab->add_checkbox("open.xerath.misc.avoidshields", "Try to avoid shields", true);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
 		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.edash", "Auto E on dash", true);
