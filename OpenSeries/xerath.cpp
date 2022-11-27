@@ -1169,7 +1169,7 @@ namespace xerath {
 		if (settings::automatic::avoidShields->get_bool())
 		{
 			std::sort(dummyList.rbegin(), dummyList.rend(), [](game_object_script a, game_object_script b) {
-				float shieldValueA = (a->get_magical_shield() + a->get_all_shield()) * 2;
+				const float shieldValueA = (a->get_magical_shield() + a->get_all_shield()) * 2;
 				if (shieldValueA == 0)
 					return false;
 				float damageA = 0;
@@ -1200,11 +1200,11 @@ namespace xerath {
 				{
 					damageA += getRDamage(a, 0, getTotalHP(a) - damageA, true);
 				}
-				float resistanceA = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
-				float resistanceB = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
-				float shieldValueB = (b->get_magical_shield() + b->get_all_shield()) * 2;
-				float effectiveShieldA = shieldValueA / resistanceA;
-				float effectiveShieldB = shieldValueB / resistanceB;
+				const float resistanceA = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
+				const float resistanceB = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
+				const float shieldValueB = (b->get_magical_shield() + b->get_all_shield()) * 2;
+				const float effectiveShieldA = shieldValueA / resistanceA;
+				const float effectiveShieldB = shieldValueB / resistanceB;
 				return damageA < shieldValueA && effectiveShieldA > effectiveShieldB;
 				}
 			);
