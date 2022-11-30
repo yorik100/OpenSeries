@@ -1175,30 +1175,36 @@ namespace xerath {
 				float damageA = 0;
 				bool firstDamage = false;
 				int shots = 0;
-				if (isQReady)
+				const auto& accountQ = isQReady || (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == 2320506602);
+				const auto& accountW = isWReady || timeBeforeWHits(a) < FLT_MAX;
+				const auto& accountE = isEReady || willGetHitByE(a);
+				const auto& accountR = ultBuff || willGetHitByR(a);
+				if (accountQ)
 					shots++;
-				if (isWReady)
+				if (accountW)
 					shots++;
-				if (isEReady)
+				if (accountE)
 					shots++;
-				if (isQReady)
+				if (accountR)
+					shots++;
+				if (accountQ)
 				{
-					damageA += getQDamageAlternative(a, --shots, getTotalHP(a), true);
+					damageA += getQDamageAlternative(a, --shots, getTotalHP(a) - damageA, firstDamage);
 					firstDamage = false;
 				}
-				if (isWReady)
+				if (accountW)
 				{
 					damageA += getW2DamageAlternative(a, --shots, getTotalHP(a) - damageA, firstDamage);
 					firstDamage = false;
 				}
-				if (isEReady)
+				if (accountE)
 				{
-					damageA += getEDamageAlternative(a, 0, getTotalHP(a) - damageA, firstDamage);
+					damageA += getEDamageAlternative(a, --shots, getTotalHP(a) - damageA, firstDamage);
 					firstDamage = false;
 				}
-				if (ultBuff)
+				if (accountR)
 				{
-					damageA += getRDamage(a, 0, getTotalHP(a) - damageA, true);
+					damageA += getRDamage(a, --shots, getTotalHP(a) - damageA, firstDamage);
 				}
 				const float resistanceA = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
 				const float resistanceB = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
