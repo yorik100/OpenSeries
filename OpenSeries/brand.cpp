@@ -174,6 +174,8 @@ namespace brand {
 	vector nexusPos;
 	vector urfCannon;
 
+	buff_instance_script elderBuff;
+
 	game_object_script spamETarget;
 
 	bool hasCasted = false;
@@ -504,7 +506,7 @@ namespace brand {
 			const auto& buff6 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffInfernal"));
 			const auto& buff7 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffHextech"));
 			const auto& buff8 = myhero->get_buff(buff_hash("srx_dragonsoulbuffhextech_cd"));
-			const auto& buff9 = myhero->get_buff(buff_hash("ElderDragonBuff"));
+			const auto& buff9 = elderBuff;
 			const auto& buff10 = target->get_buff(buff_hash("BrandAblaze"));
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
@@ -609,8 +611,12 @@ namespace brand {
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + spell->level() * 30 + myhero->get_total_ability_power() * 0.55;
-		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
-		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false, 1);
+		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false, 1);
+		const float& totalHP = getTotalHP(target);
+		if (elderBuff && (totalHP - totalDamage) / target->get_max_health() < 0.2)
+			totalDamage = totalHP;
+		return totalDamage;
 	}
 
 	float getWDamage(const game_object_script& target)
@@ -620,8 +626,12 @@ namespace brand {
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60;
-		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
-		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+		const float& totalHP = getTotalHP(target);
+		if (elderBuff && (totalHP - totalDamage) / target->get_max_health() < 0.2)
+			totalDamage = totalHP;
+		return totalDamage;
 	}
 
 	float getW2Damage(const game_object_script& target)
@@ -631,8 +641,12 @@ namespace brand {
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > 0) return 0;
 		const float& damage = (30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.25;
-		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
-		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
+		const float& totalHP = getTotalHP(target);
+		if (elderBuff && (totalHP - totalDamage) / target->get_max_health() < 0.2)
+			totalDamage = totalHP;
+		return totalDamage;
 	}
 
 	float getEDamage(const game_object_script& target)
@@ -642,8 +656,12 @@ namespace brand {
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > 0) return 0;
 		const float& damage = 45 + 25 * spell->level() + myhero->get_total_ability_power() * 0.45;
-		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
-		return damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
+		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
+		const float& totalHP = getTotalHP(target);
+		if (elderBuff && (totalHP - totalDamage) / target->get_max_health() < 0.2)
+			totalDamage = totalHP;
+		return totalDamage;
 	}
 
 	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot, const int passiveStacks)
@@ -653,14 +671,16 @@ namespace brand {
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > 0) return 0;
 		const float& damage = 100 * spell->level() + myhero->get_total_ability_power() * 0.25;
-		const auto& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
-		return damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
+		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
+		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
+		if (elderBuff && (predictedHealth - totalDamage) / target->get_max_health() < 0.2)
+			totalDamage = getTotalHP(target);
+		return totalDamage;
 	}
 
 	rDamageData getTotalRDamage(const game_object_script& target)
 	{
 		// Get total damage of R && returns damage, bounces needed to kill && if it kills
-		const auto& ElderBuff = myhero->get_buff(buff_hash("ElderDragonBuff"));
 		auto rDamage = 0.f;
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
@@ -672,7 +692,7 @@ namespace brand {
 			{
 				auto calculatedRDamage = getRDamage(target, i, totalHP - rDamage, isFirstShot, shotsToKill + 1);
 				auto calculatedRMaxDamage = getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + 1);
-				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < (ElderBuff ? 0.2 : 0))
+				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < 0)
 				{
 					rDamage = rDamage + calculatedRMaxDamage;
 					shotsToKill = shotsToKill + 1;
@@ -682,8 +702,6 @@ namespace brand {
 				shotsToKill = shotsToKill + 1;
 				isFirstShot = false;
 			}
-			if (((totalHP)-rDamage) / target->get_max_health() < 0.2 && ElderBuff)
-				rDamage = totalHP;
 			auto canBeKilled = rDamage >= totalHP;
 			rDamageData rDataStruct = { .damage = rDamage, .shots = shotsToKill, .kills = canBeKilled };
 			return rDataStruct;
@@ -973,10 +991,15 @@ namespace brand {
 
 		// Allows casting a spell for this update
 		hasCasted = false;
+
+		// Get ready spells
 		isQReady = myhero->get_spell_state(spellslot::q) == spell_state::Ready;
 		isWReady = myhero->get_spell_state(spellslot::w) == spell_state::Ready;
 		isEReady = myhero->get_spell_state(spellslot::e) == spell_state::Ready;
 		isRReady = myhero->get_spell_state(spellslot::r) == spell_state::Ready;
+
+		// Get buffs
+		elderBuff = myhero->get_buff(buff_hash("ElderDragonBuff"));
 
 		// Get pred & damage of spells && a bunch of useful stuff on every enemies so you don't need to do it multiple times per update
 		for (const auto& target : entitylist->get_enemy_heroes())
