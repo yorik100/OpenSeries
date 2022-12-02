@@ -548,7 +548,7 @@ namespace xerath {
 		const auto& timeToHit = w->get_delay() + getPing();
 		const auto& trueTimeToHit = w->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, wDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -569,7 +569,7 @@ namespace xerath {
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, eDamageList[target->get_handle()])) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
 			return true;
 		}
@@ -588,7 +588,7 @@ namespace xerath {
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage)) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
 			return true;
 		}

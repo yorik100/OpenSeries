@@ -414,7 +414,7 @@ namespace brand {
 		const auto& timeToHit = w->get_delay() + getPing();
 		const auto& trueTimeToHit = w->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.1, wDamageList[target->get_handle()]))
+		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit + 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -428,7 +428,7 @@ namespace brand {
 		// Cast E
 		if (hasCasted) return true;
 
-		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
+		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, e->get_delay() + 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding) {
 			e->cast(target);
 			return true;
@@ -443,7 +443,7 @@ namespace brand {
 
 		const auto& timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto& trueTimeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
-		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
+		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, trueTimeToHit + 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding) {
 			r->cast(target);
 			return true;
