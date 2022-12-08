@@ -1299,7 +1299,7 @@ namespace xerath {
 					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
 					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
-					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
+					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing || (!target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius());
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
 					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
@@ -1886,6 +1886,7 @@ namespace xerath {
 		for (const auto& target : entitylist->get_enemy_heroes())
 		{
 			if (!target->is_valid()) continue;
+
 			if (settings::draws::rKillList->get_bool() && customIsValid(target) && rDamageList[target->get_handle()].kills && (settings::draws::rKillListRangeIgnore->get_bool() || target->get_position().distance(myhero->get_position()) <= r->range()))
 			{
 				const auto& key = index++;
