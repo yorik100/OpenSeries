@@ -171,6 +171,7 @@ namespace xerath {
 		}
 		namespace ultimate {
 			TreeEntry* rImmobile;
+			TreeEntry* rCantDodge;
 			TreeEntry* rDash;
 			TreeEntry* rCast;
 			TreeEntry* rStasis;
@@ -1299,9 +1300,10 @@ namespace xerath {
 					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
 					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
-					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing || (!target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius());
+					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
+					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
-					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
+					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingCantDodge || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
 					hasCasted = true;
 					return;
@@ -1780,6 +1782,7 @@ namespace xerath {
 		settings::ultimate::rCast = ultTab->add_checkbox("open.xerath.ultimate.rcast", "Cast R2 on cast", true);
 		settings::ultimate::rDash = ultTab->add_checkbox("open.xerath.ultimate.rdash", "Cast R2 on dash", true);
 		settings::ultimate::rImmobile = ultTab->add_checkbox("open.xerath.ultimate.rimmobile", "Cast R2 on immobile", true);
+		settings::ultimate::rCantDodge = ultTab->add_checkbox("open.xerath.ultimate.rcantdodge", "Cast R2 on undodgeable", true);
 		settings::ultimate::rStasis = ultTab->add_checkbox("open.xerath.ultimate.rstasis", "Cast R2 on stasis", true);
 
 		// Misc
