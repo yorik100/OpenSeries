@@ -1362,7 +1362,11 @@ namespace xerath {
 			}
 
 			// E cast
-			if (canUseE && (ccTime - 0.3) < eLandingTime && castE(target, "combo")) return;
+			if (canUseE)
+			{
+				if ((ccTime - 0.3) < eLandingTime && castE(target, "combo")) return;
+				if (ePredictionList[target->get_handle()].hitchance > hit_chance::low && ccTime > 0 && ccTime < 2) return;
+			};
 
 			// W cast
 			if (canUseW)
@@ -1431,7 +1435,11 @@ namespace xerath {
 			}
 
 			// E cast
-			if (canUseE && (ccTime - 0.3) < eLandingTime && castE(target, "harass")) return;
+			if (canUseE)
+			{
+				if ((ccTime - 0.3) < eLandingTime && castE(target, "harass")) return;
+				if (ePredictionList[target->get_handle()].hitchance > hit_chance::low && ccTime > 0 && ccTime < 2) return;
+			};
 
 			// W cast
 			if (canUseW && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]))
