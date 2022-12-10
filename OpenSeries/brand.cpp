@@ -57,7 +57,7 @@ namespace brand {
 	std::unordered_map<uint32_t, float> stunTime;
 	std::unordered_map<uint32_t, float> guardianReviveTime;
 	std::unordered_map<uint32_t, float> godBuffTime;
-	std::unordered_map<uint32_t, float> noKillBuffTime;;
+	std::unordered_map<uint32_t, float> noKillBuffTime;
 	std::unordered_map<uint32_t, float> qDamageList;
 	std::unordered_map<uint32_t, float> wDamageList;
 	std::unordered_map<uint32_t, float> eDamageList;
@@ -807,6 +807,9 @@ namespace brand {
 
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
+
+		// Extra invulnerability checks
+		if (target->get_action_state() != (action_state)167772162) return false;
 
 		const auto& isCastingImmortalitySpell = target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 		const auto& isValid = !isCastingImmortalitySpell && (target->is_valid_target(range, from, invul) || isValidRecalling(target, range, from));
