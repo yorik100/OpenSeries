@@ -2178,12 +2178,12 @@ namespace xerath {
 
 		// Q
 		q = plugin_sdk->register_spell(spellslot::q, XERATH_MIN_Q_RANGE);
-		q->set_skillshot(0.6f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
+		q->set_skillshot(0.55f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q->set_spell_lock(false);
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, XERATH_W_RANGE);
-		w->set_skillshot(0.8f, 275.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(0.81f, 275.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
@@ -2193,17 +2193,17 @@ namespace xerath {
 
 		// R
 		r = plugin_sdk->register_spell(spellslot::r, XERATH_R_RANGE);
-		r->set_skillshot(0.6f, 200.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		r->set_skillshot(0.65f, 200.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		r->set_spell_lock(false);
 
 		// Q dummy
 		qCharge = plugin_sdk->register_spell(spellslot::q, XERATH_MAX_Q_RANGE);
-		qCharge->set_skillshot(0.5f, 70.f, 1250, {}, skillshot_type::skillshot_line);
+		qCharge->set_skillshot(0.52f, 70.f, 1250, {}, skillshot_type::skillshot_line);
 		qCharge->set_spell_lock(false);
 
 		// Q charged
 		q2 = plugin_sdk->register_spell(spellslot::q, XERATH_MIN_Q_RANGE);
-		q2->set_skillshot(0.5f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
+		q2->set_skillshot(0.52f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q2->set_spell_lock(false);
 
 
