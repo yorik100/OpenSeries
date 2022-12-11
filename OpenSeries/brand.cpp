@@ -808,8 +808,8 @@ namespace brand {
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
-		// Extra invulnerability checks
-		if ((int)target->get_action_state() == 167772162 && !target->is_targetable() && stunTime[target->get_handle()] < 0 && !target->get_active_spell()) return false;
+		// Extra invulnerability checks (hextech portal)
+		if ((int)target->get_action_state() == 167772162 && !target->is_targetable() && target->is_dashing() && !target->get_active_spell()) return false;
 
 		const auto& isCastingImmortalitySpell = target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 		const auto& isValid = !isCastingImmortalitySpell && (target->is_valid_target(range, from, invul) || isValidRecalling(target, range, from));
