@@ -858,6 +858,8 @@ namespace brand {
 		int count = 0;
 		for (const auto& enemy : entitylist->get_enemy_heroes())
 		{
+			if (!customIsValid(enemy)) continue;
+
 			if (enemy->get_handle() == target->get_handle() || godBuffTime[enemy->get_handle()] > 0) {
 				count++;
 				continue;
