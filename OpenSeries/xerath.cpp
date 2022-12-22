@@ -1333,7 +1333,7 @@ namespace xerath {
 			const auto& trueELandingTime = getTimeToHit(ep.input, ep, false);
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= 750 && !qBuff;
+			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() + 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (700 + target->get_bounding_radius()) && !qBuff;
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() + 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime + 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady;
@@ -1402,7 +1402,7 @@ namespace xerath {
 			if (!isValidTarget) continue;
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= 750 && !qBuff;
+			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (700 + target->get_bounding_radius()) && !qBuff;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady;
