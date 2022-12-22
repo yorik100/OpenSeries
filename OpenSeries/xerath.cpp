@@ -186,7 +186,7 @@ namespace xerath {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float XERATH_W_PARTICLE_TIME = 0.81f;
+	static constexpr float XERATH_W_PARTICLE_TIME = 0.825f;
 	static constexpr float XERATH_W_OUTER_RADIUS = 275.f;
 	static constexpr float XERATH_W_INNER_RADIUS = 100.f;
 	static constexpr float XERATH_R_PARTICLE_TIME = 0.65f;
