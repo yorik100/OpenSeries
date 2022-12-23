@@ -908,7 +908,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = isRReady;
+		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0);
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
