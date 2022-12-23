@@ -409,7 +409,7 @@ namespace xerath {
 		if (!target->is_ai_hero()) return true;
 		const auto& totalTime = time + getPing();
 		if (damage >= 0 && damage < 100) damage = 100;
-		if (godBuffTime[target->get_handle()] <= totalTime && (godBuffTime[target->get_handle()] <= totalTime || damage < getTotalHP(target)))
+		if (godBuffTime[target->get_handle()] <= totalTime && (noKillBuffTime[target->get_handle()] <= totalTime || damage < getTotalHP(target)))
 			return true;
 		return false;
 	}
