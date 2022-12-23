@@ -186,7 +186,7 @@ namespace xerath {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float XERATH_W_PARTICLE_TIME = 0.825f;
+	static constexpr float XERATH_W_PARTICLE_TIME = 0.8f;
 	static constexpr float XERATH_W_OUTER_RADIUS = 275.f;
 	static constexpr float XERATH_W_INNER_RADIUS = 100.f;
 	static constexpr float XERATH_R_PARTICLE_TIME = 0.65f;
@@ -608,6 +608,10 @@ namespace xerath {
 	{
 		// Get W pred
 		w->set_radius(XERATH_W_OUTER_RADIUS);
+
+		// Delay is randomly higher
+		w->set_delay(isMoving(target) ? 0.9 : XERATH_W_PARTICLE_TIME);
+
 		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
@@ -639,6 +643,10 @@ namespace xerath {
 	prediction_output getRPred(const game_object_script& target)
 	{
 		// Get R pred
+
+		// Delay is randomly higher
+		w->set_delay(isMoving(target) ? 0.7 : XERATH_R_PARTICLE_TIME);
+
 		const prediction_output& p = r->get_prediction(target);
 		return p;
 	}
