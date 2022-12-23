@@ -908,7 +908,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0);
+		const auto& hasUlt = isRReady;
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
@@ -1919,7 +1919,7 @@ namespace xerath {
 
 			// Draw stasis pred pos
 			auto stasisData = stasisInfo[target->get_handle()];
-			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd <= gametime->get_time())
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
 			{
 				draw_manager->add_circle(target->get_position(), target->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
 				auto castTime = stasisData.stasisEnd - stasisData.stasisStart;

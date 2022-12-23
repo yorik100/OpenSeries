@@ -1756,7 +1756,7 @@ namespace brand {
 
 			// Draw stasis pred pos
 			const auto& stasisData = stasisInfo[target->get_handle()];
-			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd <= gametime->get_time())
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
 			{
 				draw_manager->add_circle(target->get_position(), target->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
 				const auto& castTime = stasisData.stasisEnd - stasisData.stasisStart;
