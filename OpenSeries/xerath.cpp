@@ -688,7 +688,7 @@ namespace xerath {
 		// If target isn't moving then add extra 50 range to overcharge
 		const auto& distance = myhero->get_position().distance(target->get_position());
 
-		// Else add 50 extra range + extra range behind to avoid sidestepping by moving backwards
+		// Else add extra range behind to avoid sidestepping by moving backwards
 		return range > distance + std::min((int)std::round((target->get_move_speed() * q2->get_delay())), 250);
 	}
 
