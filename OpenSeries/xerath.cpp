@@ -522,8 +522,6 @@ namespace xerath {
 		// Cast Q charged
 		if (hasCasted) return true;
 
-		if (!isValidQ(target)) return false;
-
 		auto& p = q2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
