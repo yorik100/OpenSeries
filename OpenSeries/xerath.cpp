@@ -522,6 +522,8 @@ namespace xerath {
 		// Cast Q charged
 		if (hasCasted) return true;
 
+		if (!isValidQ(target)) return false;
+
 		auto& p = q2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -1369,11 +1371,11 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
+				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
 				{
 					if (castQLong(target, "combo")) return;
 				}
-				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
+				if (prediction->get_prediction(target, q2->get_delay() + getPing()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
 				{
 					qTarget = target;
 					hasCasted = true;
@@ -1442,11 +1444,11 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
+				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
 				{
 					if (castQLong(target, "harass")) return;
 				}
-				if (prediction->get_prediction(target, 0.5 + getPing()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + target->get_bounding_radius()))
+				if (prediction->get_prediction(target, q2->get_delay() + getPing()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + target->get_bounding_radius()))
 				{
 					qTarget = target;
 					hasCasted = true;
