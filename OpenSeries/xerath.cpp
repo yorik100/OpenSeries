@@ -689,7 +689,7 @@ namespace xerath {
 		const auto& distance = myhero->get_position().distance(target->get_position());
 
 		// Else add 50 extra range + extra range behind to avoid sidestepping by moving backwards
-		return range > distance + 50 + std::min((int)std::round((target->get_move_speed() * q2->get_delay())), 250);
+		return range > distance + std::min((int)std::round((target->get_move_speed() * q2->get_delay())), 250);
 	}
 
 	float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted)
