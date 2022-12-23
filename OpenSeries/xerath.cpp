@@ -1371,7 +1371,7 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
+				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
 				{
 					if (castQLong(target, "combo")) return;
 				}
@@ -1444,7 +1444,7 @@ namespace xerath {
 			// Charged Q recast
 			if (canReleaseQ)
 			{
-				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible)
+				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
 				{
 					if (castQLong(target, "harass")) return;
 				}
