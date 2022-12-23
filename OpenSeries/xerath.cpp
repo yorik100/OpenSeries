@@ -620,6 +620,10 @@ namespace xerath {
 	{
 		// Get W center pred
 		w->set_radius(XERATH_W_INNER_RADIUS);
+
+		// Delay is randomly higher
+		w->set_delay(isMoving(target) ? 0.9 : XERATH_W_PARTICLE_TIME);
+
 		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
