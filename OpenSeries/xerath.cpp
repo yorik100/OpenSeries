@@ -1128,7 +1128,7 @@ namespace xerath {
 			rDamageList[target->get_handle()] = getTotalRDamage(target);
 
 			// Remove guardian angel time if target finished revive
-			if (target->is_targetable())
+			if (!target->is_playing_animation(buff_hash("Death")))
 				guardianReviveTime[target->get_handle()] = -1;
 
 			// Get every important buff times
@@ -2155,7 +2155,7 @@ namespace xerath {
 	void on_buff(game_object_script& sender, buff_instance_script& buff, const bool gain)
 	{
 		// Detect if someone is reviving from Guardian Angel
-		if (!gain && sender->is_valid() && !sender->is_targetable() && buff->get_hash_name() == buff_hash("willrevive") && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
+		if (!gain && sender->is_valid() && buff->get_hash_name() == buff_hash("willrevive") && sender->is_playing_animation(buff_hash("Death")) && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
 		{
 			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
 			return;
