@@ -160,7 +160,7 @@ namespace brand {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float BRAND_W_PARTICLE_TIME = 0.625f;
+	static constexpr float BRAND_W_PARTICLE_TIME = 0.65f;
 	static constexpr float BRAND_Q_RANGE = 1040;
 	static constexpr float BRAND_W_RANGE = 900;
 	static constexpr float BRAND_E_RANGE = 660;
@@ -187,6 +187,11 @@ namespace brand {
 	float last_tick = 0;
 	float attackOrderTime = 0;
 	float lastCast = 0;
+
+	bool isMoving(const game_object_script& target)
+	{
+		return target->get_path_controller() && !target->get_path_controller()->is_dashing() && target->is_moving();
+	}
 
 	float timeBeforeWHits(const game_object_script& target)
 	{
@@ -470,6 +475,7 @@ namespace brand {
 	prediction_output getWPred(const game_object_script& target)
 	{
 		// Get W pred
+		w->set_delay(isMoving(target) ? 0.95 : 0.9);
 		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
@@ -1950,7 +1956,7 @@ namespace brand {
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, BRAND_W_RANGE);
-		w->set_skillshot(0.875f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(0.9f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
