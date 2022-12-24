@@ -475,7 +475,10 @@ namespace brand {
 	prediction_output getWPred(const game_object_script& target)
 	{
 		// Get W pred
+
+		// Delay is randomly higher
 		w->set_delay(isMoving(target) ? 0.95 : 0.9);
+
 		const prediction_output& p = w->get_prediction(target);
 		return p;
 	}
