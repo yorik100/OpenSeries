@@ -1019,7 +1019,6 @@ namespace brand {
 
 			qPredictionList[target->get_handle()] = isQReady ? getQPred(target) : prediction_output {};
 			wPredictionList[target->get_handle()] = isWReady ? getWPred(target) : prediction_output {};
-			if (!target->is_visible()) continue;
 
 			stunTime[target->get_handle()] = target->get_immovibility_time();
 			qDamageList[target->get_handle()] = getQDamage(target);
@@ -1030,6 +1029,8 @@ namespace brand {
 			// Remove guardian angel time if target finished revive
 			if (!target->is_playing_animation(buff_hash("Death")))
 				guardianReviveTime[target->get_handle()] = -1;
+
+			if (!target->is_visible()) continue;
 
 			// Get every important buff times
 			buffList listOfNeededBuffs = combinedBuffChecks(target);
