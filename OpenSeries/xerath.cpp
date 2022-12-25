@@ -253,7 +253,7 @@ namespace xerath {
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
-			e->set_delay(- getPing() - 0.066);
+			e->set_delay(- getPing() - 0.1);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
@@ -1067,7 +1067,7 @@ namespace xerath {
 		// Getting rid of bad W particles
 		particleList.erase(std::remove_if(particleList.begin(), particleList.end(), [](const particleData& x)
 			{
-				return x.creationTime + XERATH_W_PARTICLE_TIME <= gametime->get_time();
+				return x.creationTime + 0.9 <= gametime->get_time();
 			}
 		),
 			particleList.end());
