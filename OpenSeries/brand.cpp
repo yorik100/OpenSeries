@@ -1970,7 +1970,7 @@ namespace brand {
 
 		// R
 		r = plugin_sdk->register_spell(spellslot::r, BRAND_R_RANGE);
-		r->set_skillshot(0.25f, 60.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		r->set_skillshot(0.f, 60.f, FLT_MAX, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
 		r->set_spell_lock(false);
 
 		// Get enemy Nexus pos
