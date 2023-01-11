@@ -1026,7 +1026,7 @@ namespace xerath {
 	bool isRecalling(const game_object_script& target)
 	{
 		// Get if target is recalling
-		const auto& isRecalling = target->is_teleporting() && (target->get_teleport_state() == "recall" || target->get_teleport_state() == "SuperRecall" || target->get_teleport_state() == "SummonerTeleport");
+		const auto& isRecalling = target->is_teleporting() && (target->is_teleporting() || target->get_teleport_state() == "recall" || target->get_teleport_state() == "SuperRecall" || target->get_teleport_state() == "SummonerTeleport");
 		return isRecalling;
 	}
 
