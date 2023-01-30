@@ -1593,7 +1593,7 @@ namespace xerath {
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
-			const auto& dashing = target->is_dashing();
+			const auto& dashing = target->is_dashing() || qPredictionList[target->get_handle()].hitchance == hit_chance::dashing || wPredictionList[target->get_handle()].hitchance == hit_chance::dashing || w2PredictionList[target->get_handle()].hitchance == hit_chance::dashing || ePredictionList[target->get_handle()].hitchance == hit_chance::dashing;
 			const auto& ccTime = stunTime[target->get_handle()];
 			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
