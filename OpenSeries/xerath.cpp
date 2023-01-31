@@ -93,13 +93,14 @@ namespace xerath {
 	};
 
 	static std::unordered_set immuneSpells = {
-		buff_hash("EvelynnR"),
-		buff_hash("ZedR"),
-		buff_hash("EkkoR"),
-		buff_hash("FizzE"),
-		buff_hash("FizzETwo"),
-		buff_hash("XayahR"),
-		buff_hash("VladimirSanguinePool")
+		spell_hash("EvelynnR"),
+		spell_hash("ZedR"),
+		spell_hash("EkkoR"),
+		spell_hash("FizzE"),
+		spell_hash("FizzETwo"),
+		spell_hash("FizzEBuffer"),
+		spell_hash("XayahR"),
+		spell_hash("VladimirSanguinePool")
 	};
 
 	script_spell* q;
@@ -1046,7 +1047,7 @@ namespace xerath {
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
-		const auto& isCastingImmortalitySpell = ((target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash())) || target->has_buff(buff_hash("AkshanE2")));
+		const auto& isCastingImmortalitySpell = ((target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash()))) || target->has_buff(buff_hash("AkshanE2"));
 		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()) || isValidRecalling(target, range, from));
 		return isValid;
 	}

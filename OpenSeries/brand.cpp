@@ -87,13 +87,14 @@ namespace brand {
 	};
 
 	static std::unordered_set immuneSpells = {
-		buff_hash("EvelynnR"),
-		buff_hash("ZedR"),
-		buff_hash("EkkoR"),
-		buff_hash("FizzE"),
-		buff_hash("FizzETwo"),
-		buff_hash("XayahR"),
-		buff_hash("VladimirSanguinePool")
+		spell_hash("EvelynnR"),
+		spell_hash("ZedR"),
+		spell_hash("EkkoR"),
+		spell_hash("FizzE"),
+		spell_hash("FizzETwo"),
+		spell_hash("FizzEBuffer"),
+		spell_hash("XayahR"),
+		spell_hash("VladimirSanguinePool")
 	};
 
 	game_object_script bestETarget;
