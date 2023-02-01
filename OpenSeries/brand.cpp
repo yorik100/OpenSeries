@@ -161,7 +161,7 @@ namespace brand {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float BRAND_W_PARTICLE_TIME = 0.625f;
+	static constexpr float BRAND_W_PARTICLE_TIME = 0.6f;
 	static constexpr float BRAND_Q_RANGE = 1025;
 	static constexpr float BRAND_W_RANGE = 900;
 	static constexpr float BRAND_E_RANGE = 660;
@@ -1962,7 +1962,7 @@ namespace brand {
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, BRAND_W_RANGE);
-		w->set_skillshot(0.9f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(0.85f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
