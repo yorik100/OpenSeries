@@ -161,7 +161,7 @@ namespace brand {
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
-	static constexpr float BRAND_W_PARTICLE_TIME = 0.65f;
+	static constexpr float BRAND_W_PARTICLE_TIME = 0.625f;
 	static constexpr float BRAND_Q_RANGE = 1025;
 	static constexpr float BRAND_W_RANGE = 900;
 	static constexpr float BRAND_E_RANGE = 660;
@@ -1756,6 +1756,7 @@ namespace brand {
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
 				draw_manager->add_circle(particle.particle->get_position(), w->get_radius(), MAKE_COLOR(255, 0, 0, 255), 2);
+				draw_manager->add_filled_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 64));
 				draw_manager->add_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 255), 2);
 			}
 		}
@@ -1991,7 +1992,7 @@ namespace brand {
 
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update);
-		event_handler<events::on_draw>::add_callback(on_draw);
+		event_handler<events::on_env_draw>::add_callback(on_draw);
 		event_handler<events::on_create_object>::add_callback(on_create);
 		event_handler<events::on_delete_object>::add_callback(on_delete);
 		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
@@ -2005,7 +2006,7 @@ namespace brand {
 	{
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
-		event_handler< events::on_draw >::remove_handler(on_draw);
+		event_handler< events::on_env_draw >::remove_handler(on_draw);
 		event_handler< events::on_create_object >::remove_handler(on_create);
 		event_handler< events::on_delete_object >::remove_handler(on_delete);
 		event_handler< events::on_buff_gain >::remove_handler(on_buff_gain);

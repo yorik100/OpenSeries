@@ -1068,14 +1068,14 @@ namespace xerath {
 		// Getting rid of bad W particles
 		particleList.erase(std::remove_if(particleList.begin(), particleList.end(), [](const particleData& x)
 			{
-				return x.creationTime + 0.9 <= gametime->get_time();
+				return x.creationTime + XERATH_W_PARTICLE_TIME <= gametime->get_time();
 			}
 		),
 			particleList.end());
 		// Getting rid of bad R particles
 		ultParticleList.erase(std::remove_if(ultParticleList.begin(), ultParticleList.end(), [](const particleData& x)
 			{
-				return x.creationTime + 0.7 <= gametime->get_time();
+				return x.creationTime + XERATH_R_PARTICLE_TIME <= gametime->get_time();
 			}
 		),
 			ultParticleList.end());
@@ -1903,6 +1903,7 @@ namespace xerath {
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
 				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS, MAKE_COLOR(0, 0, 255, 255), 2);
+				draw_manager->add_filled_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 64));
 				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 255), 2);
 			}
 		}
@@ -2244,7 +2245,7 @@ namespace xerath {
 
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update);
-		event_handler<events::on_draw>::add_callback(on_draw);
+		event_handler<events::on_env_draw>::add_callback(on_draw);
 		event_handler<events::on_create_object>::add_callback(on_create);
 		event_handler<events::on_delete_object>::add_callback(on_delete);
 		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
@@ -2258,7 +2259,7 @@ namespace xerath {
 	{
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
-		event_handler< events::on_draw >::remove_handler(on_draw);
+		event_handler< events::on_env_draw >::remove_handler(on_draw);
 		event_handler< events::on_create_object >::remove_handler(on_create);
 		event_handler< events::on_delete_object >::remove_handler(on_delete);
 		event_handler< events::on_buff_gain >::remove_handler(on_buff_gain);
