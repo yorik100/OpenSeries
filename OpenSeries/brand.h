@@ -52,6 +52,7 @@ namespace brand
 	inline void createMenu();
 	inline void on_update();
 	inline void on_draw();
+	inline void on_draw_real();
 	inline void on_create(const game_object_script obj);
 	inline void on_delete(const game_object_script obj);
 	inline void on_buff(game_object_script& sender, buff_instance_script& buff, const bool gain);

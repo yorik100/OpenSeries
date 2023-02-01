@@ -1902,8 +1902,60 @@ namespace xerath {
 		// Draw W on ground
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
-				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS, MAKE_COLOR(0, 0, 255, 255), 2);
 				draw_manager->add_filled_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 64));
+			}
+		}
+
+		// Draw R on ground
+		if (settings::draws::rRadius->get_bool())
+		{
+			for (const auto& particle : ultParticleList) {
+				draw_manager->add_filled_circle(particle.particle->get_position(), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 64));
+			}
+		}
+
+		// Draw misc
+		int index = 0;
+		for (const auto& target : entitylist->get_enemy_heroes())
+		{
+
+			// Draw stasis pred pos
+			auto stasisData = stasisInfo[target->get_handle()];
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
+			{
+				auto castTime = stasisData.stasisEnd - stasisData.stasisStart;
+				draw_manager->add_filled_circle(target->get_position(), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), MAKE_COLOR(255, 127, 0, 64));
+			}
+		}
+
+		// Draw particle pred positions
+		if (settings::draws::particlePos->get_bool())
+		{
+			for (const auto& obj : particlePredList)
+			{
+				if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
+
+				draw_manager->add_filled_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 0, 255, 64));
+			}
+		}
+
+		// Target indicators management
+		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
+		{
+			draw_manager->add_filled_circle(qTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + qTarget->get_bounding_radius())), MAKE_COLOR(255, 127, 0, 64));
+		}
+		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
+		{
+			draw_manager->add_filled_circle(rTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + rTarget->get_bounding_radius())), MAKE_COLOR(255, 0, 0, 64));
+		}
+	}
+
+	void on_draw_real()
+	{
+		// Draw W on ground
+		if (settings::draws::wRadius->get_bool()) {
+			for (const auto& particle : particleList) {
+				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS, MAKE_COLOR(0, 0, 255, 255), 2);
 				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 255), 2);
 			}
 		}
@@ -1926,7 +1978,7 @@ namespace xerath {
 			if (settings::draws::rKillList->get_bool() && customIsValid(target) && rDamageList[target->get_handle()].kills && (settings::draws::rKillListRangeIgnore->get_bool() || target->get_position().distance(myhero->get_position()) <= r->range()))
 			{
 				const auto& key = index++;
-				const auto& position = vector(1350.f + settings::draws::killListXOffset->get_int(), 80.f + settings::draws::killListYOffset->get_int() + (key*50));
+				const auto& position = vector(1350.f + settings::draws::killListXOffset->get_int(), 80.f + settings::draws::killListYOffset->get_int() + (key * 50));
 				draw_manager->add_text_on_screen(position, MAKE_COLOR(255, 0, 0, 255), 22, "%s is killable in %i %s", target->get_model_cstr(), rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "shots" : "shot");
 			}
 
@@ -2246,6 +2298,7 @@ namespace xerath {
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update);
 		event_handler<events::on_env_draw>::add_callback(on_draw);
+		event_handler<events::on_draw>::add_callback(on_draw_real);
 		event_handler<events::on_create_object>::add_callback(on_create);
 		event_handler<events::on_delete_object>::add_callback(on_delete);
 		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
@@ -2260,6 +2313,7 @@ namespace xerath {
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
 		event_handler< events::on_env_draw >::remove_handler(on_draw);
+		event_handler< events::on_draw >::remove_handler(on_draw_real);
 		event_handler< events::on_create_object >::remove_handler(on_create);
 		event_handler< events::on_delete_object >::remove_handler(on_delete);
 		event_handler< events::on_buff_gain >::remove_handler(on_buff_gain);

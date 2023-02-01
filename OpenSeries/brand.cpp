@@ -1752,11 +1752,46 @@ namespace brand {
 
 		// Misc
 
+		// Draw misc
+		for (const auto& target : entitylist->get_enemy_heroes())
+		{
+			if (!target->is_valid()) continue;
+
+			// Draw stasis pred pos
+			const auto& stasisData = stasisInfo[target->get_handle()];
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
+			{
+				const auto& castTime = stasisData.stasisEnd - stasisData.stasisStart;
+				draw_manager->add_filled_circle(target->get_position(), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), MAKE_COLOR(255, 127, 0, 64));
+			}
+		}
+
+		// Draw particle pred positions
+		if (settings::draws::particlePos->get_bool())
+		{
+			for (const auto& obj : particlePredList)
+			{
+				if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
+
+				draw_manager->add_filled_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 0, 255, 64));
+			}
+		}
+
+		// Draw W on ground
+		if (settings::draws::wRadius->get_bool()) {
+			for (const auto& particle : particleList) {
+				draw_manager->add_filled_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 64));
+			}
+		}
+
+	}
+
+	void on_draw_real()
+	{
 		// Draw W on ground
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
 				draw_manager->add_circle(particle.particle->get_position(), w->get_radius(), MAKE_COLOR(255, 0, 0, 255), 2);
-				draw_manager->add_filled_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 64));
 				draw_manager->add_circle(particle.particle->get_position(), w->get_radius() * std::min(1.f, (1 / (BRAND_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 255), 2);
 			}
 		}
@@ -1814,7 +1849,6 @@ namespace brand {
 				draw_manager->add_image(obj.owner->get_square_icon_portrait(), { screenPos.x - sizeMod.x, screenPos.y - sizeMod.y }, size);
 			}
 		}
-
 	}
 	
 	void on_create(const game_object_script obj)
