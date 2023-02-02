@@ -354,7 +354,7 @@ namespace brand {
 	{
 		// Check if the time to hit target is bigger than their godmode buff remaining time or if we'll kill a target that we shouldn't try to kill
 		if (!target->is_ai_hero()) return true;
-		const auto& totalTime = time + getPing();
+		const auto& totalTime = std::max(0.f, time + getPing());
 		if (damage >= 0 && damage < 100) damage = 100;
 		if (godBuffTime[target->get_handle()] <= totalTime && (noKillBuffTime[target->get_handle()] <= totalTime || damage < getTotalHP(target)))
 			return true;
@@ -1178,7 +1178,7 @@ namespace brand {
 			const auto& dist = target->get_position().distance(myhero->get_position());
 			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, trueQLandingTime - 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() - 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
-			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, e->get_delay() - 0.5, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
+			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
 			const auto& rRange = settings::combo::rComboKills->get_bool() && settings::combo::rComboMinionBounce->get_bool() ? 1350 : BRAND_R_RANGE;
 			const auto& canUseR = settings::combo::rCombo->get_bool() && couldDamageLater(target, r->get_delay() - 0.5, rDamageList[target->get_handle()].damage) && isRReady && dist <= rRange && target->is_visible();
 			const auto& couldUseQ = (canUseQ && qCanBeCasted(target));
@@ -1273,7 +1273,7 @@ namespace brand {
 			const auto& dist = target->get_position().distance(myhero->get_position());
 			const auto& canUseQ = settings::harass::qHarass->get_bool() && couldDamageLater(target, q->get_delay() - 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && couldDamageLater(target, w->get_delay() - 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
-			const auto& canUseE = settings::harass::eHarass->get_bool() && couldDamageLater(target, e->get_delay() - 0.5, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
+			const auto& canUseE = settings::harass::eHarass->get_bool() && couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && isEReady && (dist <= BRAND_E_RANGE || (settings::combo::eExtraCombo->get_bool() ? bestETarget : nullptr)) && target->is_visible();
 			const auto& couldUseQ = (canUseQ && qCanBeCasted(target));
 
 			// If no spells can be used on that target then go to next target
@@ -1996,7 +1996,7 @@ namespace brand {
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, BRAND_W_RANGE);
-		w->set_skillshot(0.85f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(0.95f, 260.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
@@ -2027,6 +2027,7 @@ namespace brand {
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update);
 		event_handler<events::on_env_draw>::add_callback(on_draw);
+		event_handler<events::on_draw>::add_callback(on_draw_real);
 		event_handler<events::on_create_object>::add_callback(on_create);
 		event_handler<events::on_delete_object>::add_callback(on_delete);
 		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
@@ -2041,6 +2042,7 @@ namespace brand {
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
 		event_handler< events::on_env_draw >::remove_handler(on_draw);
+		event_handler< events::on_draw >::remove_handler(on_draw_real);
 		event_handler< events::on_create_object >::remove_handler(on_create);
 		event_handler< events::on_delete_object >::remove_handler(on_delete);
 		event_handler< events::on_buff_gain >::remove_handler(on_buff_gain);

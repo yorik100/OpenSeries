@@ -408,7 +408,7 @@ namespace xerath {
 	{
 		// Check if the time to hit target is bigger than their godmode buff remaining time or if we'll kill a target that we shouldn't try to kill
 		if (!target->is_ai_hero()) return true;
-		const auto& totalTime = time + getPing();
+		const auto& totalTime = std::max(0.f, time + getPing());
 		if (damage >= 0 && damage < 100) damage = 100;
 		if (godBuffTime[target->get_handle()] <= totalTime && (noKillBuffTime[target->get_handle()] <= totalTime || damage < getTotalHP(target)))
 			return true;
