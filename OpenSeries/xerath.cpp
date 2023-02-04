@@ -103,6 +103,11 @@ namespace xerath {
 		spell_hash("VladimirSanguinePool")
 	};
 
+	static std::unordered_set ignoreSpells = {
+		spell_hash("NunuW"),
+		spell_hash("SionR")
+	};
+
 	script_spell* q;
 	script_spell* w;
 	script_spell* e;
@@ -1323,7 +1328,7 @@ namespace xerath {
 					const auto& manualKey = settings::automatic::manualRKey->get_bool();
 					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
+					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
 					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
@@ -1600,7 +1605,7 @@ namespace xerath {
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
 			const auto& dashingCast = dashing && (dashE || dashW || dashQ);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ) && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW || stasisQ);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;

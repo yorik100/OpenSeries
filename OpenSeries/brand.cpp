@@ -97,6 +97,11 @@ namespace brand {
 		spell_hash("VladimirSanguinePool")
 	};
 
+	static std::unordered_set ignoreSpells = {
+		spell_hash("NunuW"),
+		spell_hash("SionR")
+	};
+
 	game_object_script bestETarget;
 
 	script_spell* q;
@@ -1414,7 +1419,7 @@ namespace brand {
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW) && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
