@@ -1885,12 +1885,6 @@ namespace xerath {
 			draw_manager->add_circle(myhero->get_position(), XERATH_R_RANGE, MAKE_COLOR(255, 127, 0, alpha), 2);
 		}
 
-		// Minimap R range
-		if (settings::draws::spellRanges::rMinimapRange->get_bool() && isRReady)
-		{
-			draw_manager->draw_circle_on_minimap(myhero->get_position(), XERATH_R_RANGE, MAKE_COLOR(255, 127, 0, 255), 2);
-		}
-
 		// Near mouse R range
 		if (settings::draws::spellRanges::rNearMouseRange->get_bool() && settings::automatic::rRange->get_int() > 0 && ultBuff)
 		{
@@ -1952,6 +1946,12 @@ namespace xerath {
 
 	void on_draw_real()
 	{
+		// Minimap R range
+		if (settings::draws::spellRanges::rMinimapRange->get_bool() && isRReady)
+		{
+			draw_manager->draw_circle_on_minimap(myhero->get_position(), XERATH_R_RANGE, MAKE_COLOR(255, 127, 0, 255), 2);
+		}
+
 		// Draw W on ground
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
