@@ -1053,7 +1053,7 @@ namespace xerath {
 		if (isYuumiAttached(target)) return false;
 
 		const auto& isCastingImmortalitySpell = ((target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash()))) || target->has_buff(buff_hash("AkshanE2"));
-		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()) || isValidRecalling(target, range, from));
+		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
 		return isValid;
 	}
 
