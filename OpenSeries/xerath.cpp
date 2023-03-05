@@ -1121,7 +1121,7 @@ namespace xerath {
 			w2PredictionList[target->get_handle()] = isWReady ? getW2Pred(target) : prediction_output{};
 			ePredictionList[target->get_handle()] = isEReady ? getEPred(target) : prediction_output{};
 			if (ultBuff)
-				rPredictionList[target->get_handle()] = isRReady ? getRPred(target) : prediction_output{};
+				rPredictionList[target->get_handle()] = getRPred(target);
 			qDummyPredictionList[target->get_handle()] = isQReady ? getQDummyPred(target) : prediction_output{};
 			if (qBuff)
 				q2PredictionList[target->get_handle()] = isQReady ? getQ2Pred(target) : prediction_output{};
@@ -1309,7 +1309,7 @@ namespace xerath {
 
 			// Storing useful info
 			const auto& canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime - 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing()) < 2 - r->get_delay() && ultBuff;
+			const auto& canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing()) < 2 - r->get_delay() && ultBuff && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
 			const auto& rCombo = settings::combo::rCombo->get_bool() && orbwalker->combo_mode();
 
 			// If can't do anything on target, go next target
@@ -1332,7 +1332,7 @@ namespace xerath {
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
 					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
-					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingCantDodge || castingStasis || rCombo) && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible && (stasisDuration - getPing() + 0.2) < r->get_delay())
+					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingCantDodge || castingStasis || rCombo) && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
 					hasCasted = true;
 					return;

@@ -76,7 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Users\GAMERZ\AppData\Roaming\acb82ccbb24130f3633dd9f9906329a9\plugins\x86</OutDir>
+    <OutDir>C:\Users\Yorik\AppData\Roaming\d1fcee941d04bac5ea2922a1f8875ea2\plugins\x86</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
