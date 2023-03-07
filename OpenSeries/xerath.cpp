@@ -1380,7 +1380,7 @@ namespace xerath {
 				{
 					if (castQLong(target, "combo")) return;
 				}
-				if (prediction->get_prediction(target, q2->get_delay() + getPing()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
+				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
 				{
 					qTarget = target;
 					hasCasted = true;
@@ -1453,7 +1453,7 @@ namespace xerath {
 				{
 					if (castQLong(target, "harass")) return;
 				}
-				if (prediction->get_prediction(target, q2->get_delay() + getPing()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + target->get_bounding_radius()))
+				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + target->get_bounding_radius()))
 				{
 					qTarget = target;
 					hasCasted = true;
