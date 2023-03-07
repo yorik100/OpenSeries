@@ -1,6 +1,7 @@
 #include "brand.h"
 #include <unordered_set>
 #include <unordered_map>
+#include <array>
 
 namespace brand {
 
@@ -63,7 +64,8 @@ namespace brand {
 	std::unordered_map<uint32_t, float> eDamageList;
 	std::unordered_map<uint32_t, rDamageData> rDamageList;
 
-	static std::unordered_set godBuffList{
+	static constexpr uint32_t godBuffList[]
+	{
 		buff_hash("KayleR"),
 		buff_hash("TaricR"),
 		buff_hash("SivirE"),
@@ -74,19 +76,22 @@ namespace brand {
 		buff_hash("PantheonE")
 	};
 
-	static std::unordered_set noKillBuffList{
+	static constexpr uint32_t noKillBuffList[]
+	{
 		buff_hash("UndyingRage"),
 		buff_hash("ChronoShift")
 	};
 
-	static std::unordered_set stasisBuffList{
+	static constexpr uint32_t stasisBuffList[]
+	{
 		buff_hash("ChronoRevive"),
 		buff_hash("BardRStasis"),
 		buff_hash("ZhonyasRingShield"),
 		buff_hash("LissandraRSelf")
 	};
 
-	static std::unordered_set immuneSpells = {
+	static constexpr uint32_t immuneSpells[]
+	{
 		spell_hash("EvelynnR"),
 		spell_hash("ZedR"),
 		spell_hash("EkkoR"),
@@ -97,7 +102,8 @@ namespace brand {
 		spell_hash("VladimirSanguinePool")
 	};
 
-	static std::unordered_set ignoreSpells = {
+	static constexpr uint32_t ignoreSpells[]
+	{
 		spell_hash("NunuW"),
 		spell_hash("SionR")
 	};
@@ -240,7 +246,7 @@ namespace brand {
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 
 			const auto& buffHash = buff->get_hash_name();
-			if (godBuffList.contains(buffHash))
+			if (std::find(std::begin(godBuffList), std::end(godBuffList), buffHash) != std::end(godBuffList))
 			{
 				const auto& isPantheonE = buffHash == buff_hash("PantheonE");
 				const auto& realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
@@ -261,7 +267,7 @@ namespace brand {
 		{
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 			const auto& buffHash = buff->get_hash_name();
-			if (noKillBuffList.contains(buffHash))
+			if (std::find(std::begin(noKillBuffList), std::end(noKillBuffList), buffHash) != std::end(noKillBuffList))
 			{
 				if (buffTime < buff->get_remaining_time())
 				{
@@ -280,7 +286,7 @@ namespace brand {
 		{
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 			const auto& buffHash = buff->get_hash_name();
-			if (stasisBuffList.contains(buffHash))
+			if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(stasisBuffList))
 			{
 				if (buffTime < buff->get_remaining_time())
 				{
@@ -310,7 +316,7 @@ namespace brand {
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 
 			const auto& buffHash = buff->get_hash_name();
-			if (godBuffList.contains(buffHash))
+			if (std::find(std::begin(godBuffList), std::end(godBuffList), buffHash) != std::end(godBuffList))
 			{
 				const auto& isPantheonE = buffHash == buff_hash("PantheonE");
 				const auto& realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
@@ -319,14 +325,14 @@ namespace brand {
 					godBuffTime = realRemainingTime;
 				}
 			}
-			else if (noKillBuffList.contains(buffHash))
+			else if (std::find(std::begin(noKillBuffList), std::end(noKillBuffList), buffHash) != std::end(noKillBuffList))
 			{
 				if (noKillBuffTime < buff->get_remaining_time())
 				{
 					noKillBuffTime = buff->get_remaining_time();
 				}
 			}
-			else if (stasisBuffList.contains(buffHash))
+			else if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(noKillBuffList))
 			{
 				if (stasisTime < buff->get_remaining_time())
 				{
@@ -823,7 +829,7 @@ namespace brand {
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
-		const auto& isCastingImmortalitySpell = ((target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash())) || target->has_buff(buff_hash("AkshanE2")));
+		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
 		return isValid;
 	}
@@ -1423,7 +1429,7 @@ namespace brand {
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW) && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW) && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;

@@ -69,7 +69,8 @@ namespace xerath {
 	std::unordered_map<uint32_t, float> eDamageList;
 	std::unordered_map<uint32_t, rDamageData> rDamageList;
 
-	static std::unordered_set godBuffList{
+	static constexpr uint32_t godBuffList[]
+	{
 		buff_hash("KayleR"),
 		buff_hash("TaricR"),
 		buff_hash("SivirE"),
@@ -80,19 +81,22 @@ namespace xerath {
 		buff_hash("PantheonE")
 	};
 
-	static std::unordered_set noKillBuffList{
+	static constexpr uint32_t noKillBuffList[]
+	{
 		buff_hash("UndyingRage"),
 		buff_hash("ChronoShift")
 	};
 
-	static std::unordered_set stasisBuffList{
+	static constexpr uint32_t stasisBuffList[]
+	{
 		buff_hash("ChronoRevive"),
 		buff_hash("BardRStasis"),
 		buff_hash("ZhonyasRingShield"),
 		buff_hash("LissandraRSelf")
 	};
 
-	static std::unordered_set immuneSpells = {
+	static constexpr uint32_t immuneSpells[]
+	{
 		spell_hash("EvelynnR"),
 		spell_hash("ZedR"),
 		spell_hash("EkkoR"),
@@ -103,7 +107,8 @@ namespace xerath {
 		spell_hash("VladimirSanguinePool")
 	};
 
-	static std::unordered_set ignoreSpells = {
+	static constexpr uint32_t ignoreSpells[]
+	{
 		spell_hash("NunuW"),
 		spell_hash("SionR")
 	};
@@ -294,7 +299,7 @@ namespace xerath {
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 
 			const auto& buffHash = buff->get_hash_name();
-			if (godBuffList.contains(buffHash))
+			if (std::find(std::begin(godBuffList), std::end(godBuffList), buffHash) != std::end(godBuffList))
 			{
 				const auto& isPantheonE = buffHash == buff_hash("PantheonE");
 				const auto& realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
@@ -315,7 +320,7 @@ namespace xerath {
 		{
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 			const auto& buffHash = buff->get_hash_name();
-			if (noKillBuffList.contains(buffHash))
+			if (std::find(std::begin(noKillBuffList), std::end(noKillBuffList), buffHash) != std::end(noKillBuffList))
 			{
 				if (buffTime < buff->get_remaining_time())
 				{
@@ -334,7 +339,7 @@ namespace xerath {
 		{
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 			const auto& buffHash = buff->get_hash_name();
-			if (stasisBuffList.contains(buffHash))
+			if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(stasisBuffList))
 			{
 				if (buffTime < buff->get_remaining_time())
 				{
@@ -364,7 +369,7 @@ namespace xerath {
 			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
 
 			const auto& buffHash = buff->get_hash_name();
-			if (godBuffList.contains(buffHash))
+			if (std::find(std::begin(godBuffList), std::end(godBuffList), buffHash) != std::end(godBuffList))
 			{
 				const auto& isPantheonE = buffHash == buff_hash("PantheonE");
 				const auto& realRemainingTime = !isPantheonE ? buff->get_remaining_time() : buff->get_remaining_time() + 0.2;
@@ -373,14 +378,14 @@ namespace xerath {
 					godBuffTime = realRemainingTime;
 				}
 			}
-			else if (noKillBuffList.contains(buffHash))
+			else if (std::find(std::begin(noKillBuffList), std::end(noKillBuffList), buffHash) != std::end(noKillBuffList))
 			{
 				if (noKillBuffTime < buff->get_remaining_time())
 				{
 					noKillBuffTime = buff->get_remaining_time();
 				}
 			}
-			else if (stasisBuffList.contains(buffHash))
+			else if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(stasisBuffList))
 			{
 				if (stasisTime < buff->get_remaining_time())
 				{
@@ -1052,7 +1057,7 @@ namespace xerath {
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
-		const auto& isCastingImmortalitySpell = ((target->get_active_spell() && immuneSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash()))) || target->has_buff(buff_hash("AkshanE2"));
+		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
 		return isValid;
 	}
@@ -1328,7 +1333,7 @@ namespace xerath {
 					const auto& manualKey = settings::automatic::manualRKey->get_bool();
 					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
+					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
 					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
@@ -1609,7 +1614,7 @@ namespace xerath {
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
 			const auto& dashingCast = dashing && (dashE || dashW || dashQ);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ) && !ignoreSpells.contains(target->get_active_spell()->get_spell_data()->get_name_hash());
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ) && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW || stasisQ);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
@@ -1890,7 +1895,7 @@ namespace xerath {
 		// R
 		if (settings::draws::spellRanges::rRange->get_bool())
 		{
-			auto alpha = isRReady ? 255 : 50;
+			auto alpha = (isRReady || ultBuff) ? 255 : 50;
 			draw_manager->add_circle(myhero->get_position(), XERATH_R_RANGE, MAKE_COLOR(255, 127, 0, alpha), 2);
 		}
 
@@ -1956,7 +1961,7 @@ namespace xerath {
 	void on_draw_real()
 	{
 		// Minimap R range
-		if (settings::draws::spellRanges::rMinimapRange->get_bool() && isRReady)
+		if (settings::draws::spellRanges::rMinimapRange->get_bool() && (isRReady || ultBuff))
 		{
 			draw_manager->draw_circle_on_minimap(myhero->get_position(), XERATH_R_RANGE, MAKE_COLOR(255, 127, 0, 255), 2);
 		}
