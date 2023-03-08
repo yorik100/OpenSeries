@@ -444,7 +444,6 @@ namespace brand {
 	{
 		// Cast E
 		if (hasCasted) return true;
-
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding) {
 			e->cast(target);
