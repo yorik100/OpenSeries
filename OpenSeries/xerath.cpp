@@ -246,7 +246,7 @@ namespace xerath {
 			if (!renderer->is_on_screen(screenPosStart, 50) && !renderer->is_on_screen(screenPosEnd, 50))
 				continue;
 
-			draw_manager->add_line(points[i].set_z(legsense  ? -1 : pos.z), points[next_index].set_z(legsense ? -1 : pos.z), color, thickness);
+			draw_manager->add_line(points[i].set_z(legsense ? -1 : pos.z), points[next_index].set_z(legsense ? -1 : pos.z), color, thickness);
 		}
 	}
 
@@ -564,7 +564,7 @@ namespace xerath {
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& range = q2PredictionList[target->get_handle()].input.range;
-		const auto& predval = ((range - target->get_bounding_radius()) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 2) : settings::hitchance::qHitchance->get_int();
+		const auto& predval = ((range - target->get_bounding_radius()) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
 		if (p.hitchance >= getPredIntFromSettings(predval) && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
