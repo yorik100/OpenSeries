@@ -3,7 +3,7 @@
 
 namespace xerath
 {
-	inline bool isPlayingGodAnimations(const game_object_script& target);
+	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness);
 	inline bool isMoving(const game_object_script& target);
 	inline float timeBeforeWHits(const game_object_script& target);
 	inline float timeBeforeWHitsLocation(vector& position);

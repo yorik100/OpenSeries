@@ -129,6 +129,7 @@ namespace brand {
 				TreeEntry* eRange;
 				TreeEntry* eExtraRange;
 				TreeEntry* rRange;
+				TreeEntry* legCircles;
 			}
 		}
 		namespace combo {
@@ -199,6 +200,28 @@ namespace brand {
 	float last_tick = 0;
 	float attackOrderTime = 0;
 	float lastCast = 0;
+
+	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
+	{
+		const auto points = geometry::geometry::circle_points(pos, radius, quality);
+		for (int i = 0; i < points.size(); i++)
+		{
+			const int next_index = (i + 1) % points.size();
+			const auto start = points[i];
+			const auto end = points[next_index];
+			if (legsense && (start.is_wall() || start.is_building()) && (end.is_wall() || end.is_building()))
+				continue;
+
+			vector screenPosStart;
+			renderer->world_to_screen(start, screenPosStart);
+			vector screenPosEnd;
+			renderer->world_to_screen(end, screenPosEnd);
+			if (!renderer->is_on_screen(screenPosStart, 50) && !renderer->is_on_screen(screenPosEnd, 50))
+				continue;
+
+			draw_manager->add_line(points[i].set_z(legsense ? -1 : pos.z), points[next_index].set_z(legsense ? -1 : pos.z), color, thickness);
+		}
+	}
 
 	bool isMoving(const game_object_script& target)
 	{
@@ -1624,6 +1647,7 @@ namespace brand {
 		settings::draws::spellRanges::eExtraRange = drawRangeTab->add_checkbox("open.brand.draws.ranges.eextrarange", "^ Draw bounce range", true);
 		settings::draws::spellRanges::rRange = drawRangeTab->add_checkbox("open.brand.draws.rrange", "Draw R range", true);
 		settings::draws::spellRanges::rRange->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+		settings::draws::spellRanges::legCircles = drawRangeTab->add_checkbox("open.brand.draws.ranges.legcircles", "LegSense circles", false);
 
 		// Normal draws
 		settings::draws::wRadius = drawTab->add_checkbox("open.brand.draws.wradius", "Draw W on ground", true);
@@ -1731,19 +1755,19 @@ namespace brand {
 		// Q
 		if (settings::draws::spellRanges::qRange->get_bool()) {
 			const auto& alpha = isQReady ? 255 : 50;
-			draw_manager->add_circle(myhero->get_position(), BRAND_Q_RANGE, MAKE_COLOR(204, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_Q_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
 		}
 
 		// W
 		if (settings::draws::spellRanges::wRange->get_bool()) {
 			const auto& alpha = isWReady ? 255 : 50;
-			draw_manager->add_circle(myhero->get_position(), BRAND_W_RANGE, MAKE_COLOR(255, 0, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_W_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 0, 0, alpha), 2);
 		}
 
 		// E
 		if (settings::draws::spellRanges::eRange->get_bool()) {
 			const auto& alpha = isEReady ? 255 : 50;
-			draw_manager->add_circle(myhero->get_position(), BRAND_E_RANGE, MAKE_COLOR(0, 127, 255, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_E_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, alpha), 2);
 		}
 
 		// ExtraE
@@ -1754,14 +1778,14 @@ namespace brand {
 				if (!customIsValid(target.target, BRAND_E_RANGE)) continue;
 
 				const auto& isMainTarget = bestETarget && target.target->get_handle() == bestETarget->get_handle();
-				draw_manager->add_circle(target.target->get_position(), target.extraRange ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE, MAKE_COLOR(0, 127, 255, isMainTarget ? 160 : 75), 2);
+				drawCircle(target.target->get_position(), target.extraRange ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, isMainTarget ? 160 : 75), 2);
 			}
 		}
 
 		// R
 		if (settings::draws::spellRanges::rRange->get_bool()) {
 			const auto& alpha = isRReady ? 255 : 50;
-			draw_manager->add_circle(myhero->get_position(), BRAND_R_RANGE, MAKE_COLOR(255, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_R_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 127, 0, alpha), 2);
 		}
 
 		// Misc
