@@ -287,7 +287,7 @@ namespace xerath {
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
-			e->set_delay(- getPing() - 0.1);
+			e->set_delay(- getPing());
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
