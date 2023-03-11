@@ -564,7 +564,7 @@ namespace xerath {
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& range = q2PredictionList[target->get_handle()].input.range;
-		const auto& predval = ((range - target->get_bounding_radius()) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
+		const auto& predval = ((range - std::max(target->get_bounding_radius(), 65.f)) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
 		if (p.hitchance >= getPredIntFromSettings(predval) && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
@@ -635,7 +635,7 @@ namespace xerath {
 	prediction_output getQShortPred(const game_object_script& target)
 	{
 		// Get Q short pred
-		q->set_range(XERATH_MIN_Q_RANGE + target->get_bounding_radius());
+		q->set_range(XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		const prediction_output& p = q->get_prediction(target);
 		return p;
 	}
@@ -667,8 +667,8 @@ namespace xerath {
 	prediction_output getEPred(const game_object_script& target)
 	{
 		// Get E pred
-		const auto& totalRadius = target->get_bounding_radius();
-		e->set_range(XERATH_E_RANGE + target->get_bounding_radius());
+		const auto& totalRadius = std::max(target->get_bounding_radius(), 65.f);
+		e->set_range(XERATH_E_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		e->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
 		prediction_output p = e->get_prediction(target);
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
@@ -694,7 +694,7 @@ namespace xerath {
 	prediction_output getQDummyPred(const game_object_script& target)
 	{
 		// Get Q dummy pred
-		qCharge->set_range(XERATH_MAX_Q_RANGE + target->get_bounding_radius());
+		qCharge->set_range(XERATH_MAX_Q_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		const prediction_output& p = qCharge->get_prediction(target);
 		return p;
 	}
@@ -706,7 +706,7 @@ namespace xerath {
 		// Changing charging Q range
 		float range = charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5);
 		range = (range < XERATH_MAX_Q_RANGE ? range - 50 : range);
-		q2->set_range(range + target->get_bounding_radius());
+		q2->set_range(range + std::max(target->get_bounding_radius(), 65.f));
 
 		const prediction_output& p = q2->get_prediction(target);
 		return p;
@@ -718,7 +718,7 @@ namespace xerath {
 		const auto& range = q2PredictionList[target->get_handle()].input.range;
 
 		// If Q is fully charged or can hit 100% then ignore
-		if (range - target->get_bounding_radius() >= XERATH_MAX_Q_RANGE || (q2PredictionList[target->get_handle()].hitchance > hit_chance::very_high && !isMoving(target)))
+		if (range - std::max(target->get_bounding_radius(), 65.f) >= XERATH_MAX_Q_RANGE || (q2PredictionList[target->get_handle()].hitchance > hit_chance::very_high && !isMoving(target)))
 			return true;
 
 		// If target isn't moving then add extra 50 range to overcharge
@@ -1392,7 +1392,7 @@ namespace xerath {
 			const auto& trueELandingTime = getTimeToHit(ep.input, ep, false);
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() - 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + target->get_bounding_radius()) && !qBuff;
+			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() - 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 65.f)) && !qBuff;
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() - 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime - 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady;
@@ -1461,7 +1461,7 @@ namespace xerath {
 			if (!isValidTarget) continue;
 
 			// Check if X spells can be used on that target
-			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + target->get_bounding_radius()) && !qBuff;
+			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 65.f)) && !qBuff;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady;
@@ -1483,7 +1483,7 @@ namespace xerath {
 				{
 					if (castQLong(target, "harass")) return;
 				}
-				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + target->get_bounding_radius()))
+				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + std::max(target->get_bounding_radius(), 65.f)))
 				{
 					qTarget = target;
 					hasCasted = true;

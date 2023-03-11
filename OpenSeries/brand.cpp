@@ -493,8 +493,8 @@ namespace brand {
 	prediction_output getQPred(const game_object_script& target)
 	{
 		// Get Q pred
-		const auto& totalRadius = target->get_bounding_radius();
-		q->set_range(BRAND_Q_RANGE + target->get_bounding_radius());
+		const auto& totalRadius = std::max(target->get_bounding_radius(), 65.f);
+		q->set_range(BRAND_Q_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		q->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
 		prediction_output p = q->get_prediction(target);
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
