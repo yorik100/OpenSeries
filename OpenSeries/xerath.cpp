@@ -1721,7 +1721,7 @@ namespace xerath {
 	void createMenu()
 	{
 		// Main tab
-		mainMenu = menu->create_tab("open.xerath", "OpenXerath");
+		mainMenu = menu->create_tab("open.xerath", "[AURORA] OpenXerath");
 		mainMenu->set_texture(myhero->get_square_icon_portrait());
 
 		// Combo settings

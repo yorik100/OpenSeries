@@ -1548,7 +1548,7 @@ namespace brand {
 	void createMenu()
 	{
 		// Main tab
-		mainMenu = menu->create_tab("open.brand", "OpenBrand");
+		mainMenu = menu->create_tab("open.brand", "[AURORA] OpenBrand");
 		mainMenu->set_texture(myhero->get_square_icon_portrait());
 
 		// Combo settings

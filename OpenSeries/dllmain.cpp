@@ -2,7 +2,7 @@
 #include "brand.h"
 #include "xerath.h"
 
-PLUGIN_NAME("OpenSeries");
+PLUGIN_NAME("[AURORA] OpenSeries");
 
 PLUGIN_TYPE(plugin_type::champion);
 SUPPORTED_CHAMPIONS( champion_id::Brand, champion_id::Xerath );
@@ -36,5 +36,4 @@ PLUGIN_API void on_sdk_unload( )
 {
     brand::unload();
     xerath::unload();
-
 }
