@@ -718,7 +718,7 @@ namespace xerath {
 		const auto& range = q2PredictionList[target->get_handle()].input.range;
 
 		// If Q is fully charged or can hit 100% then ignore
-		if (range - std::max(target->get_bounding_radius(), 50.f) >= XERATH_MAX_Q_RANGE || (q2PredictionList[target->get_handle()].hitchance > hit_chance::very_high && !isMoving(target)))
+		if (range - std::max(target->get_bounding_radius(), 50.f) >= XERATH_MAX_Q_RANGE || q2PredictionList[target->get_handle()].hitchance > hit_chance::very_high)
 			return true;
 
 		// If target isn't moving then add extra 50 range to overcharge
