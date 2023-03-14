@@ -2062,6 +2062,17 @@ namespace brand {
 		// Call menu creation function
 		createMenu();
 
+		// Warning if trolling
+		scheduler->delay_action(0.1f, []()
+			{
+				const auto aurora_prediction = menu->get_tab("aurora_prediction");
+				if (!aurora_prediction || aurora_prediction->is_hidden() != false)
+				{
+					myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performance !</font>");
+				}
+			}
+		);
+
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update);
 		event_handler<events::on_env_draw>::add_callback(on_draw);
