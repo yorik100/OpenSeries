@@ -57,6 +57,7 @@ namespace brand {
 	std::unordered_map<uint32_t, stasisStruct> stasisInfo;
 	std::unordered_map<uint32_t, float> stunTime;
 	std::unordered_map<uint32_t, float> guardianReviveTime;
+	std::unordered_map<uint32_t, float> deathAnimTime;
 	std::unordered_map<uint32_t, float> godBuffTime;
 	std::unordered_map<uint32_t, float> noKillBuffTime;
 	std::unordered_map<uint32_t, float> qDamageList;
@@ -318,7 +319,7 @@ namespace brand {
 			}
 		}
 		// Get guardian angel revive time if there is one
-		float GATime = (!target->is_targetable() && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		float GATime = (buffTime <= 0 && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
 		if (buffTime < GATime)
 		{
 			buffTime = GATime;
@@ -366,7 +367,7 @@ namespace brand {
 			}
 		}
 		// Get guardian angel revive time if there is one
-		float GATime = (!target->is_targetable() && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		float GATime = (stasisTime <= 0 && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
 		if (stasisTime < GATime)
 		{
 			stasisTime = GATime;
@@ -1996,7 +1997,7 @@ namespace brand {
 		// Detect if someone is reviving from Guardian Angel
 		if (!gain && sender->is_valid() && buff->get_hash_name() == buff_hash("willrevive") && sender->is_playing_animation(buff_hash("Death")) && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
 		{
-			guardianReviveTime[sender->get_handle()] = gametime->get_time() + 4;
+			guardianReviveTime[sender->get_handle()] = deathAnimTime[sender->get_handle()] + 4;
 			return;
 		}
 	}
@@ -2021,6 +2022,19 @@ namespace brand {
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
 	{
 		if (sender->get_handle() == myhero->get_handle()) lastCast = 0;
+	}
+
+	void on_network_packet(game_object_script sender, std::uint32_t network_id, pkttype_e type, void* args)
+	{
+		if (type != pkttype_e::PKT_S2C_PlayAnimation_s || !sender) return;
+
+		const auto& data = (PKT_S2C_PlayAnimationArgs*)args;
+		if (!data) return;
+
+		if (strcmp(data->animation_name, "Death") == 0)
+		{
+			deathAnimTime[sender->get_handle()] = gametime->get_time();
+		}
 	}
 
 	void load()
@@ -2083,6 +2097,7 @@ namespace brand {
 		event_handler<events::on_buff_lose>::add_callback(on_buff_lose);
 		event_handler<events::on_cast_spell>::add_callback(on_cast_spell);
 		event_handler<events::on_process_spell_cast>::add_callback(on_process_spell_cast);
+		event_handler<events::on_network_packet>::add_callback(on_network_packet);
 
 	}
 
@@ -2098,6 +2113,7 @@ namespace brand {
 		event_handler< events::on_buff_lose >::remove_handler(on_buff_lose);
 		event_handler< events::on_cast_spell >::remove_handler(on_cast_spell);
 		event_handler< events::on_process_spell_cast >::remove_handler(on_process_spell_cast);
+		event_handler< events::on_network_packet >::remove_handler(on_network_packet);
 	}
 
 }
