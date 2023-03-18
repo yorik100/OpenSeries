@@ -356,7 +356,7 @@ namespace brand {
 					noKillBuffTime = buff->get_remaining_time();
 				}
 			}
-			else if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(noKillBuffList))
+			else if (std::find(std::begin(stasisBuffList), std::end(stasisBuffList), buffHash) != std::end(stasisBuffList))
 			{
 				if (stasisTime < buff->get_remaining_time())
 				{
