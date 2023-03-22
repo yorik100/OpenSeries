@@ -188,6 +188,7 @@ namespace xerath {
 			TreeEntry* rDash;
 			TreeEntry* rCast;
 			TreeEntry* rStasis;
+			TreeEntry* rParticle;
 		}
 		namespace hitchance {
 			TreeEntry* qHitchance;
@@ -1526,6 +1527,7 @@ namespace xerath {
 		auto particleE = settings::automatic::eParticle->get_bool() && isEReady;
 		auto particleW = settings::automatic::wParticle->get_bool() && isWReady;
 		auto particleQ = settings::automatic::qParticle->get_bool() && isQReady && qBuff;
+		auto particleR = settings::ultimate::rParticle->get_bool() && isRReady && ultBuff;
 
 		// Checking if particles are valid, if they're not, delete them from the list
 		particlePredList.erase(std::remove_if(particlePredList.begin(), particlePredList.end(), [](const particleStruct& x)
@@ -1535,7 +1537,7 @@ namespace xerath {
 		),
 			particlePredList.end());
 
-		if (hasCasted || (!particleE && !particleW && !particleQ)) return;
+		if (hasCasted || (!particleE && !particleW && !particleQ && !particleR)) return;
 
 		// Loop through every pred particles
 		for (auto& obj : particlePredList)
@@ -1572,10 +1574,12 @@ namespace xerath {
 			const auto& particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			const auto& eCanDodge = obj.owner->get_move_speed() * ((eLandingTime - particleTime) + getPing()) > e->get_radius() + obj.owner->get_bounding_radius();
 			const auto& wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
+			const auto& rCanDodge = obj.owner->get_move_speed() * ((r->get_delay() - particleTime) + getPing()) > r->get_radius();
 			const auto& qCanDodge = obj.owner->get_move_speed() * ((q->get_delay() - particleTime) + getPing()) > q->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
 			const auto& canE = particleE && !eCanDodge && myhero->get_position().distance(obj.castingPos) <= ePredictionList[obj.owner->get_handle()].input.range && collisionList.empty();
 			const auto& canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
+			const auto& canR = particleR && !rCanDodge && myhero->get_position().distance(obj.castingPos) <= r->range();
 			const auto& canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + obj.owner->get_bounding_radius() - 50;
 
 			// Try to cast E if possible
@@ -1589,6 +1593,13 @@ namespace xerath {
 			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
 				w->cast(obj.castingPos);
+				hasCasted = true;
+				return;
+			}
+			// Try to cast R if possible
+			else if (canR && !rTarget && (particleTime - getPing() + 0.2) <= r->get_delay())
+			{
+				r->cast(obj.castingPos);
 				hasCasted = true;
 				return;
 			}
@@ -1857,6 +1868,7 @@ namespace xerath {
 		settings::ultimate::rImmobile = ultTab->add_checkbox("open.xerath.ultimate.rimmobile", "Cast R2 on immobile", true);
 		settings::ultimate::rCantDodge = ultTab->add_checkbox("open.xerath.ultimate.rcantdodge", "Cast R2 on undodgeable", true);
 		settings::ultimate::rStasis = ultTab->add_checkbox("open.xerath.ultimate.rstasis", "Cast R2 on stasis", true);
+		settings::ultimate::rParticle = ultTab->add_checkbox("open.xerath.ultimate.rparticle", "Cast R2 on particle", true);
 
 		// Misc
 		settings::lowSpec = mainMenu->add_checkbox("open.xerath.lowspec", "Low spec mode (tick limiter)", false);
