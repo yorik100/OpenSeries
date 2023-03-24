@@ -1,7 +1,7 @@
 #include "brand.h"
 #include <unordered_set>
 #include <unordered_map>
-#include <array>
+#include <stdarg.h>
 
 namespace brand {
 
@@ -171,6 +171,7 @@ namespace brand {
 			TreeEntry* wHitchance;
 		}
 		TreeEntry* lowSpec;
+		TreeEntry* debugPrint;
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
@@ -201,6 +202,40 @@ namespace brand {
 	float last_tick = 0;
 	float attackOrderTime = 0;
 	float lastCast = 0;
+
+	void debugPrint(const std::string& str, ...)
+	{
+		// Thanks seidhr
+		if (settings::debugPrint->get_bool())
+		{
+			va_list                     list;
+			int                         size;
+			std::unique_ptr< char[] >   buf;
+
+			if (str.empty())
+				return;
+
+			va_start(list, str);
+
+			// count needed size.
+			size = std::vsnprintf(0, 0, str.c_str(), list) + 1;
+
+			// allocate.
+			buf = std::make_unique< char[] >(size);
+			if (!buf) {
+				va_end(list);
+				return;
+			}
+
+			// print to buffer.
+			std::vsnprintf(buf.get(), size, str.c_str(), list);
+
+			va_end(list);
+
+			// print to console.
+			console->print("%.*s", size - 1, buf.get());
+		}
+	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
 	{
@@ -439,6 +474,7 @@ namespace brand {
 			if (performECombo)
 				spamETarget = target;
 	 		hasCasted = true;
+			debugPrint("[%i:%i] Casted Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 	 	}
 		return false;
@@ -459,6 +495,7 @@ namespace brand {
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
+			debugPrint("[%i:%i] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -1719,6 +1756,7 @@ namespace brand {
 
 		// Misc
 		settings::lowSpec = mainMenu->add_checkbox("open.brand.lowspec", "Low spec mode (tick limiter)", false);
+		settings::debugPrint = mainMenu->add_checkbox("open.brand.debugprint", "Debug print in console (dev)", false);
 	}
 
 	void on_update()

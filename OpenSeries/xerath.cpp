@@ -1,6 +1,8 @@
 #include "xerath.h"
 #include <unordered_set>
 #include <unordered_map>
+#include <stdarg.h>
+
 
 namespace xerath {
 
@@ -197,6 +199,7 @@ namespace xerath {
 			TreeEntry* rHitchance;
 		}
 		TreeEntry* lowSpec;
+		TreeEntry* debugPrint;
 	}
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
@@ -229,6 +232,40 @@ namespace xerath {
 	float last_tick = 0;
 	float lastCast = 0;
 	int rShots = 0;
+
+	void debugPrint(const std::string& str, ...)
+	{
+		// Thanks seidhr
+		if (settings::debugPrint->get_bool())
+		{
+			va_list                     list;
+			int                         size;
+			std::unique_ptr< char[] >   buf;
+
+			if (str.empty())
+				return;
+
+			va_start(list, str);
+
+			// count needed size.
+			size = std::vsnprintf(0, 0, str.c_str(), list) + 1;
+
+			// allocate.
+			buf = std::make_unique< char[] >(size);
+			if (!buf) {
+				va_end(list);
+				return;
+			}
+
+			// print to buffer.
+			std::vsnprintf(buf.get(), size, str.c_str(), list);
+
+			va_end(list);
+
+			// print to console.
+			console->print("%.*s", size - 1, buf.get());
+		}
+	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
 	{
@@ -290,6 +327,7 @@ namespace xerath {
 		{
 			if (!missile) continue;
 			e->set_delay(- getPing());
+			e->set_radius(XERATH_E_RANGE);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
@@ -528,6 +566,7 @@ namespace xerath {
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
 			hasCasted = true;
+			debugPrint("[%i:%i] Casted short Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -571,6 +610,7 @@ namespace xerath {
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
+			debugPrint("[%i:%i] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -591,6 +631,7 @@ namespace xerath {
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
+			debugPrint("[%i:%i] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -610,6 +651,7 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
+			debugPrint("[%i:%i] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -629,6 +671,7 @@ namespace xerath {
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
+			debugPrint("[%i:%i] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -1872,6 +1915,7 @@ namespace xerath {
 
 		// Misc
 		settings::lowSpec = mainMenu->add_checkbox("open.xerath.lowspec", "Low spec mode (tick limiter)", false);
+		settings::debugPrint = mainMenu->add_checkbox("open.xerath.debugprint", "Debug print in console (dev)", false);
 	}
 
 	void on_update()
