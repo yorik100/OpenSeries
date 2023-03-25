@@ -326,8 +326,9 @@ namespace xerath {
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
-			e->set_delay(- getPing());
+			e->set_delay(-getPing());
 			e->set_range(XERATH_E_RANGE);
+			e->set_radius(80.f);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
@@ -713,6 +714,7 @@ namespace xerath {
 	{
 		// Get E pred
 		const auto& totalRadius = std::max(target->get_bounding_radius(), 65.f);
+		e->set_radius(60.f);
 		e->set_range(XERATH_E_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		e->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
 		prediction_output p = e->get_prediction(target);
