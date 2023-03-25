@@ -328,7 +328,7 @@ namespace xerath {
 			if (!missile) continue;
 			e->set_delay(-getPing());
 			e->set_range(XERATH_E_RANGE);
-			e->set_radius(80.f);
+			e->set_radius(70.f);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
