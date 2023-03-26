@@ -567,7 +567,7 @@ namespace xerath {
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
 			hasCasted = true;
-			debugPrint("[%i:%i] Casted short Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted short Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -611,7 +611,7 @@ namespace xerath {
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
-			debugPrint("[%i:%i] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -632,7 +632,7 @@ namespace xerath {
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
-			debugPrint("[%i:%i] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -652,7 +652,7 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
-			debugPrint("[%i:%i] Casted E on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted E on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -672,7 +672,7 @@ namespace xerath {
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
-			debugPrint("[%i:%i] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -1642,7 +1642,7 @@ namespace xerath {
 				return;
 			}
 			// Try to cast R if possible
-			else if (canR && !rTarget && (particleTime - getPing() + 0.2) <= r->get_delay())
+			else if (canR && !rTarget && (particleTime - getPing() + 0.1) <= r->get_delay())
 			{
 				r->cast(obj.castingPos);
 				hasCasted = true;

@@ -474,7 +474,7 @@ namespace brand {
 			if (performECombo)
 				spamETarget = target;
 	 		hasCasted = true;
-			debugPrint("[%i:%i] Casted Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 	 	}
 		return false;
@@ -495,7 +495,7 @@ namespace brand {
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
-			debugPrint("[%i:%i] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
+			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
