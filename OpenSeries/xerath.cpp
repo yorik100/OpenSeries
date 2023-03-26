@@ -1642,7 +1642,7 @@ namespace xerath {
 				return;
 			}
 			// Try to cast R if possible
-			else if (canR && !rTarget && (particleTime - getPing() + 0.1) <= r->get_delay())
+			else if (canR && !rTarget && (particleTime - getPing() + 0.2) <= r->get_delay())
 			{
 				r->cast(obj.castingPos);
 				hasCasted = true;
