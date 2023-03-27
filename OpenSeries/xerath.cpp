@@ -655,7 +655,6 @@ namespace xerath {
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
-			myhero->print_chat(0, "%i | %i", willGetHitByE(target), isMoving(target));
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
