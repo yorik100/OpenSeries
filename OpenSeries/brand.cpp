@@ -1155,7 +1155,7 @@ namespace brand {
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
 		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack())
 		{
-			if (castingTime < 0.033 + getPing() && castingTime > 0)
+			if (castingTime < getPing() + 0.033 && castingTime > 0)
 			{
 				return !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta();
 			}
