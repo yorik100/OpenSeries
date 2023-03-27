@@ -223,6 +223,8 @@ namespace xerath {
 	game_object_script qTarget;
 	game_object_script rTarget;
 
+	TreeTab* aurora_prediction;
+
 	bool hasCasted = false;
 	bool isQReady = false;
 	bool isWReady = false;
@@ -265,6 +267,25 @@ namespace xerath {
 			// print to console.
 			console->print("%.*s", size - 1, buf.get());
 		}
+	}
+
+	bool can_cast(const spellslot& spellslot)
+	{
+		const auto spell = myhero->get_spell(spellslot);
+		if (!spell)
+		{
+			return false;
+		}
+
+		const auto state = myhero->get_spell_state(spellslot);
+		if (state == spell_state::Ready)
+		{
+			return true;
+		}
+
+		const auto cooldown = spell->cooldown();
+		//IN CD = (state & (1 << 5)) != 0
+		return cooldown < (ping->get_ping() / 1000.f) + 0.033f && (state & (1 << 5)) != 0;
 	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
@@ -326,9 +347,12 @@ namespace xerath {
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
-			e->set_delay(-getPing());
-			e->set_range(XERATH_E_RANGE);
-			e->set_radius(70.f);
+
+			aurora_prediction = menu->get_tab("aurora_prediction");
+			if (!aurora_prediction || aurora_prediction->is_hidden() != false)
+				e->set_delay(0);
+			else
+				e->set_delay(-getPing());
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25);
 			if (eCollisions.empty()) continue;
@@ -631,6 +655,7 @@ namespace xerath {
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
+			myhero->print_chat(0, "%i | %i", willGetHitByE(target), isMoving(target));
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -886,7 +911,7 @@ namespace xerath {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isQReady) return 0;
 		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false);
@@ -901,7 +926,7 @@ namespace xerath {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isQReady) return 0;
 		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -915,7 +940,7 @@ namespace xerath {
 		// Get W normal damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isWReady) return 0;
 		const float& damage = 25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -930,7 +955,7 @@ namespace xerath {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isWReady) return 0;
 		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -945,7 +970,7 @@ namespace xerath {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isWReady) return 0;
 		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
@@ -959,7 +984,7 @@ namespace xerath {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isEReady) return 0;
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -974,7 +999,7 @@ namespace xerath {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0) return 0;
+		if (!isEReady) return 0;
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
@@ -988,7 +1013,7 @@ namespace xerath {
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
-		if (spell->cooldown() > 0 && ultParticleList.empty() && !ultBuff) return 0;
+		if (!isRReady && ultParticleList.empty() && !ultBuff) return 0;
 		const float& damage = 150 + 50 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -1004,7 +1029,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0);
+		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && isRReady);
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
@@ -1127,6 +1152,7 @@ namespace xerath {
 		// Custom isValid
 
 		// If it's Yuumi that is attached then target is not valid
+
 		if (isYuumiAttached(target)) return false;
 
 		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
@@ -1174,10 +1200,10 @@ namespace xerath {
 		hasCasted = false;
 
 		// Get ready spells
-		isQReady = myhero->get_spell_state(spellslot::q) == spell_state::Ready;
-		isWReady = myhero->get_spell_state(spellslot::w) == spell_state::Ready;
-		isEReady = myhero->get_spell_state(spellslot::e) == spell_state::Ready;
-		isRReady = myhero->get_spell_state(spellslot::r) == spell_state::Ready;
+		isQReady = can_cast(spellslot::q);
+		isWReady = can_cast(spellslot::w);
+		isEReady = can_cast(spellslot::e);
+		isRReady = can_cast(spellslot::r);
 
 		// Get buffs
 		ultBuff = myhero->get_buff(buff_hash("xerathrshots"));
@@ -2410,7 +2436,7 @@ namespace xerath {
 		// Warning if trolling
 		scheduler->delay_action(0.1f, []()
 			{
-				const auto aurora_prediction = menu->get_tab("aurora_prediction");
+				aurora_prediction = menu->get_tab("aurora_prediction");
 				if (!aurora_prediction || aurora_prediction->is_hidden() != false)
 				{
 					myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performance !</font>");
