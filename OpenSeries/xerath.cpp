@@ -1653,7 +1653,7 @@ namespace xerath {
 			const auto& canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + obj.owner->get_bounding_radius() - 50;
 
 			// Try to cast E if possible
-			if (canE && (particleTime - getPing() + 0.05 <= eLandingTime))
+			if (canE && (particleTime - getPing() + 0.1 <= eLandingTime))
 			{
 				e->cast(obj.castingPos);
 				hasCasted = true;
@@ -1734,7 +1734,7 @@ namespace xerath {
 			if (stasisCast)
 			{
 				// Cast E on stasis
-				if (stasisE && (stasisDuration + 0.05) < eLandingTime && castE(target, "stasis")) break;
+				if (stasisE && (stasisDuration + 0.1) < eLandingTime && castE(target, "stasis")) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
 				// Cast Q on stasis
