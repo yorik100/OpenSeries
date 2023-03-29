@@ -756,7 +756,7 @@ namespace xerath {
 		// Get R pred
 
 		// Delay is randomly higher
-		r->set_delay(isMoving(target) ? 0.7 : XERATH_R_PARTICLE_TIME);
+		r->set_delay(isMoving(target) ? 0.7f : XERATH_R_PARTICLE_TIME);
 
 		const prediction_output& p = r->get_prediction(target);
 		return p;
