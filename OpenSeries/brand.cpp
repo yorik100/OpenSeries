@@ -709,7 +709,7 @@ namespace brand {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (!isQReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + spell->level() * 30 + myhero->get_total_ability_power() * 0.55;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false, 1);
@@ -724,7 +724,7 @@ namespace brand {
 		// Get W normal damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (!isWReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
@@ -739,7 +739,7 @@ namespace brand {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (!isWReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = (30 + 45 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.25;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false, 1);
@@ -754,7 +754,7 @@ namespace brand {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (!isEReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 45 + 25 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
@@ -769,7 +769,7 @@ namespace brand {
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
-		if (!isRReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 100 * spell->level() + myhero->get_total_ability_power() * 0.25;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
@@ -785,7 +785,7 @@ namespace brand {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& rActive = myhero->get_spell(spellslot::r)->level() != 0 && isRReady;
+		const auto& rActive = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0;
 		if (rActive)
 		{
 			for (int i = 3; i > 0; i--)

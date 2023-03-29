@@ -910,7 +910,7 @@ namespace xerath {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (!isQReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, false, true, false);
@@ -925,7 +925,7 @@ namespace xerath {
 		// Get Q damage
 		const auto& spell = myhero->get_spell(spellslot::q);
 		if (spell->level() == 0) return 0;
-		if (!isQReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 30 + spell->level() * 40 + myhero->get_total_ability_power() * 0.85;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -939,7 +939,7 @@ namespace xerath {
 		// Get W normal damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (!isWReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -954,7 +954,7 @@ namespace xerath {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (!isWReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -969,7 +969,7 @@ namespace xerath {
 		// Get W empowered damage
 		const auto& spell = myhero->get_spell(spellslot::w);
 		if (spell->level() == 0) return 0;
-		if (!isWReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = (25 + 35 * spell->level() + myhero->get_total_ability_power() * 0.60) * 1.667;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
@@ -983,7 +983,7 @@ namespace xerath {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (!isEReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, false);
@@ -998,7 +998,7 @@ namespace xerath {
 		// Get E damage
 		const auto& spell = myhero->get_spell(spellslot::e);
 		if (spell->level() == 0) return 0;
-		if (!isEReady) return 0;
+		if (spell->cooldown() > 0) return 0;
 		const float& damage = 50 + 30 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, true, firstShot, false);
@@ -1012,7 +1012,7 @@ namespace xerath {
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
-		if (!isRReady && ultParticleList.empty() && !ultBuff) return 0;
+		if (spell->cooldown() > 0 && ultParticleList.empty() && !ultBuff) return 0;
 		const float& damage = 150 + 50 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -1028,7 +1028,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && isRReady);
+		const auto& hasUlt = (myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0);
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
