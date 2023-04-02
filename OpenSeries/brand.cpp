@@ -153,6 +153,7 @@ namespace brand {
 			TreeEntry* eExtraHarass;
 		}
 		namespace automatic {
+			TreeEntry* qeLogic;
 			TreeEntry* qStun;
 			TreeEntry* wStun;
 			TreeEntry* qDash;
@@ -484,7 +485,7 @@ namespace brand {
 	 	const auto& wTime = !ignoreHitChance ? timeBeforeWHits(target) : timeBeforeWHitsLocation(pos) - 0.2;
 	 	const auto& ablazeBuff = target->get_buff(buff_hash("BrandAblaze"));
 		const auto& targetAblaze = (ablazeBuff && ablazeBuff->get_remaining_time() >= timeToHit + 0.2);
-		const auto& performECombo = (eCombo && couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && trueTimeToHit > 0.5 && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE && prediction->get_prediction(target, 0.25).get_unit_position().distance(myhero->get_position()) <= BRAND_E_RANGE && !targetAblaze);
+		const auto& performECombo = settings::automatic::qeLogic->get_bool() && (eCombo && couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && trueTimeToHit > 0.5 && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE && prediction->get_prediction(target, 0.25).get_unit_position().distance(myhero->get_position()) <= BRAND_E_RANGE && !targetAblaze);
 	 	const auto& isQStun = targetAblaze || (wTime < timeToHit - 0.2) || performECombo;
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int())) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
@@ -1760,6 +1761,7 @@ namespace brand {
 
 		// Misc tab
 		const auto miscTab = mainMenu->add_tab("open.brand.misc", "Misc");
+		settings::automatic::qeLogic = miscTab->add_checkbox("open.brand.misc.qelogic", "Try to Q-E", false);
 		settings::automatic::qStun = miscTab->add_checkbox("open.brand.misc.qstun", "Auto Q on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.brand.misc.wstun", "Auto W on stun", true);
 		settings::automatic::qDash = miscTab->add_checkbox("open.brand.misc.qdash", "Auto Q on dash", true);
