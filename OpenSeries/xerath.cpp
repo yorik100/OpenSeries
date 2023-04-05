@@ -2293,16 +2293,20 @@ namespace xerath {
 		{
 			// Delete Xerath W in list when a W particle gets deleted with handle comparison
 			if (obj->get_emitter() && obj->get_emitter()->is_ally())
-				std::erase_if(particleList, [obj](particleData& particle) {return particle.particle->get_handle() == obj->get_handle(); });
+				particleList.erase(std::remove_if(particleList.begin(), particleList.end(), [obj](particleData& particle)
+					{
+						return particle.particle->get_handle() == obj->get_handle();
+				}), particleList.end());
 			return;
 		}
 		case buff_hash("Xerath_R_aoe_reticle_green"):
 		{
 			// Delete Xerath R in list when a R particle gets deleted with handle comparison
 			if (obj->get_emitter() && obj->get_emitter()->is_me())
-			{
-				std::erase_if(ultParticleList, [obj](particleData& particle) {return particle.particle->get_handle() == obj->get_handle(); });
-			}
+				ultParticleList.erase(std::remove_if(ultParticleList.begin(), ultParticleList.end(), [obj](particleData& particle)
+					{
+						return particle.particle->get_handle() == obj->get_handle();
+					}), ultParticleList.end());
 			return;
 		}
 		}
@@ -2321,9 +2325,10 @@ namespace xerath {
 			case spell_hash("XerathMageSpearMissile"):
 			{
 				if (entitylist->get_object(obj->missile_get_sender_id())->is_ally())
-				{
-					std::erase_if(eMissileList, [obj](game_object_script& missile) {return missile->get_handle() == obj->get_handle(); });
-				}
+					eMissileList.erase(std::remove_if(eMissileList.begin(), eMissileList.end(), [obj](game_object_script& missile)
+					{
+						return missile->get_handle() == obj->get_handle();
+					}), eMissileList.end());
 			}
 			}
 		}

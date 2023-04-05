@@ -2048,7 +2048,10 @@ namespace brand {
 	{
 		// Delete Brand W in list when a W particle gets deleted with handle comparison
 		if (obj->get_emitter_resources_hash() == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
-			std::erase_if(particleList, [obj](particleData& particle) {return particle.particle->get_handle() == obj->get_handle(); });
+			particleList.erase(std::remove_if(particleList.begin(), particleList.end(), [obj](particleData& particle)
+			{
+				return particle.particle->get_handle() == obj->get_handle();
+			}), particleList.end());
 	}
 
 	void on_buff(game_object_script& sender, buff_instance_script& buff, const bool gain)
