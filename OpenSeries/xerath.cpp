@@ -1428,11 +1428,11 @@ namespace xerath {
 				{
 					rTarget = target;
 					const auto& manualKey = settings::automatic::manualRKey->get_bool();
-					const auto& dashingCast = settings::ultimate::rDash->get_bool() && target->is_dashing();
+					const auto& dashingCast = settings::ultimate::rDash->get_bool() && (target->is_dashing() || rPredictionList[target->get_handle()].hitchance == hit_chance::dashing);
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
 					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
-					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !target->is_dashing() && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
+					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !(target->is_dashing() || rPredictionList[target->get_handle()].hitchance == hit_chance::dashing) && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
 					if (isRReady && (manualKey || dashingCast || castingCast || castingImmobile || castingCantDodge || castingStasis || rCombo) && (stasisDuration - getPing() + 0.2) < r->get_delay())
 						castR(target, "manual");
