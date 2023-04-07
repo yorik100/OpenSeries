@@ -344,7 +344,7 @@ namespace xerath {
 	bool willGetHitByE(const game_object_script& target)
 	{
 		if (!target) return false;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathE")) return true;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
