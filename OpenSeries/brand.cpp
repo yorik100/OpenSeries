@@ -1510,17 +1510,17 @@ namespace brand {
 		{
 			const auto& stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
-			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie() && !isCastMoving(target);
+			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
 			const auto& dashing = target->is_dashing() || qPredictionList[target->get_handle()].hitchance == hit_chance::dashing || wPredictionList[target->get_handle()].hitchance == hit_chance::dashing;
 			const auto& ccTime = stunTime[target->get_handle()];
-			const auto& channelingSpell = target->is_casting_interruptible_spell() >= 1 || isRecalling(target);
+			const auto& channelingSpell = (target->is_casting_interruptible_spell() >= 1 || isRecalling(target)) && !isCastMoving(target);
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW) && !isCastMoving(target);
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;
