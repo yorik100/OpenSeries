@@ -886,6 +886,17 @@ namespace brand {
 		return false;
 	}
 
+	int isCastMoving(const game_object_script& target)
+	{
+		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("NunuW_Recast") && target->is_playing_animation(buff_hash("Spell2")))
+			return 2;
+		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("AurelionSolWToggle") && target->is_playing_animation(buff_hash("Spell2")))
+			return 2;
+		if (target->get_active_spell() && target->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("SionR"))
+			return 1;
+		return 0;
+	}
+
 	bool isRecalling(const game_object_script& target)
 	{
 		// Get if target is recalling
@@ -1499,7 +1510,7 @@ namespace brand {
 		{
 			const auto& stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
-			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
+			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie() && !isCastMoving(target);
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
@@ -1509,7 +1520,7 @@ namespace brand {
 			const auto& ccCast = ccTime > 0 && (ccQ || ccW);
 			const auto& dashingCast = dashing && (dashQ || dashW);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW) && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingQ || castingW);
 			const auto& channelingCast = channelingSpell && (channelQ || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisQ || stasisW);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;

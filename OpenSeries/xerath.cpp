@@ -344,6 +344,7 @@ namespace xerath {
 	bool willGetHitByE(const game_object_script& target)
 	{
 		if (!target) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathE")) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
@@ -585,8 +586,9 @@ namespace xerath {
 
 		const auto& timeToHit = q->get_delay() + getPing();
 		const auto& trueTimeToHit = q->get_delay();
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
@@ -607,8 +609,9 @@ namespace xerath {
 
 		const auto& timeToHit = q->get_delay() + getPing();
 		const auto& trueTimeToHit = q->get_delay();
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
@@ -629,9 +632,10 @@ namespace xerath {
 		const auto& trueTimeToHit = q->get_delay();
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& range = q2PredictionList[target->get_handle()].input.range;
 		const auto& predval = ((range - std::max(target->get_bounding_radius(), 50.f)) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
-		if (p.hitchance >= getPredIntFromSettings(predval) && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(predval) && !isCastDash && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
@@ -651,8 +655,9 @@ namespace xerath {
 
 		const auto& timeToHit = w->get_delay() + getPing();
 		const auto& trueTimeToHit = w->get_delay();
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -673,8 +678,9 @@ namespace xerath {
 		const auto& timeToHit = getTimeToHit(p.input, p, true);
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& wTime = timeBeforeWHits(target);
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()])) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()])) {
 			e->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted E on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -693,8 +699,9 @@ namespace xerath {
 		const auto& timeToHit = getTimeToHit(p.input, p, true);
 		const auto& trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
+		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
-		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage)) {
+		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) && !isCastDash && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage)) {
 			r->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -1130,6 +1137,17 @@ namespace xerath {
 		return false;
 	}
 
+	int isCastMoving(const game_object_script& target)
+	{
+		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("NunuW_Recast") && target->is_playing_animation(buff_hash("Spell2")))
+			return 2;
+		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("AurelionSolWToggle") && target->is_playing_animation(buff_hash("Spell2")))
+			return 2;
+		if (target->get_active_spell() && target->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("SionR"))
+			return 1;
+		return 0;
+	}
+
 	bool isRecalling(const game_object_script& target)
 	{
 		// Get if target is recalling
@@ -1420,6 +1438,8 @@ namespace xerath {
 			// Cast E (chain CC logic)
 			if (canUseE && (ccTime - 0.3) < eLandingTime && castE(target, "manual")) return;
 
+			if (isCastMoving(target)) continue;
+
 			// Cast R
 			const auto& rRange = settings::automatic::rRange->get_int() > 0 ? settings::automatic::rRange->get_int() : FLT_MAX;
 			if (canUseR)
@@ -1430,7 +1450,7 @@ namespace xerath {
 					const auto& manualKey = settings::automatic::manualRKey->get_bool();
 					const auto& dashingCast = settings::ultimate::rDash->get_bool() && (target->is_dashing() || rPredictionList[target->get_handle()].hitchance == hit_chance::dashing);
 					const auto& castingSpell = settings::ultimate::rCast->get_bool() && target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
+					const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling();
 					const auto& castingImmobile = settings::ultimate::rImmobile->get_bool() && rPredictionList[target->get_handle()].hitchance >= hit_chance::dashing;
 					const auto& castingCantDodge = settings::ultimate::rCantDodge->get_bool() && !(target->is_dashing() || rPredictionList[target->get_handle()].hitchance == hit_chance::dashing) && rPredictionList[target->get_handle()].hitchance >= hit_chance::very_high && target->get_move_speed() * (r->get_delay() + getPing() + 0.066) < r->get_radius();
 					const auto& castingStasis = settings::ultimate::rStasis->get_bool() && stasisDuration > 0 && (stasisDuration - getPing() + 0.2) < r->get_delay();
@@ -1711,7 +1731,7 @@ namespace xerath {
 		{
 			const auto& stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
-			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
+			const bool& isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie() && !isCastMoving(target);
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
@@ -1721,7 +1741,7 @@ namespace xerath {
 			const auto& ccCast = ccTime > 0 && (ccE || ccW);
 			const auto& dashingCast = dashing && (dashE || dashW || dashQ);
 			const auto& castingSpell = target->get_active_spell() && target->get_active_spell()->cast_start_time() - 0.033 >= gametime->get_time();
-			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ) && std::find(std::begin(ignoreSpells), std::end(ignoreSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) == std::end(ignoreSpells);
+			const auto& castingCast = castingSpell && !target->get_active_spell()->get_spell_data()->is_insta() && !target->get_active_spell()->get_spell_data()->mCanMoveWhileChanneling() && (castingE || castingW || castingQ);
 			const auto& channelingCast = channelingSpell && (channelE || channelW);
 			const auto& stasisCast = stasisDuration > 0 && (stasisE || stasisW || stasisQ);
 			if (!ccCast && !dashingCast && !castingCast && !channelingCast && !stasisCast) continue;

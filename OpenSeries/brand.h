@@ -34,6 +34,7 @@ namespace brand
 	inline void draw_dmg_rl(const game_object_script& target, const float damage, unsigned long color);
 	inline void draw_dmg_lr(const game_object_script& target, const float damage, unsigned long color);
 	inline bool isYuumiAttached(const game_object_script& target);
+	int isCastMoving(const game_object_script& target);
 	inline bool isRecalling(const game_object_script& target);
 	inline bool isValidRecalling(const game_object_script& target, float range, const vector& from);
 	inline bool customIsValid(const game_object_script& target, float range, const vector& from, bool invul);
