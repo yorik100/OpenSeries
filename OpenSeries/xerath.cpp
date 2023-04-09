@@ -2372,7 +2372,7 @@ namespace xerath {
 			guardianReviveTime[sender->get_handle()] = deathAnimTime[sender->get_handle()] + 4;
 			return;
 		}
-		if (gain && buff->get_caster()->is_me() && buff->get_hash_name() == buff_hash("Stun") && sender->is_ai_hero() && sender->is_enemy())
+		if (gain && buff->get_caster()->is_me() && buff->get_hash_name() == buff_hash("Stun") && sender->is_valid() && sender->is_ai_hero() && sender->is_enemy())
 		{
 			hitByETime[sender->get_handle()] = -1.F;
 			return;
