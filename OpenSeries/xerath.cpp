@@ -2003,25 +2003,25 @@ namespace xerath {
 		// Spellranges
 
 		// Q
-		if (settings::draws::spellRanges::qRange->get_bool())
+		if (settings::draws::spellRanges::qRange->get_bool() || qBuff)
 		{
 			auto alpha = isQReady ? 255 : 50;
-			drawCircle(myhero->get_position(), true_charged_range(1500, 750, 1.5), 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
-			drawCircle(myhero->get_position(), 1500, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), true_charged_range(1500, 750, 1.5), 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), 1500, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
 		}
 
 		// W
 		if (settings::draws::spellRanges::wRange->get_bool())
 		{
 			auto alpha = isWReady ? 255 : 50;
-			drawCircle(myhero->get_position(), XERATH_W_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 255, 255, alpha), 2);
+			drawCircle(myhero->get_position(), XERATH_W_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 255, 255, alpha), 2);
 		}
 
 		// E
 		if (settings::draws::spellRanges::eRange->get_bool())
 		{
 			auto alpha = isEReady ? 255 : 50;
-			drawCircle(myhero->get_position(), XERATH_E_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, alpha), 2);
+			drawCircle(myhero->get_position(), XERATH_E_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, alpha), 2);
 		}
 
 		// R
@@ -2034,7 +2034,7 @@ namespace xerath {
 		// Near mouse R range
 		if (settings::draws::spellRanges::rNearMouseRange->get_bool() && settings::automatic::rRange->get_int() > 0 && ultBuff)
 		{
-			drawCircle(hud->get_hud_input_logic()->get_game_cursor_position(), settings::automatic::rRange->get_int(), 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 127, 0, 255), 2);
+			drawCircle(hud->get_hud_input_logic()->get_game_cursor_position(), settings::automatic::rRange->get_int(), 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 127, 0, 255), 2);
 		}
 
 		// Misc
