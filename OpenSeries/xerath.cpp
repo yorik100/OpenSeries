@@ -70,6 +70,7 @@ namespace xerath {
 	std::unordered_map<uint32_t, float> qDamageList;
 	std::unordered_map<uint32_t, float> wDamageList;
 	std::unordered_map<uint32_t, float> eDamageList;
+	std::unordered_map<uint32_t, float> hitByETime;
 	std::unordered_map<uint32_t, rDamageData> rDamageList;
 
 	static constexpr uint32_t godBuffList[]
@@ -345,6 +346,7 @@ namespace xerath {
 	{
 		if (!target) return false;
 		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathE")) return true;
+		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.05F) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
@@ -2209,6 +2211,14 @@ namespace xerath {
 		{
 			if (obj->get_emitter() && obj->get_emitter()->is_ally())
 				ultParticleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
+			return;
+		}
+		case buff_hash("Xerath_E_tar"):
+		{
+			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_enemy())
+			{
+				hitByETime[obj->get_particle_attachment_object()->get_handle()] = gametime->get_time();
+			}
 			return;
 		}
 		}
