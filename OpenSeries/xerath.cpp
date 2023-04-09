@@ -2082,11 +2082,11 @@ namespace xerath {
 		// Target indicators management
 		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
 		{
-			draw_manager->add_filled_circle(qTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + qTarget->get_bounding_radius())), MAKE_COLOR(255, 127, 0, 64));
+			draw_manager->add_circle_with_glow(qTarget->get_position(), MAKE_COLOR(255, 127, 0, 255), fmod((250.f * gametime->get_time()), (50 + qTarget->get_bounding_radius())), 2.F, glow_data(0.2f, 0.75f, 0.f, 1.f));
 		}
 		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
 		{
-			draw_manager->add_filled_circle(rTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + rTarget->get_bounding_radius())), MAKE_COLOR(255, 0, 0, 64));
+			draw_manager->add_circle_with_glow(rTarget->get_position(), MAKE_COLOR(255, 0, 0, 255), fmod((250.f * gametime->get_time()), (50 + rTarget->get_bounding_radius())), 2.F, glow_data(0.2f, 0.75f, 0.f, 1.f));
 		}
 	}
 
@@ -2180,13 +2180,11 @@ namespace xerath {
 		// Target indicators management
 		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
 		{
-			draw_manager->add_circle(qTarget->get_position(), 50 + qTarget->get_bounding_radius(), MAKE_COLOR(255, 127, 0, 255), 2);
-			draw_manager->add_circle(qTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + qTarget->get_bounding_radius())), MAKE_COLOR(255, 127, 0, 255), 2);
+			draw_manager->add_circle_with_glow(qTarget->get_position(), MAKE_COLOR(255, 127, 0, 255), 50 + qTarget->get_bounding_radius(), 2.F, glow_data(0.2f, 0.75f, 0.2f, 0.75f));
 		}
 		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
 		{
-			draw_manager->add_circle(rTarget->get_position(), 50 + rTarget->get_bounding_radius(), MAKE_COLOR(255, 0, 0, 255), 2);
-			draw_manager->add_circle(rTarget->get_position(), fmod((250.f * -gametime->get_time()), (50 + rTarget->get_bounding_radius())), MAKE_COLOR(255, 0, 0, 255), 2);
+			draw_manager->add_circle_with_glow(rTarget->get_position(), MAKE_COLOR(255, 0, 0, 255), 50 + rTarget->get_bounding_radius(), 2.F, glow_data(0.2f, 0.75f, 0.2f, 0.75f));
 		}
 	}
 
