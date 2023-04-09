@@ -153,6 +153,7 @@ namespace brand {
 			TreeEntry* eExtraHarass;
 		}
 		namespace automatic {
+			TreeEntry* towerCheck;
 			TreeEntry* qeLogic;
 			TreeEntry* qStun;
 			TreeEntry* wStun;
@@ -238,6 +239,14 @@ namespace brand {
 		}
 	}
 
+	bool isUnderTower(const game_object_script& target)
+	{
+		for (const auto& turret : entitylist->get_enemy_turrets())
+			if (target->get_position().distance(turret->get_position()) <= 750 + target->get_bounding_radius())
+				return true;
+		return false;
+	}
+
 	bool can_cast(const spellslot& spellslot)
 	{
 		const auto spell = myhero->get_spell(spellslot);
@@ -254,7 +263,7 @@ namespace brand {
 
 		const auto cooldown = spell->cooldown();
 		//IN CD = (state & (1 << 5)) != 0
-		return cooldown < (ping->get_ping() / 1000.f) + 0.033f && (state & (1 << 5)) != 0;
+		return cooldown < (getPing()) + 0.033f && (state & (1 << 5)) != 0;
 	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
@@ -1488,7 +1497,7 @@ namespace brand {
 	void automatic()
 	{
 		// Check if you didn't already cast
-		if (hasCasted) return;
+		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero))) return;
 
 		// Store every settings
 		const auto& ccQ = settings::automatic::qStun->get_bool() && isQReady;
@@ -1772,6 +1781,7 @@ namespace brand {
 
 		// Misc tab
 		const auto miscTab = mainMenu->add_tab("open.brand.misc", "Misc");
+		settings::automatic::towerCheck = miscTab->add_checkbox("open.brand.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::qeLogic = miscTab->add_checkbox("open.brand.misc.qelogic", "Try to Q-E", false);
 		settings::automatic::qStun = miscTab->add_checkbox("open.brand.misc.qstun", "Auto Q on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.brand.misc.wstun", "Auto W on stun", true);

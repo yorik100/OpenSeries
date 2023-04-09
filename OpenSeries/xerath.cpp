@@ -168,6 +168,7 @@ namespace xerath {
 			TreeEntry* rRange;
 			TreeEntry* manualREnable;
 			TreeEntry* avoidShields;
+			TreeEntry* towerCheck;
 			TreeEntry* eStun;
 			TreeEntry* wStun;
 			TreeEntry* eDash;
@@ -270,6 +271,14 @@ namespace xerath {
 		}
 	}
 
+	bool isUnderTower(const game_object_script& target)
+	{
+		for (const auto& turret : entitylist->get_enemy_turrets())
+			if (target->get_position().distance(turret->get_position()) <= 750 + target->get_bounding_radius())
+				return true;
+		return false;
+	}
+
 	bool can_cast(const spellslot& spellslot)
 	{
 		const auto spell = myhero->get_spell(spellslot);
@@ -286,7 +295,7 @@ namespace xerath {
 
 		const auto cooldown = spell->cooldown();
 		//IN CD = (state & (1 << 5)) != 0
-		return cooldown < (ping->get_ping() / 1000.f) + 0.033f && (state & (1 << 5)) != 0;
+		return cooldown < (getPing()) + 0.033f && (state & (1 << 5)) != 0;
 	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
@@ -1708,7 +1717,7 @@ namespace xerath {
 	void automatic()
 	{
 		// Check if you didn't already cast
-		if (hasCasted) return;
+		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero))) return;
 
 		// Store every settings
 		auto ccE = settings::automatic::eStun->get_bool() && isEReady;
@@ -1936,6 +1945,7 @@ namespace xerath {
 		settings::automatic::rRange->set_tooltip("Set to 0 to disable near mouse feature");
 		settings::automatic::manualREnable = miscTab->add_checkbox("open.xerath.misc.manualrenable", "Start channeling R with manual R key", false);
 		settings::automatic::avoidShields = miscTab->add_checkbox("open.xerath.misc.avoidshields", "Try to avoid shields", true);
+		settings::automatic::towerCheck = miscTab->add_checkbox("open.xerath.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
 		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.edash", "Auto E on dash", true);
