@@ -1826,19 +1826,19 @@ namespace brand {
 		// Q
 		if (settings::draws::spellRanges::qRange->get_bool()) {
 			const auto& alpha = isQReady ? 255 : 50;
-			drawCircle(myhero->get_position(), BRAND_Q_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_Q_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(204, 127, 0, alpha), 2);
 		}
 
 		// W
 		if (settings::draws::spellRanges::wRange->get_bool()) {
 			const auto& alpha = isWReady ? 255 : 50;
-			drawCircle(myhero->get_position(), BRAND_W_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 0, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_W_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 0, 0, alpha), 2);
 		}
 
 		// E
 		if (settings::draws::spellRanges::eRange->get_bool()) {
 			const auto& alpha = isEReady ? 255 : 50;
-			drawCircle(myhero->get_position(), BRAND_E_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_E_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, alpha), 2);
 		}
 
 		// ExtraE
@@ -1849,14 +1849,14 @@ namespace brand {
 				if (!customIsValid(target.target, BRAND_E_RANGE)) continue;
 
 				const auto& isMainTarget = bestETarget && target.target->get_handle() == bestETarget->get_handle();
-				drawCircle(target.target->get_position(), target.extraRange ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, isMainTarget ? 160 : 75), 2);
+				drawCircle(target.target->get_position(), target.extraRange ? BRAND_E_MAX_BOUNCE_RANGE : BRAND_E_MIN_BOUNCE_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(0, 127, 255, isMainTarget ? 160 : 75), 2);
 			}
 		}
 
 		// R
 		if (settings::draws::spellRanges::rRange->get_bool()) {
 			const auto& alpha = isRReady ? 255 : 50;
-			drawCircle(myhero->get_position(), BRAND_R_RANGE, 400, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 127, 0, alpha), 2);
+			drawCircle(myhero->get_position(), BRAND_R_RANGE, 100, settings::draws::spellRanges::legCircles->get_bool(), MAKE_COLOR(255, 127, 0, alpha), 2);
 		}
 
 		// Misc
