@@ -2042,7 +2042,7 @@ namespace xerath {
 		// Draw W on ground
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
-				draw_manager->add_filled_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 64));
+				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 255, 255, 255), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 			}
 		}
 
@@ -2050,7 +2050,7 @@ namespace xerath {
 		if (settings::draws::rRadius->get_bool())
 		{
 			for (const auto& particle : ultParticleList) {
-				draw_manager->add_filled_circle(particle.particle->get_position(), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 64));
+				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 127, 0, 255), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 			}
 		}
 
@@ -2101,8 +2101,7 @@ namespace xerath {
 		// Draw W on ground
 		if (settings::draws::wRadius->get_bool()) {
 			for (const auto& particle : particleList) {
-				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS, MAKE_COLOR(0, 0, 255, 255), 2);
-				draw_manager->add_circle(particle.particle->get_position(), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(0, 255, 255, 255), 2);
+				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 0, 255, 255), XERATH_W_OUTER_RADIUS, 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
 			}
 		}
 
@@ -2110,8 +2109,7 @@ namespace xerath {
 		if (settings::draws::rRadius->get_bool())
 		{
 			for (const auto& particle : ultParticleList) {
-				draw_manager->add_circle(particle.particle->get_position(), r->get_radius(), MAKE_COLOR(255, 0, 0, 255), 2);
-				draw_manager->add_circle(particle.particle->get_position(), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), MAKE_COLOR(255, 127, 0, 255), 2);
+				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 0, 0, 255), r->get_radius(), 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
 			}
 		}
 
