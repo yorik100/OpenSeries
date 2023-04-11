@@ -3,10 +3,10 @@
 
 namespace brand
 {
-	void debugPrint(const std::string& str, ...);
-	bool isUnderTower(const game_object_script& target);
-	bool can_cast(const spellslot& spellslot);
-	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness);
+	inline void debugPrint(const std::string& str, ...);
+	inline bool isUnderTower(const game_object_script& target);
+	inline bool can_cast(const spellslot& spellslot);
+	inline void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness);
 	inline bool isMoving(const game_object_script& target);
 	inline float timeBeforeWHits(const game_object_script& target);
 	inline float timeBeforeWHitsLocation(vector& position);

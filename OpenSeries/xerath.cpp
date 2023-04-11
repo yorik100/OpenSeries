@@ -298,6 +298,16 @@ namespace xerath {
 		return cooldown < (getPing()) + 0.033f && (state & (1 << 5)) != 0;
 	}
 
+	bool isStunnable(const game_object_script& target)
+	{
+		return !target->get_is_cc_immune() && !target->get_is_unstoppable() && !target->has_buff({ buff_hash("MorganaE"),  buff_hash("bansheesveil"),  buff_hash("itemmagekillerveil"), buff_hash("malzaharpassiveshield"), buff_hash("DrMundoPImmunity") });
+	}
+
+	bool isSlowable(const game_object_script& target)
+	{
+		return !target->get_is_cc_immune() && !target->get_is_unstoppable() && !target->has_buff({ buff_hash("MorganaE"),  buff_hash("bansheesveil"),  buff_hash("itemmagekillerveil"), buff_hash("malzaharpassiveshield"), buff_hash("Highlander") });
+	}
+
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
 	{
 		const auto points = geometry::geometry::circle_points(pos, radius, quality);
@@ -329,6 +339,7 @@ namespace xerath {
 	{
 		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
 		float returnTimeToHit = FLT_MAX;
+		if (!target || !isSlowable(target)) return returnTimeToHit;
 		for (const auto& particle : particleList) {
 			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME - gametime->get_time();
 			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
@@ -353,7 +364,8 @@ namespace xerath {
 
 	bool willGetHitByE(const game_object_script& target)
 	{
-		if (!target) return false;
+		// Get if target will get hit by E
+		if (!target || !isStunnable(target)) return false;
 		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
 		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.1F) return true;
 		for (const auto& missile : eMissileList)
@@ -375,6 +387,7 @@ namespace xerath {
 
 	bool willGetHitByR(const game_object_script& target)
 	{
+		if (!target) return false;
 		for (const auto& particle : ultParticleList) {
 			const auto& timeBeforeHit = particle.creationTime + XERATH_R_PARTICLE_TIME - gametime->get_time();
 			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
@@ -2221,7 +2234,7 @@ namespace xerath {
 		}
 		case buff_hash("Xerath_E_tar"):
 		{
-			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_enemy())
+			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_enemy() && isStunnable(obj->get_particle_attachment_object()))
 			{
 				hitByETime[obj->get_particle_attachment_object()->get_handle()] = gametime->get_time();
 			}

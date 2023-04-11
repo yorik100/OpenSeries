@@ -297,6 +297,7 @@ namespace brand {
 	{
 		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
 		float returnTimeToHit = FLT_MAX;
+		if (!target) return returnTimeToHit;
 		for (const auto& particle : particleList) {
 			const auto& timeBeforeHit = particle.creationTime + BRAND_W_PARTICLE_TIME - gametime->get_time();
 			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
