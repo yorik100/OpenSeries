@@ -338,6 +338,7 @@ namespace xerath {
 	float timeBeforeWHits(const game_object_script& target)
 	{
 		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
+		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathArcaneBarrage2")) return XERATH_W_PARTICLE_TIME + 0.1F;
 		float returnTimeToHit = FLT_MAX;
 		if (!target || !isSlowable(target)) return returnTimeToHit;
 		for (const auto& particle : particleList) {
