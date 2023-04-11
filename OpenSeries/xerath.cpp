@@ -341,9 +341,9 @@ namespace xerath {
 		float returnTimeToHit = FLT_MAX;
 		if (!target || !isSlowable(target)) return returnTimeToHit;
 		for (const auto& particle : particleList) {
-			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME - gametime->get_time();
+			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME + 0.1F - gametime->get_time();
 			const auto& unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
-			if (particle.particle->is_valid() && unitPositionDist <= w->get_radius() && returnTimeToHit > timeBeforeHit)
+			if (particle.particle->is_valid() && unitPositionDist <= XERATH_W_OUTER_RADIUS && returnTimeToHit > timeBeforeHit)
 				returnTimeToHit = timeBeforeHit;
 		}
 		return returnTimeToHit;
@@ -354,9 +354,9 @@ namespace xerath {
 		// Get time to hit before any W particle hits a specific location (including ally W particles, useful in one for all)
 		float returnTimeToHit = FLT_MAX;
 		for (const auto& particle : particleList) {
-			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME - gametime->get_time();
+			const auto& timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME + 0.1F - gametime->get_time();
 			const auto& unitPositionDist = position.distance(particle.particle->get_position());
-			if (particle.particle->is_valid() && unitPositionDist <= w->get_radius() && returnTimeToHit > timeBeforeHit)
+			if (particle.particle->is_valid() && unitPositionDist <= XERATH_W_OUTER_RADIUS && returnTimeToHit > timeBeforeHit)
 				returnTimeToHit = timeBeforeHit;
 		}
 		return returnTimeToHit;
