@@ -60,6 +60,7 @@ namespace xerath
 	inline void calcs();
 	inline bool debuffCantCast();
 	inline bool isCastingSpell();
+	inline bool isCastingAuto();
 	inline bool canCastSpells();
 	inline void targetSelectorSort();
 	inline void manualHandling();

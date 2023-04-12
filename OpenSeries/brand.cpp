@@ -154,6 +154,7 @@ namespace brand {
 		}
 		namespace automatic {
 			TreeEntry* towerCheck;
+			TreeEntry* attackCheck;
 			TreeEntry* qeLogic;
 			TreeEntry* qStun;
 			TreeEntry* wStun;
@@ -1195,16 +1196,18 @@ namespace brand {
 		// Check if we're already casting a spell
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
 		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack())
-		{
-			if (castingTime < getPing() + 0.033 && castingTime > 0)
-			{
+			if (castingTime > getPing() + 0.033 && castingTime > 0)
 				return !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta();
-			}
-			else
-			{
-				lastCast = 0;
-			}
-		}
+		return false;
+	}
+
+	bool isCastingAuto()
+	{
+		// Check if we're casting an auto
+		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack())
+			if (castingTime > getPing() - 0.033 && castingTime > 0)
+				return true;
 		return false;
 	}
 
@@ -1221,6 +1224,8 @@ namespace brand {
 		if (lastCast > gametime->get_time()) return false;
 
 		if (isCastingSpell()) return false;
+
+		if (settings::automatic::attackCheck->get_bool() && isCastingAuto()) return false;
 
 		return true;
 	}
@@ -1783,6 +1788,7 @@ namespace brand {
 		// Misc tab
 		const auto miscTab = mainMenu->add_tab("open.brand.misc", "Misc");
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.brand.misc.towercheck", "Don't auto cast under turret", false);
+		settings::automatic::attackCheck = miscTab->add_checkbox("open.brand.misc.attackcheck", "Don't cancel auto to cast", false);
 		settings::automatic::qeLogic = miscTab->add_checkbox("open.brand.misc.qelogic", "Try to Q-E", false);
 		settings::automatic::qStun = miscTab->add_checkbox("open.brand.misc.qstun", "Auto Q on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.brand.misc.wstun", "Auto W on stun", true);

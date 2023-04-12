@@ -49,6 +49,7 @@ namespace brand
 	inline bool debuffCantCast();
 	inline bool isCastingSpell();
 	inline bool canCastSpells();
+	inline bool isCastingAuto();
 	inline void targetSelectorSort();
 	inline void combo();
 	inline void harass();

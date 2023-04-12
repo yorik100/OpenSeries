@@ -169,6 +169,7 @@ namespace xerath {
 			TreeEntry* manualREnable;
 			TreeEntry* avoidShields;
 			TreeEntry* towerCheck;
+			TreeEntry* attackCheck;
 			TreeEntry* eStun;
 			TreeEntry* wStun;
 			TreeEntry* eDash;
@@ -1310,16 +1311,18 @@ namespace xerath {
 		// Check if we're already casting a spell
 		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
 		if (myhero->get_active_spell() && !myhero->get_active_spell()->is_auto_attack())
-		{
-			if (castingTime < getPing() + 0.033 && castingTime > 0)
-			{
+			if (castingTime > getPing() + 0.033 && castingTime > 0)
 				return !myhero->get_active_spell()->is_channeling() && !myhero->get_active_spell()->get_spell_data()->is_insta();
-			}
-			else
-			{
-				lastCast = 0;
-			}
-		}
+		return false;
+	}
+
+	bool isCastingAuto()
+	{
+		// Check if we're casting an auto
+		const auto& castingTime = myhero->get_active_spell() ? myhero->get_active_spell()->cast_start_time() - gametime->get_time() : 0;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack())
+			if (castingTime > getPing() - 0.033 && castingTime > 0)
+				return true;
 		return false;
 	}
 
@@ -1336,6 +1339,8 @@ namespace xerath {
 		if (lastCast > gametime->get_time() && !ultBuff) return false;
 
 		if (isCastingSpell()) return false;
+
+		if (settings::automatic::attackCheck->get_bool() && isCastingAuto()) return false;
 
 		return true;
 	}
@@ -1959,6 +1964,7 @@ namespace xerath {
 		settings::automatic::manualREnable = miscTab->add_checkbox("open.xerath.misc.manualrenable", "Start channeling R with manual R key", false);
 		settings::automatic::avoidShields = miscTab->add_checkbox("open.xerath.misc.avoidshields", "Try to avoid shields", true);
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.xerath.misc.towercheck", "Don't auto cast under turret", false);
+		settings::automatic::attackCheck = miscTab->add_checkbox("open.xerath.misc.attackcheck", "Don't cancel auto to cast", false);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
 		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.edash", "Auto E on dash", true);
