@@ -43,7 +43,7 @@ namespace brand
 	inline bool canRBounce(const game_object_script& target);
 	inline int rBounceCount(const game_object_script& target);
 	inline game_object_script findClosestMinion(const game_object_script& target);
-	inline bool limitedTick(int msTime);
+	inline bool limitedTick(float msTime);
 	inline bool eSpam();
 	inline void calcs();
 	inline bool debuffCantCast();

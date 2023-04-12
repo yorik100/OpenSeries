@@ -56,7 +56,7 @@ namespace xerath
 	inline bool isRecalling(const game_object_script& target);
 	inline bool isValidRecalling(const game_object_script& target, float range, const vector& from);
 	inline bool customIsValid(const game_object_script& target, float range, const vector& from, bool invul);
-	inline bool limitedTick(int msTime);
+	inline bool limitedTick(float msTime);
 	inline void calcs();
 	inline bool debuffCantCast();
 	inline bool isCastingSpell();
