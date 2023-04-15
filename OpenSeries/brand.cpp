@@ -275,7 +275,7 @@ namespace brand {
 	bool can_cast(const spellslot& spellslot)
 	{
 		const auto spell = myhero->get_spell(spellslot);
-		if (!spell)
+		if (!spell || !myhero->can_cast())
 		{
 			return false;
 		}
