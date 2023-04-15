@@ -5,6 +5,7 @@ namespace xerath
 {
 	inline void debugPrint(const std::string& str, ...);
 	inline bool isUnderTower(const game_object_script& target);
+	inline bool hasEnoughMana(const spellslot& spellslot);
 	inline bool can_cast(const spellslot& spellslot);
 	inline bool isStunnable(const game_object_script& target);
 	inline bool isSlowable(const game_object_script& target);

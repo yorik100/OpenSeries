@@ -117,6 +117,11 @@ namespace xerath {
 		spell_hash("SionR")
 	};
 
+	static constexpr float qMana[] { 80, 90, 100, 110, 120 };
+	static constexpr float wMana[] { 70, 80, 90, 100, 110 };
+	static constexpr float eMana[] { 60, 65, 70, 75, 80 };
+	static constexpr float rMana[] { 100, 100, 100 };
+
 	script_spell* q;
 	script_spell* w;
 	script_spell* e;
@@ -280,6 +285,25 @@ namespace xerath {
 		return false;
 	}
 
+	bool hasEnoughMana(const spellslot& spellslot)
+	{
+		switch (spellslot)
+		{
+		case spellslot::q:
+		{
+			return qBuff || myhero->get_mana() >= qMana[myhero->get_spell(spellslot)->level() - 1];
+		}
+		case spellslot::w:
+			return myhero->get_mana() >= wMana[myhero->get_spell(spellslot)->level() - 1];
+		case spellslot::e:
+			return myhero->get_mana() >= eMana[myhero->get_spell(spellslot)->level() - 1];
+		case spellslot::r:
+			return ultBuff || myhero->get_mana() >= rMana[myhero->get_spell(spellslot)->level() - 1];
+		default:
+			return true;
+		}
+	}
+
 	bool can_cast(const spellslot& spellslot)
 	{
 		const auto spell = myhero->get_spell(spellslot);
@@ -292,6 +316,11 @@ namespace xerath {
 		if (state == spell_state::Ready)
 		{
 			return true;
+		}
+
+		if (!hasEnoughMana(spellslot))
+		{
+			return false;
 		}
 
 		const auto cooldown = spell->cooldown();
@@ -1293,17 +1322,8 @@ namespace xerath {
 
 	bool debuffCantCast()
 	{
-		// Check if player has any debuff that prevents spell casting
-		const auto& stunBuffList = { buff_type::Stun, buff_type::Silence, buff_type::Taunt, buff_type::Polymorph, buff_type::Fear, buff_type::Charm, buff_type::Suppression, buff_type::Knockup, buff_type::Knockback, buff_type::Asleep };
-		for (auto&& buff : myhero->get_bufflist())
-		{
-			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
-			for (const auto& buffType : stunBuffList)
-			{
-				if (buff->get_type() == buffType) return true;
-			}
-		}
-		return false;
+		// Check if player can cast
+		return !myhero->can_cast();
 	}
 
 	bool isCastingSpell()

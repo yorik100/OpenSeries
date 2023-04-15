@@ -109,6 +109,11 @@ namespace brand {
 		spell_hash("SionR")
 	};
 
+	static constexpr float qMana[] { 50, 50, 50, 50, 50 };
+	static constexpr float wMana[] { 60, 70, 80, 90, 100 };
+	static constexpr float eMana[] { 70, 75, 80, 85, 90 };
+	static constexpr float rMana[] { 100, 100, 100 };
+
 	game_object_script bestETarget;
 
 	script_spell* q;
@@ -248,6 +253,25 @@ namespace brand {
 		return false;
 	}
 
+	bool hasEnoughMana(const spellslot& spellslot)
+	{
+		switch (spellslot)
+		{
+		case spellslot::q:
+		{
+			return myhero->get_mana() >= qMana[myhero->get_spell(spellslot)->level() - 1];
+		}
+		case spellslot::w:
+			return myhero->get_mana() >= wMana[myhero->get_spell(spellslot)->level() - 1];
+		case spellslot::e:
+			return myhero->get_mana() >= eMana[myhero->get_spell(spellslot)->level() - 1];
+		case spellslot::r:
+			return myhero->get_mana() >= rMana[myhero->get_spell(spellslot)->level() - 1];
+		default:
+			return true;
+		}
+	}
+
 	bool can_cast(const spellslot& spellslot)
 	{
 		const auto spell = myhero->get_spell(spellslot);
@@ -260,6 +284,11 @@ namespace brand {
 		if (state == spell_state::Ready)
 		{
 			return true;
+		}
+
+		if (!hasEnoughMana(spellslot))
+		{
+			return false;
 		}
 
 		const auto cooldown = spell->cooldown();
@@ -1178,17 +1207,8 @@ namespace brand {
 
 	bool debuffCantCast()
 	{
-		// Check if player has any debuff that prevents spell casting
-		const auto& stunBuffList = { buff_type::Stun, buff_type::Silence, buff_type::Taunt, buff_type::Polymorph, buff_type::Fear, buff_type::Charm, buff_type::Suppression, buff_type::Knockup, buff_type::Knockback, buff_type::Asleep };
-		for (auto&& buff : myhero->get_bufflist())
-		{
-			if (buff == nullptr || !buff->is_valid() || !buff->is_alive()) continue;
-			for (const auto& buffType : stunBuffList)
-			{
-				if (buff->get_type() == buffType) return true;
-			}
-		}
-		return false;
+		// Check if player can cast
+		return !myhero->can_cast();
 	}
 
 	bool isCastingSpell()
