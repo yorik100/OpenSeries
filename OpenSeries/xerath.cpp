@@ -1338,7 +1338,7 @@ namespace xerath {
 
 		if (lastCast > gametime->get_time() && !ultBuff) return false;
 
-		if (isCastingSpell()) return false;
+		if (!qBuff && isCastingSpell()) return false;
 
 		if (settings::automatic::attackCheck->get_bool() && isCastingAuto()) return false;
 
@@ -1531,7 +1531,8 @@ namespace xerath {
 				{
 					if (castQLong(target, "combo")) return;
 				}
-				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
+				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius()
+					&& target->get_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius())
 				{
 					qTarget = target;
 					hasCasted = true;
