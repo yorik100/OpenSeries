@@ -397,7 +397,7 @@ namespace xerath {
 		// Get if target will get hit by E
 		if (!target || !isStunnable(target)) return false;
 		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
-		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.1F) return true;
+		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.15F) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
