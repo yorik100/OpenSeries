@@ -2103,8 +2103,10 @@ namespace brand {
 
 	void on_buff(game_object_script& sender, buff_instance_script& buff, const bool gain)
 	{
-		// Detect if someone is reviving from Guardian Angel
-		if (!gain && sender->is_valid() && buff->get_hash_name() == buff_hash("willrevive") && sender->is_playing_animation(buff_hash("Death")) && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
+		if (!sender || !buff) return;
+		
+		// Detects if someone is reviving from Guardian Angel
+		if (!gain && buff->get_hash_name() == buff_hash("willrevive") && sender->is_playing_animation(buff_hash("Death")) && sender->has_item(ItemId::Guardian_Angel) != spellslot::invalid)
 		{
 			guardianReviveTime[sender->get_handle()] = deathAnimTime[sender->get_handle()] + 4;
 			return;
