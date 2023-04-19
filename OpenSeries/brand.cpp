@@ -160,6 +160,7 @@ namespace brand {
 		namespace automatic {
 			TreeEntry* towerCheck;
 			TreeEntry* attackCheck;
+			TreeEntry* fowPred;
 			TreeEntry* qeLogic;
 			TreeEntry* qStun;
 			TreeEntry* wStun;
@@ -200,6 +201,8 @@ namespace brand {
 	buff_instance_script elderBuff;
 
 	game_object_script spamETarget;
+
+	TreeTab* aurora_prediction;
 
 	bool hasCasted = false;
 	bool isQReady = false;
@@ -298,14 +301,17 @@ namespace brand {
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
 	{
+		if (legsense)
+		{
+			draw_manager->add_circle_with_glow(pos, color, radius, thickness, glow_data(0.1f, 0.75f, 0.f, 1.f));
+			return;
+		}
 		const auto points = geometry::geometry::circle_points(pos, radius, quality);
 		for (int i = 0; i < points.size(); i++)
 		{
 			const int next_index = (i + 1) % points.size();
 			const auto start = points[i];
 			const auto end = points[next_index];
-			if (legsense && (start.is_wall() || start.is_building()) && (end.is_wall() || end.is_building()))
-				continue;
 
 			vector screenPosStart;
 			renderer->world_to_screen(start, screenPosStart);
@@ -314,7 +320,7 @@ namespace brand {
 			if (!renderer->is_on_screen(screenPosStart, 50) && !renderer->is_on_screen(screenPosEnd, 50))
 				continue;
 
-			draw_manager->add_line(points[i].set_z(legsense ? -1 : pos.z), points[next_index].set_z(legsense ? -1 : pos.z), color, thickness);
+			draw_manager->add_line(points[i].set_z(pos.z), points[next_index].set_z(pos.z), color, thickness);
 		}
 	}
 
@@ -528,7 +534,7 @@ namespace brand {
 		const auto& performECombo = settings::automatic::qeLogic->get_bool() && (eCombo && couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && trueTimeToHit > 0.5 && target->get_position().distance(myhero->get_position()) <= BRAND_E_RANGE && prediction->get_prediction(target, 0.25).get_unit_position().distance(myhero->get_position()) <= BRAND_E_RANGE && !targetAblaze);
 	 	const auto& isQStun = targetAblaze || (wTime < timeToHit - 0.2) || performECombo;
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int())) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
+	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 	 	{
 	 		q->cast(p.get_cast_position());
 			if (performECombo)
@@ -551,7 +557,7 @@ namespace brand {
 		const auto& timeToHit = w->get_delay() + getPing();
 		const auto& trueTimeToHit = w->get_delay();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int())) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
+		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
 			hasCasted = true;
@@ -566,7 +572,7 @@ namespace brand {
 		// Cast E
 		if (hasCasted) return true;
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding) {
+		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible()) {
 			e->cast(target);
 			return true;
 		}
@@ -581,7 +587,7 @@ namespace brand {
 		const auto& timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto& trueTimeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit - 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding) {
+		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding && target->is_visible()) {
 			r->cast(target);
 			return true;
 		}
@@ -960,6 +966,9 @@ namespace brand {
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
+		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool())
+			return prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible;
+
 		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
 		return isValid;
@@ -1142,6 +1151,9 @@ namespace brand {
 
 		// Manage auto attacks
 		orbwalker->set_attack((attackOrderTime > gametime->get_time() - 0.066) ? ((orbwalker->combo_mode()) ? false : true) : true);
+
+		// Get aurora pred menu
+		aurora_prediction = menu->get_tab("aurora_prediction");
 
 		// Allows casting a spell for this update
 		hasCasted = false;
@@ -1809,6 +1821,7 @@ namespace brand {
 		const auto miscTab = mainMenu->add_tab("open.brand.misc", "Misc");
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.brand.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::attackCheck = miscTab->add_checkbox("open.brand.misc.attackcheck", "Don't cancel auto to cast", false);
+		settings::automatic::fowPred = miscTab->add_checkbox("open.brand.misc.fowpred", "AuroraPred FoW prediction", true);
 		settings::automatic::qeLogic = miscTab->add_checkbox("open.brand.misc.qelogic", "Try to Q-E", false);
 		settings::automatic::qStun = miscTab->add_checkbox("open.brand.misc.qstun", "Auto Q on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.brand.misc.wstun", "Auto W on stun", true);
@@ -2190,7 +2203,7 @@ namespace brand {
 		// Warning if trolling
 		scheduler->delay_action(0.1f, []()
 			{
-				const auto aurora_prediction = menu->get_tab("aurora_prediction");
+				aurora_prediction = menu->get_tab("aurora_prediction");
 				if (!aurora_prediction || aurora_prediction->is_hidden() != false)
 				{
 					myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performance !</font>");
