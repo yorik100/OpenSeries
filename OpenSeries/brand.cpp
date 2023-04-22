@@ -575,6 +575,7 @@ namespace brand {
 		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible())
 		{
 			e->cast(target);
+			debugPrint("[%i:%02d] Casted E on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -591,6 +592,7 @@ namespace brand {
 		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding && target->is_visible())
 		{
 			r->cast(target);
+			debugPrint("[%i:%02d] Casted R on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -961,14 +963,14 @@ namespace brand {
 		return isValid;
 	}
 
-	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero, bool invul = false)
+	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = myhero->get_position(), bool invul = false)
 	{
 		// Custom isValid
 
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
 
-		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible)
+		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible	&& from.distance(target) <= range)
 			return true;
 
 		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
