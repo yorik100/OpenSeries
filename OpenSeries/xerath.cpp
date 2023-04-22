@@ -1229,8 +1229,8 @@ namespace xerath {
 
 		if (isYuumiAttached(target)) return false;
 
-		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool())
-			return prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible;
+		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible)
+			return true;
 
 		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto& isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
@@ -1333,7 +1333,7 @@ namespace xerath {
 	bool debuffCantCast()
 	{
 		// Check if player can cast
-		return !myhero->can_cast();
+		return myhero->has_buff_type({ buff_type::Stun, buff_type::Asleep, buff_type::Fear, buff_type::Flee, buff_type::Charm, buff_type::Berserk, buff_type::Silence, buff_type::Taunt, buff_type::Suppression, buff_type::Knockback, buff_type::Knockup });
 	}
 
 	bool isCastingSpell()
@@ -1368,7 +1368,7 @@ namespace xerath {
 
 		if (lastCast > gametime->get_time() && !ultBuff) return false;
 
-		if (!qBuff && isCastingSpell()) return false;
+		if (isCastingSpell()) return false;
 
 		if (settings::automatic::attackCheck->get_bool() && isCastingAuto()) return false;
 
