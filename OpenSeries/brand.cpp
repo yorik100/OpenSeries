@@ -2218,16 +2218,16 @@ namespace brand {
 		);
 
 		// Add events
-		event_handler<events::on_update>::add_callback(on_update);
-		event_handler<events::on_env_draw>::add_callback(on_draw);
-		event_handler<events::on_draw>::add_callback(on_draw_real);
-		event_handler<events::on_create_object>::add_callback(on_create);
-		event_handler<events::on_delete_object>::add_callback(on_delete);
-		event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
-		event_handler<events::on_buff_lose>::add_callback(on_buff_lose);
-		event_handler<events::on_cast_spell>::add_callback(on_cast_spell);
-		event_handler<events::on_process_spell_cast>::add_callback(on_process_spell_cast);
-		event_handler<events::on_network_packet>::add_callback(on_network_packet);
+		event_handler<events::on_update>::add_callback(on_update, event_prority::high);
+		event_handler<events::on_env_draw>::add_callback(on_draw, event_prority::high);
+		event_handler<events::on_draw>::add_callback(on_draw_real, event_prority::high);
+		event_handler<events::on_create_object>::add_callback(on_create, event_prority::high);
+		event_handler<events::on_delete_object>::add_callback(on_delete, event_prority::high);
+		event_handler<events::on_buff_gain>::add_callback(on_buff_gain, event_prority::high);
+		event_handler<events::on_buff_lose>::add_callback(on_buff_lose, event_prority::high);
+		event_handler<events::on_cast_spell>::add_callback(on_cast_spell, event_prority::high);
+		event_handler<events::on_process_spell_cast>::add_callback(on_process_spell_cast, event_prority::high);
+		event_handler<events::on_network_packet>::add_callback(on_network_packet, event_prority::high);
 
 	}
 
