@@ -647,6 +647,7 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
 			hasCasted = true;
@@ -670,6 +671,7 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
 			return true;
@@ -694,6 +696,7 @@ namespace xerath {
 		const auto& predval = ((range - std::max(target->get_bounding_radius(), 50.f)) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
 		if ((p.hitchance >= getPredIntFromSettings(predval) || !target->is_visible()) && !isCastDash && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -716,6 +719,7 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			w->cast(p.get_cast_position());
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -737,7 +741,9 @@ namespace xerath {
 		const auto& wTime = timeBeforeWHits(target);
 		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) || !target->is_visible()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()])) {
+		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) || !target->is_visible()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()]))
+		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			e->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted E on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -748,7 +754,7 @@ namespace xerath {
 	bool castR(const game_object_script& target, std::string mode)
 	{
 		// Cast R
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = rPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -758,7 +764,9 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto& isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
 		const auto& overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
-		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) || !target->is_visible()) && !isCastDash && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage)) {
+		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) || !target->is_visible()) && !isCastDash && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage))
+		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			r->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -1226,7 +1234,6 @@ namespace xerath {
 		// Custom isValid
 
 		// If it's Yuumi that is attached then target is not valid
-
 		if (isYuumiAttached(target)) return false;
 
 		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible)
@@ -1549,8 +1556,10 @@ namespace xerath {
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() - 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime - 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady;
-			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() - 0.5, qDamageList[target->get_handle()]) && isQReady && qBuff;
+			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() - 0.5, qDamageList[target->get_handle()]) && qBuff;
 
+			//bool isQBuff = qBuff && qBuff->is_valid();
+			//	console->print("[%i:%02d] qBuff : %i canReleaseQ : %i", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, isQBuff, canReleaseQ);
 			// If no spells can be used on that target then go to next target
 			if (!canUseQ && !canUseW && !canUseE && !canChargeQ && !canReleaseQ) continue;
 
@@ -1561,6 +1570,7 @@ namespace xerath {
 			{
 				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
 				{
+					qTarget = target;
 					if (castQLong(target, "combo")) return;
 				}
 				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= XERATH_MAX_Q_RANGE + target->get_bounding_radius()
@@ -1635,6 +1645,7 @@ namespace xerath {
 			{
 				if (q2PredictionList[target->get_handle()].hitchance > hit_chance::impossible && isValidQ(target))
 				{
+					qTarget = target;
 					if (castQLong(target, "harass")) return;
 				}
 				if (prediction->get_prediction(target, q2->get_delay()).get_unit_position().distance(myhero->get_position()) <= (XERATH_MAX_Q_RANGE + std::max(target->get_bounding_radius(), 50.f)))

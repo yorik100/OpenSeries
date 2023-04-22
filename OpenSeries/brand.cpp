@@ -536,6 +536,7 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 	 	{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 	 		q->cast(p.get_cast_position());
 			if (performECombo)
 				spamETarget = target;
@@ -559,6 +560,7 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			w->cast(p.get_cast_position());
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -572,7 +574,9 @@ namespace brand {
 		// Cast E
 		if (hasCasted) return true;
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible()) {
+		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible())
+		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			e->cast(target);
 			return true;
 		}
@@ -587,7 +591,9 @@ namespace brand {
 		const auto& timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto& trueTimeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit - 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
-		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding && target->is_visible()) {
+		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding && target->is_visible())
+		{
+			lastCast = gametime->get_time() + 0.133 + getPing();
 			r->cast(target);
 			return true;
 		}
