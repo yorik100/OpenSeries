@@ -401,7 +401,7 @@ namespace xerath {
 		// Get if target will get hit by E
 		if (!target || !isStunnable(target)) return false;
 		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
-		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.15F) return true;
+		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.18F) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile) continue;
@@ -1552,7 +1552,7 @@ namespace xerath {
 			const auto& canUseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q->get_delay() - 0.5, qDamageList[target->get_handle()]) && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 50.f)) && !qBuff;
 			const auto& canUseW = settings::combo::wCombo->get_bool() && couldDamageLater(target, w->get_delay() - 0.5, wDamageList[target->get_handle()]) && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::combo::eCombo->get_bool() && couldDamageLater(target, trueELandingTime - 0.5, eDamageList[target->get_handle()]) && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
-			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady;
+			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && !qBuff;
 			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() - 0.5, qDamageList[target->get_handle()]) && qBuff;
 
 			//bool isQBuff = qBuff && qBuff->is_valid();
@@ -1625,7 +1625,7 @@ namespace xerath {
 			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 50.f)) && !qBuff;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
-			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady;
+			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady && !qBuff;
 			const auto& canReleaseQ = settings::harass::qHarass->get_bool() && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
@@ -2464,6 +2464,7 @@ namespace xerath {
 
 	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process)
 	{
+		//debugPrint("[%i:%02d] Spellcast on spellslot : %i", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, spellSlot);
 		lastCast = gametime->get_time() + 0.133 + getPing();
 	}
 
