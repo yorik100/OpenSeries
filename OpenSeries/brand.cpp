@@ -1257,6 +1257,8 @@ namespace brand {
 
 		if (lastCast > gametime->get_time()) return false;
 
+		if (evade->is_evading()) return false;
+
 		if (!isQReady && !isWReady && !isEReady && !isRReady) return false;
 
 		if (debuffCantCast()) return false;

@@ -636,7 +636,7 @@ namespace xerath {
 	bool castQShort(const game_object_script& target, std::string mode)
 	{
 		// Cast Q short
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = qPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -659,7 +659,7 @@ namespace xerath {
 	bool castQCharge(const game_object_script& target, std::string mode)
 	{
 		// Cast Q dummy
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = qDummyPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -680,7 +680,7 @@ namespace xerath {
 	bool castQLong(const game_object_script& target, std::string mode)
 	{
 		// Cast Q charged
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = q2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -705,7 +705,7 @@ namespace xerath {
 	bool castW(const game_object_script& target, std::string mode, bool wCenter = false)
 	{
 		// Cast W
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = !wCenter ? wPredictionList[target->get_handle()] : w2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -727,7 +727,7 @@ namespace xerath {
 	bool castE(const game_object_script& target, std::string mode)
 	{
 		// Cast E
-		if (hasCasted) return true;
+		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = ePredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -1366,7 +1366,7 @@ namespace xerath {
 
 		if (myhero->is_recalling()) return false;
 
-		if (lastCast > gametime->get_time() && !ultBuff) return false;
+		if (evade->is_evading()) return false;
 
 		if (qBuff || ultBuff) return true;
 
