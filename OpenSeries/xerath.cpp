@@ -647,9 +647,8 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			q->cast(p.get_cast_position());
-			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true, true);
+			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted short Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -671,7 +670,6 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
 			return true;
@@ -696,7 +694,6 @@ namespace xerath {
 		const auto& predval = ((range - std::max(target->get_bounding_radius(), 50.f)) >= XERATH_MAX_Q_RANGE) ? std::min(settings::hitchance::qHitchance->get_int(), 1) : settings::hitchance::qHitchance->get_int();
 		if ((p.hitchance >= getPredIntFromSettings(predval) || !target->is_visible()) && !isCastDash && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -719,7 +716,6 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			w->cast(p.get_cast_position());
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -743,7 +739,6 @@ namespace xerath {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::eHitchance->get_int()) || !target->is_visible()) && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, eDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			e->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted E on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
@@ -1360,6 +1355,8 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack())
 			if (castingTime > getPing() - 0.033 && castingTime > 0)
 				return true;
+		if (!orbwalker->can_move())
+			return true;
 		return false;
 	}
 

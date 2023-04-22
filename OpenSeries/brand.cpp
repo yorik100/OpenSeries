@@ -187,7 +187,7 @@ namespace brand {
 	static constexpr float BRAND_W_PARTICLE_TIME = 0.6f;
 	static constexpr float BRAND_Q_RANGE = 1050;
 	static constexpr float BRAND_W_RANGE = 900;
-	static constexpr float BRAND_E_RANGE = 660;
+	static constexpr float BRAND_E_RANGE = 650;
 	static constexpr float BRAND_E_MAX_BOUNCE_RANGE = 600;
 	static constexpr float BRAND_E_MIN_BOUNCE_RANGE = 300;
 	static constexpr float BRAND_R_RANGE = 750;
@@ -536,7 +536,6 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 	 	if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::qHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && (isQStun || qDamageList[target->get_handle()] > getTotalHP(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 	 	{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 	 		q->cast(p.get_cast_position());
 			if (performECombo)
 				spamETarget = target;
@@ -560,7 +559,6 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			w->cast(p.get_cast_position());
 			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
@@ -576,7 +574,6 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible())
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			e->cast(target);
 			return true;
 		}
@@ -593,7 +590,6 @@ namespace brand {
 		const auto& aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit - 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, trueTimeToHit - 0.1, rDamageList[target->get_handle()].damage) && aliveWhenLanding && target->is_visible())
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			r->cast(target);
 			return true;
 		}
@@ -1246,6 +1242,8 @@ namespace brand {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack())
 			if (castingTime > getPing() - 0.033 && castingTime > 0)
 				return true;
+		if (!orbwalker->can_move())
+			return true;
 		return false;
 	}
 
@@ -1339,11 +1337,11 @@ namespace brand {
 			const auto& couldUseQ = (canUseQ && qCanBeCasted(target));
 			const auto& couldUseE = settings::combo::eCombo->get_bool() && isEReady;
 
-			// If no spells can be used on that target then go to next target
-			if (!canUseQ && !canUseW && !canUseE && !canUseR) continue;
-
 			// Cancel autos if can E or if could Q
 			if (couldUseE || couldUseQ) attackOrderTime = gametime->get_time();
+
+			// If no spells can be used on that target then go to next target
+			if (!canUseQ && !canUseW && !canUseE && !canUseR) continue;
 
 			// Store data about R
 			const auto& isRBlocked = rCollision(target);
