@@ -1281,10 +1281,10 @@ namespace xerath {
 		hasCasted = false;
 
 		// Get ready spells
-		isQReady = can_cast(spellslot::q);
+		isQReady = can_cast(spellslot::q) || qBuff;
 		isWReady = can_cast(spellslot::w);
 		isEReady = can_cast(spellslot::e);
-		isRReady = can_cast(spellslot::r);
+		isRReady = can_cast(spellslot::r) || ultBuff;
 
 		// Get buffs
 		ultBuff = myhero->get_buff(buff_hash("xerathrshots"));
@@ -1333,7 +1333,7 @@ namespace xerath {
 	bool debuffCantCast()
 	{
 		// Check if player can cast
-		return myhero->has_buff_type({ buff_type::Stun, buff_type::Asleep, buff_type::Fear, buff_type::Flee, buff_type::Charm, buff_type::Berserk, buff_type::Silence, buff_type::Taunt, buff_type::Suppression, buff_type::Knockback, buff_type::Knockup });
+		return !myhero->can_cast() || myhero->has_buff_type({ buff_type::Stun, buff_type::Asleep, buff_type::Fear, buff_type::Flee, buff_type::Charm, buff_type::Berserk, buff_type::Silence, buff_type::Taunt, buff_type::Suppression, buff_type::Knockback, buff_type::Knockup });
 	}
 
 	bool isCastingSpell()

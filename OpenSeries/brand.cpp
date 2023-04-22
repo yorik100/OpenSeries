@@ -1220,7 +1220,7 @@ namespace brand {
 	bool debuffCantCast()
 	{
 		// Check if player can cast
-		return myhero->has_buff_type({ buff_type::Stun, buff_type::Asleep, buff_type::Fear, buff_type::Flee, buff_type::Charm, buff_type::Berserk, buff_type::Silence, buff_type::Taunt, buff_type::Suppression, buff_type::Knockback, buff_type::Knockup });
+		return !myhero->can_cast() || myhero->has_buff_type({ buff_type::Stun, buff_type::Asleep, buff_type::Fear, buff_type::Flee, buff_type::Charm, buff_type::Berserk, buff_type::Silence, buff_type::Taunt, buff_type::Suppression, buff_type::Knockback, buff_type::Knockup });
 	}
 
 	bool isCastingSpell()
