@@ -1625,7 +1625,7 @@ namespace xerath {
 			const auto& canUseQ = settings::harass::qHarass->get_bool() && isQReady && qPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && myhero->get_distance(target) <= (XERATH_MIN_Q_RANGE + std::max(target->get_bounding_radius(), 50.f)) && !qBuff;
 			const auto& canUseW = settings::harass::wHarass->get_bool() && isWReady && wPredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
 			const auto& canUseE = settings::harass::eHarass->get_bool() && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range;
-			const auto& canChargeQ = !canUseQ && settings::harass::qHarass->get_bool() && isQReady && !qBuff;
+			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::harass::qHarass->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && !qBuff;
 			const auto& canReleaseQ = settings::harass::qHarass->get_bool() && isQReady && qBuff;
 
 			// If no spells can be used on that target then go to next target
