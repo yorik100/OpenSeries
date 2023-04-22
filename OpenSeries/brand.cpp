@@ -1249,11 +1249,11 @@ namespace brand {
 
 		if (myhero->is_recalling()) return false;
 
+		if (lastCast > gametime->get_time()) return false;
+
 		if (!isQReady && !isWReady && !isEReady && !isRReady) return false;
 
 		if (debuffCantCast()) return false;
-
-		if (lastCast > gametime->get_time()) return false;
 
 		if (isCastingSpell()) return false;
 

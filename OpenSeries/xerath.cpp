@@ -1362,11 +1362,13 @@ namespace xerath {
 
 		if (myhero->is_recalling()) return false;
 
+		if (lastCast > gametime->get_time() && !ultBuff) return false;
+
+		if (qBuff || ultBuff) return true;
+
 		if (!isQReady && !isWReady && !isEReady && !isRReady && !ultBuff) return false;
 
 		if (debuffCantCast()) return false;
-
-		if (lastCast > gametime->get_time() && !ultBuff) return false;
 
 		if (isCastingSpell()) return false;
 
