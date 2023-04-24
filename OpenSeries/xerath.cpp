@@ -1286,7 +1286,7 @@ namespace xerath {
 		rTarget = game_object_script{};
 
 		// Allows casting a spell for this update
-		hasCasted = false;
+		hasCasted = evade->is_evading();
 
 		// Get ready spells
 		isQReady = can_cast(spellslot::q) || qBuff;
@@ -1371,8 +1371,6 @@ namespace xerath {
 		if (myhero->is_dead()) return false;
 
 		if (myhero->is_recalling()) return false;
-
-		if (evade->is_evading()) return false;
 
 		if (qBuff || ultBuff) return true;
 
