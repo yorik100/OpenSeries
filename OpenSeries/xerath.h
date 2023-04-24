@@ -69,6 +69,8 @@ namespace xerath
 	inline void harass();
 	inline void particleHandling();
 	inline void automatic();
+	inline void glowRemove();
+	inline void glowManager();
 	inline void createMenu();
 	inline void on_update();
 	inline void on_draw();

@@ -30,6 +30,13 @@ namespace xerath {
 		float stasisEnd = 0;
 	};
 
+	struct glowStruct {
+		game_object_script target;
+		uint32_t colour = 0;
+		float thickness = 0;
+		float blur = 0;
+	};
+
 	struct buffList {
 		float godBuff = 0;
 		float noKillBuff = 0;
@@ -49,6 +56,8 @@ namespace xerath {
 
 	std::vector<game_object_script> targets;
 	std::vector<game_object_script> eMissileList;
+	std::vector<game_object_script> glowObjectsActive;
+	std::vector<glowStruct> glowObjects;
 	std::vector<particleData> particleList;
 	std::vector<particleData> ultParticleList;
 	std::vector<eBounceTarget> eBounceTargets;
@@ -1272,10 +1281,7 @@ namespace xerath {
 		aurora_prediction = menu->get_tab("aurora_prediction");
 
 		// Reset targets
-		if (qTarget->is_valid())
-			glow->remove_glow(qTarget);
-		if (rTarget->is_valid())
-			glow->remove_glow(rTarget);
+		glowRemove();
 		qTarget = game_object_script{};
 		rTarget = game_object_script{};
 
@@ -1878,15 +1884,25 @@ namespace xerath {
 
 	}
 
+	void glowRemove()
+	{
+		for (const auto& obj : glowObjectsActive)
+			glow->remove_glow(obj);
+		glowObjectsActive.clear();
+	}
+
 	void glowManager()
 	{
+		glowRemove();
 		if (settings::draws::qIndicator->get_bool() && qTarget && qTarget->is_valid() && !qTarget->is_dead())
 		{
 			glow->apply_glow(qTarget, MAKE_COLOR(255, 127, 0, 255), 3, 0);
+			glowObjectsActive.push_back(qTarget);
 		}
 		if (settings::draws::rIndicator->get_bool() && rTarget && rTarget->is_valid() && !rTarget->is_dead())
 		{
 			glow->apply_glow(rTarget, MAKE_COLOR(255, 0, 0, 255), 3, 0);
+			glowObjectsActive.push_back(rTarget);
 		}
 	}
 
@@ -2572,10 +2588,7 @@ namespace xerath {
 	void unload()
 	{
 		// Remove glows
-		if (qTarget && qTarget->is_valid())
-			glow->remove_glow(qTarget);
-		if (rTarget && rTarget->is_valid())
-			glow->remove_glow(rTarget);
+		glowRemove();
 
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
