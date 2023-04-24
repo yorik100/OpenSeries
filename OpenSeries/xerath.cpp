@@ -2571,6 +2571,12 @@ namespace xerath {
 
 	void unload()
 	{
+		// Remove glows
+		if (qTarget && qTarget->is_valid())
+			glow->remove_glow(qTarget);
+		if (rTarget && rTarget->is_valid())
+			glow->remove_glow(rTarget);
+
 		// Remove events
 		event_handler< events::on_update >::remove_handler(on_update);
 		event_handler< events::on_env_draw >::remove_handler(on_draw);
