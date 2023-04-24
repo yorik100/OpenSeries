@@ -185,6 +185,8 @@ namespace xerath {
 			TreeEntry* towerCheck;
 			TreeEntry* attackCheck;
 			TreeEntry* fowPred;
+			TreeEntry* qShortFollowup;
+			TreeEntry* wFollowup;
 			TreeEntry* eStun;
 			TreeEntry* wStun;
 			TreeEntry* eDash;
@@ -2022,6 +2024,8 @@ namespace xerath {
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.xerath.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::attackCheck = miscTab->add_checkbox("open.xerath.misc.attackcheck", "Don't cancel auto to cast", false);
 		settings::automatic::fowPred = miscTab->add_checkbox("open.xerath.misc.fowpred", "AuroraPred FoW prediction", true);
+		settings::automatic::qShortFollowup = miscTab->add_checkbox("open.xerath.misc.qshortfollowup", "Auto short Q on targets hit in FoW by E", true);
+		settings::automatic::wFollowup = miscTab->add_checkbox("open.xerath.misc.wfollowup", "Auto W on targets hit in FoW by E", true);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.xerath.misc.wstun", "Auto W on stun", true);
 		settings::automatic::eDash = miscTab->add_checkbox("open.xerath.misc.edash", "Auto E on dash", true);
@@ -2297,8 +2301,19 @@ namespace xerath {
 		}
 		case buff_hash("Xerath_E_tar"):
 		{
-			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_enemy() && isStunnable(obj->get_particle_attachment_object()))
+			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_valid() && obj->get_particle_attachment_object()->is_enemy() && isStunnable(obj->get_particle_attachment_object()))
 			{
+				if (settings::automatic::wFollowup->get_bool() && !hasCasted && isWReady && !obj->get_particle_attachment_object()->is_dead() && !obj->get_particle_attachment_object()->is_visible() && myhero->get_position().distance(obj->get_position()) <= XERATH_W_RANGE)
+				{
+					w->cast(obj->get_position());
+					hasCasted = true;
+				}
+				if (settings::automatic::qShortFollowup->get_bool() && !hasCasted && isQReady && !obj->get_particle_attachment_object()->is_dead() && !obj->get_particle_attachment_object()->is_visible() && myhero->get_position().distance(obj->get_position()) <= XERATH_MIN_Q_RANGE)
+				{
+					q->cast(obj->get_position());
+					myhero->update_charged_spell(q->get_slot(), obj->get_position(), true);
+					hasCasted = true;
+				}
 				hitByETime[obj->get_particle_attachment_object()->get_handle()] = gametime->get_time();
 			}
 			return;
