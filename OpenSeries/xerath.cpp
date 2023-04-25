@@ -2324,20 +2324,32 @@ namespace xerath {
 		}
 		case buff_hash("Xerath_E_tar"):
 		{
-			if (obj->get_particle_attachment_object() && obj->get_particle_attachment_object()->is_valid() && obj->get_particle_attachment_object()->is_enemy() && isStunnable(obj->get_particle_attachment_object()))
+			const auto target = obj->get_particle_attachment_object();
+			const auto pos = obj->get_position();
+			if (target && target->is_valid() && target->is_enemy() && isStunnable(target))
 			{
-				if (settings::automatic::wFollowup->get_bool() && !hasCasted && isWReady && !obj->get_particle_attachment_object()->is_dead() && !obj->get_particle_attachment_object()->is_visible() && myhero->get_position().distance(obj->get_position()) <= XERATH_W_RANGE)
-				{
-					w->cast(obj->get_position());
+				if (settings::automatic::wFollowup->get_bool() && !hasCasted && isWReady && !target->is_dead() && !target->is_visible() && myhero->get_position().distance(pos) <= XERATH_W_RANGE)
+				{	
+					w->cast(pos);
+					scheduler->delay_action(0.25f, [target, pos]()
+						{
+							if (settings::automatic::qShortFollowup->get_bool() && !hasCasted && isQReady && !target->is_dead() && !target->is_visible() && myhero->get_position().distance(pos) <= XERATH_MIN_Q_RANGE)
+							{
+								q->cast(pos);
+								myhero->update_charged_spell(q->get_slot(), pos, true);
+								hasCasted = true;
+							}
+						}
+					);
 					hasCasted = true;
 				}
-				if (settings::automatic::qShortFollowup->get_bool() && !hasCasted && isQReady && !obj->get_particle_attachment_object()->is_dead() && !obj->get_particle_attachment_object()->is_visible() && myhero->get_position().distance(obj->get_position()) <= XERATH_MIN_Q_RANGE)
+				if (settings::automatic::qShortFollowup->get_bool() && !hasCasted && isQReady && !target->is_dead() && !target->is_visible() && myhero->get_position().distance(pos) <= XERATH_MIN_Q_RANGE)
 				{
-					q->cast(obj->get_position());
-					myhero->update_charged_spell(q->get_slot(), obj->get_position(), true);
+					q->cast(pos);
+					myhero->update_charged_spell(q->get_slot(), pos, true);
 					hasCasted = true;
 				}
-				hitByETime[obj->get_particle_attachment_object()->get_handle()] = gametime->get_time();
+				hitByETime[target->get_handle()] = gametime->get_time();
 			}
 			return;
 		}
