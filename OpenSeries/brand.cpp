@@ -1064,7 +1064,7 @@ namespace brand {
 			}), minionList.end());
 		for (const auto& minion : minionList)
 		{
-			if (!customIsValid(target, BRAND_R_BOUNCE_RANGE, minion->get_position()) || target->get_handle() == minion->get_handle()) continue;
+			if (!customIsValid(target, BRAND_R_BOUNCE_RANGE, minion->get_position()) || target->get_handle() == minion->get_handle() || !target->is_visible()) continue;
 			const auto& collisionsFromHero = r->get_collision(myhero->get_position(), { minion->get_position() });
 			const auto& collisions = r->get_collision(minion->get_position(), { target->get_position() });
 			const auto& isColliding = !collisions.empty() || !collisionsFromHero.empty();
