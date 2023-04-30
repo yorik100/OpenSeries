@@ -1238,12 +1238,15 @@ namespace xerath {
 		return isValid;
 	}
 
-	bool customIsValid(const game_object_script& target, float range = FLT_MAX, const vector& from = vector::zero, bool invul = false)
+	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector& from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
 
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
+
+		if (from == vector::zero)
+			from = myhero->get_position();
 
 		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
 			return true;
