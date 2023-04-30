@@ -963,7 +963,7 @@ namespace brand {
 		return isValid;
 	}
 
-	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector& from = vector::zero, bool invul = false)
+	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
 
