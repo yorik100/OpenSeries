@@ -963,7 +963,7 @@ namespace brand {
 		return isValid;
 	}
 
-	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector& from = vector::zero, bool invul = false)
+	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
 
@@ -973,7 +973,7 @@ namespace brand {
 		if (from == vector::zero)
 			from = myhero->get_position();
 
-		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible	&& from.distance(target) <= range)
+		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
 			return true;
 
 		const auto& isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
