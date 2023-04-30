@@ -1131,7 +1131,7 @@ namespace brand {
 		float priority = 0;
 		for (const auto& target : eBounceTargets)
 		{
-			if (!customIsValid(target.target, BRAND_E_RANGE)) continue;
+			if (!customIsValid(target.target, BRAND_E_RANGE) || !target.target->is_visible()) continue;
 
 			if (prioTarget == nullptr || target.priority > priority || (target.priority == priority && target.distance < distance))
 			{
