@@ -305,9 +305,7 @@ namespace xerath {
 		switch (spellslot)
 		{
 		case spellslot::q:
-		{
 			return qBuff || myhero->get_mana() >= qMana[myhero->get_spell(spellslot)->level() - 1];
-		}
 		case spellslot::w:
 			return myhero->get_mana() >= wMana[myhero->get_spell(spellslot)->level() - 1];
 		case spellslot::e:
@@ -821,7 +819,6 @@ namespace xerath {
 		const auto& totalRadius = std::max(target->get_bounding_radius(), 65.f);
 		e->set_radius(60.f);
 		e->set_range(XERATH_E_RANGE + std::max(target->get_bounding_radius(), 65.f));
-		e->from = myhero->get_position().distance(target->get_position()) > totalRadius ? myhero->get_position().extend(target->get_position(), totalRadius) : target->get_position();
 		prediction_output p = e->get_prediction(target);
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
 
@@ -1296,16 +1293,16 @@ namespace xerath {
 		// Allows casting a spell for this update
 		hasCasted = evade->is_evading();
 
-		// Get ready spells
-		isQReady = can_cast(spellslot::q) || qBuff;
-		isWReady = can_cast(spellslot::w);
-		isEReady = can_cast(spellslot::e);
-		isRReady = can_cast(spellslot::r) || ultBuff;
-
 		// Get buffs
 		ultBuff = myhero->get_buff(buff_hash("xerathrshots"));
 		qBuff = myhero->get_buff(buff_hash("XerathArcanopulseChargeUp"));
 		elderBuff = myhero->get_buff(buff_hash("ElderDragonBuff"));
+
+		// Get ready spells
+		isQReady = can_cast(spellslot::q);
+		isWReady = can_cast(spellslot::w);
+		isEReady = can_cast(spellslot::e);
+		isRReady = can_cast(spellslot::r);
 
 		// Disable Orb in ult
 		orbwalker->set_movement(!ultBuff);
@@ -1567,8 +1564,6 @@ namespace xerath {
 			const auto& canChargeQ = !canUseQ && qPredictionList[target->get_handle()].hitchance < hit_chance::impossible && settings::combo::qCombo->get_bool() && couldDamageLater(target, qCharge->get_delay() + 2.f, qDamageList[target->get_handle()]) && isQReady && !qBuff;
 			const auto& canReleaseQ = settings::combo::qCombo->get_bool() && couldDamageLater(target, q2->get_delay() - 0.5, qDamageList[target->get_handle()]) && qBuff;
 
-			//bool isQBuff = qBuff && qBuff->is_valid();
-			//	console->print("[%i:%02d] qBuff : %i canReleaseQ : %i", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, isQBuff, canReleaseQ);
 			// If no spells can be used on that target then go to next target
 			if (!canUseQ && !canUseW && !canUseE && !canChargeQ && !canReleaseQ) continue;
 
