@@ -602,7 +602,7 @@ namespace brand {
 	{
 		// Get Q pred
 		
-		q->set_range(BRAND_Q_RANGE + std::max(target->get_bounding_radius(), 65.f);
+		q->set_range(BRAND_Q_RANGE + std::max(target->get_bounding_radius(), 65.f));
 		prediction_output p = q->get_prediction(target);
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
 
