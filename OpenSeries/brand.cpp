@@ -927,12 +927,7 @@ namespace brand {
 	bool isYuumiAttached(const game_object_script& target)
 	{
 		// Check if the target is Yuumi and if it's attached to someone
-		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("YuumiW") || target->get_spell(spellslot::w)->get_name_hash() == spell_hash("YuumiWEndWrapper"))
-		{
-			const auto& yuumiBuff = target->get_buff(buff_hash("YuumiWAttach"));
-			if (yuumiBuff && yuumiBuff->get_caster()->get_handle() == target->get_handle()) return true;
-		}
-		return false;
+		return target->get_spell(spellslot::w)->get_name_hash() == spell_hash("YuumiWEndWrapper");
 	}
 
 	int isCastMoving(const game_object_script& target)
