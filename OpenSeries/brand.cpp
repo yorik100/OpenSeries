@@ -1241,8 +1241,6 @@ namespace brand {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->is_auto_attack())
 			if (castingTime > getPing() - 0.033 && castingTime > 0)
 				return true;
-		if (!orbwalker->can_move())
-			return true;
 		return false;
 	}
 
