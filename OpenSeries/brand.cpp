@@ -936,7 +936,7 @@ namespace brand {
 			return 2;
 		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("AurelionSolWToggle") && target->is_playing_animation(buff_hash("Spell2")))
 			return 2;
-		if (target->get_active_spell() && target->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("SionR"))
+		if (target->get_spell(spellslot::r)->get_name_hash() == spell_hash("SionR") && target->has_buff(buff_hash("SionR")))
 			return 1;
 		return 0;
 	}
