@@ -932,6 +932,8 @@ namespace brand {
 
 	int isCastMoving(const game_object_script& target)
 	{
+		if (!target->is_ai_hero())
+			return 0;
 		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("NunuW_Recast") && target->is_playing_animation(buff_hash("Spell2")))
 			return 2;
 		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("AurelionSolWToggle") && target->is_playing_animation(buff_hash("Spell2")))
