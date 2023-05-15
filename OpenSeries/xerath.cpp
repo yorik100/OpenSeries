@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <stdarg.h>
+#include <array>
 
 
 namespace xerath {
@@ -81,6 +82,8 @@ namespace xerath {
 	std::unordered_map<uint32_t, float> eDamageList;
 	std::unordered_map<uint32_t, float> hitByETime;
 	std::unordered_map<uint32_t, rDamageData> rDamageList;
+
+	buff_instance_script miscBuffs[8] = {};
 
 	static constexpr uint32_t godBuffList[]
 	{
@@ -246,9 +249,17 @@ namespace xerath {
 	game_object_script qTarget;
 	game_object_script rTarget;
 
+	spellslot ludenSlot;
+	spellslot hextechSlot;
+
 	TreeTab* aurora_prediction;
 
 	bool hasCasted = false;
+	bool hasRylai = false;
+	bool hasHorizon = false;
+	bool hasLiandry = false;
+	bool hasDemonic = false;
+	bool hasFocus = false;
 	bool isQReady = false;
 	bool isWReady = false;
 	bool isEReady = false;
@@ -884,17 +895,17 @@ namespace xerath {
 		const auto& bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
 		const auto& level = myhero->get_level();
 		const auto& abilityPower = myhero->get_total_ability_power();
-		const auto& buff3 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrikeAvailable.lua"));
-		const auto& buff4 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrike.lua"));
+		const auto& buff3 = miscBuffs[0];
+		const auto& buff4 = miscBuffs[1];
 		const auto& targetMaxHealth = target->get_max_health();
 		if (shots <= 0)
 		{
-			const auto& buff1 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvest.lua"));
-			const auto& buff2 = myhero->get_buff(buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvestCooldown.lua"));
-			const auto& buff5 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffInfernal_Cooldown"));
-			const auto& buff6 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffInfernal"));
-			const auto& buff7 = myhero->get_buff(buff_hash("SRX_DragonSoulBuffHextech"));
-			const auto& buff8 = myhero->get_buff(buff_hash("srx_dragonsoulbuffhextech_cd"));
+			const auto& buff1 = miscBuffs[2];
+			const auto& buff2 = miscBuffs[3];
+			const auto& buff5 = miscBuffs[4];
+			const auto& buff6 = miscBuffs[5];
+			const auto& buff7 = miscBuffs[6];
+			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
@@ -915,61 +926,36 @@ namespace xerath {
 				damage = damage + extraDamage;
 			}
 		}
-		bool hasRylai = false;
-		bool hasHorizon = false;
-		for (int i = 11; i >= 6; i--)
+		if (ludenSlot != spellslot::invalid)
 		{
-			auto item = myhero->get_item((spellslot)i);
-			if (!item) continue;
-
-			switch (item->get_item_id())
+			if (firstShot && myhero->get_spell(ludenSlot)->cooldown() <= 0)
 			{
-			case (int)ItemId::Ludens_Tempest:
-			{
-				if (firstShot && myhero->get_spell((spellslot)i)->cooldown() <= 0)
-				{
-					const auto& ludensDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 100 + abilityPower * 0.1);
-					damage = damage + ludensDamage;
-				}
-				break;
+				const auto& ludensDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 100 + abilityPower * 0.1);
+				damage = damage + ludensDamage;
 			}
-			case (int)ItemId::Hextech_Alternator:
+		}
+		if (hextechSlot != spellslot::invalid)
+		{
+			if (firstShot && myhero->get_spell(spellslot::invalid)->cooldown() <= 0)
 			{
-				if (firstShot && myhero->get_spell((spellslot)i)->cooldown() <= 0)
-				{
-					const auto& alternatorDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + 75 / 17 * (level - 1));
-					damage = damage + alternatorDamage;
-				}
-				break;
+				const auto& alternatorDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + 75 / 17 * (level - 1));
+				damage = damage + alternatorDamage;
 			}
-			case (int)ItemId::Liandrys_Anguish:
+		}
+		if (hasLiandry)
+		{
+			if (shots <= 0)
 			{
-				if (shots <= 0)
-				{
-					const auto& liandrysDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04));
-					damage = damage + liandrysDamage;
-				}
-				break;
+				const auto& liandrysDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04));
+				damage = damage + liandrysDamage;
 			}
-			case (int)ItemId::Demonic_Embrace:
+		}
+		if (hasDemonic)
+		{
+			if (shots <= 0)
 			{
-				if (shots <= 0)
-				{
-					const auto& demonicDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, targetMaxHealth * 0.04);
-					damage = damage + demonicDamage;
-				}
-				break;
-			}
-			case (int)ItemId::Horizon_Focus:
-			{
-				hasHorizon = true;
-				break;
-			}
-			case (int)ItemId::Rylais_Crystal_Scepter:
-			{
-				hasRylai = true;
-				break;
-			}
+				const auto& demonicDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, targetMaxHealth * 0.04);
+				damage = damage + demonicDamage;
 			}
 		}
 		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
@@ -1250,6 +1236,127 @@ namespace xerath {
 		return false;
 	}
 
+	void buffLoop()
+	{
+		ultBuff = nullptr;
+		qBuff = nullptr;
+		elderBuff = nullptr;
+		memset(miscBuffs, 0, sizeof(miscBuffs));
+		for (const auto& buff : myhero->get_bufflist())
+		{
+			if (!buff || !buff->is_valid()) continue;
+
+			switch (buff->get_hash_name())
+			{
+			case buff_hash("xerathrshots"):
+			{
+				ultBuff = buff;
+				break;
+			}
+			case buff_hash("XerathArcanopulseChargeUp"):
+			{
+				qBuff = buff;
+				break;
+			}
+			case buff_hash("ElderDragonBuff"):
+			{
+				elderBuff = buff;
+				break;
+			}
+			case buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrikeAvailable.lua"):
+			{
+				miscBuffs[0] = buff;
+				break;
+			}
+			case buff_hash("ASSETS/Perks/Styles/Inspiration/FirstStrike/FirstStrike.lua"):
+			{
+				miscBuffs[1] = buff;
+				break;
+			}
+			case buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvest.lua"):
+			{
+				miscBuffs[2] = buff;
+				break;
+			}
+			case buff_hash("ASSETS/Perks/Styles/Domination/DarkHarvest/DarkHarvestCooldown.lua"):
+			{
+				miscBuffs[3] = buff;
+				break;
+			}
+			case buff_hash("SRX_DragonSoulBuffInfernal_Cooldown"):
+			{
+				miscBuffs[4] = buff;
+				break;
+			}
+			case buff_hash("SRX_DragonSoulBuffInfernal"):
+			{
+				miscBuffs[5] = buff;
+				break;
+			}
+			case buff_hash("SRX_DragonSoulBuffHextech"):
+			{
+				miscBuffs[6] = buff;
+				break;
+			}
+			case buff_hash("srx_dragonsoulbuffhextech_cd"):
+			{
+				miscBuffs[7] = buff;
+				break;
+			}
+			}
+		}
+	}
+
+	void itemLoop()
+	{
+		ludenSlot = spellslot::invalid;
+		hextechSlot = spellslot::invalid;
+		hasLiandry = false;
+		hasDemonic = false;
+		hasHorizon = false;
+		hasRylai = false;
+
+		for (int i = 11; i >= 6; i--)
+		{
+			auto item = myhero->get_item((spellslot)i);
+			if (!item) continue;
+
+			switch (item->get_item_id())
+			{
+			case (int)ItemId::Ludens_Tempest:
+			{
+				ludenSlot = (spellslot)i;
+				break;
+			}
+			case (int)ItemId::Hextech_Alternator:
+			{
+				hextechSlot = (spellslot)i;
+				break;
+			}
+			case (int)ItemId::Liandrys_Anguish:
+			{
+				hasLiandry = true;
+				break;
+			}
+			case (int)ItemId::Demonic_Embrace:
+			{
+				hasDemonic = true;
+				break;
+			}
+			case (int)ItemId::Horizon_Focus:
+			{
+				hasHorizon = true;
+				break;
+			}
+			case (int)ItemId::Rylais_Crystal_Scepter:
+			{
+				hasRylai = true;
+				break;
+			}
+			}
+		}
+	}
+
 	void calcs()
 	{
 		// Register last time update triggered (for low spec mode)
@@ -1283,9 +1390,10 @@ namespace xerath {
 		hasCasted = evade->is_evading();
 
 		// Get buffs
-		ultBuff = myhero->get_buff(buff_hash("xerathrshots"));
-		qBuff = myhero->get_buff(buff_hash("XerathArcanopulseChargeUp"));
-		elderBuff = myhero->get_buff(buff_hash("ElderDragonBuff"));
+		buffLoop();
+
+		// Get items
+		itemLoop();
 
 		// Get ready spells
 		isQReady = can_cast(spellslot::q);
