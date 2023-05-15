@@ -348,7 +348,7 @@ namespace xerath {
 
 		const auto cooldown = spell->cooldown();
 		//IN CD = (state & (1 << 5)) != 0
-		return cooldown < (getPing()) + 0.033f && (state & (1 << 5)) != 0;
+		return cooldown < getPing() + 0.033f && (state & (1 << 5)) != 0;
 	}
 
 	bool isStunnable(const game_object_script& target)
@@ -1066,8 +1066,9 @@ namespace xerath {
 	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot)
 	{
 		// Get R damage
-		if (!isRReady && ultParticleList.empty() && !ultBuff) return 0;
 		const auto& spell = myhero->get_spell(spellslot::r);
+		if (spell->level() == 0) return 0;
+		if (spell->cooldown() > (getPing() + 0.033f) && ultParticleList.empty() && !ultBuff) return 0;
 		const float& damage = 150 + 50 * spell->level() + myhero->get_total_ability_power() * 0.45;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
@@ -1083,7 +1084,7 @@ namespace xerath {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& hasUlt = isRReady;
+		const auto& hasUlt = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= getPing() + 0.033f;
 		const auto& rActive = hasUlt || !ultParticleList.empty() || ultBuff;
 		const auto& shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)

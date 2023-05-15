@@ -306,7 +306,7 @@ namespace brand {
 
 		const auto cooldown = spell->cooldown();
 		//IN CD = (state & (1 << 5)) != 0
-		return cooldown < (getPing()) + 0.033f && (state & (1 << 5)) != 0;
+		return cooldown < getPing() + 0.033f && (state & (1 << 5)) != 0;
 	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
@@ -798,8 +798,9 @@ namespace brand {
 	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot, const int passiveStacks)
 	{
 		// Get R damage
-		if (!isRReady) return 0;
 		const auto& spell = myhero->get_spell(spellslot::r);
+		if (spell->level() == 0) return 0;
+		if (spell->cooldown() > (getPing() + 0.033f)) return 0;
 		const float& damage = 100 * spell->level() + myhero->get_total_ability_power() * 0.25;
 		const float& damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, true, passiveStacks);
@@ -815,7 +816,7 @@ namespace brand {
 		auto shotsToKill = 0;
 		auto isFirstShot = true;
 		const auto& totalHP = getTotalHP(target);
-		const auto& rActive = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= 0;
+		const auto& rActive = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= getPing() + 0.033f;
 		if (rActive)
 		{
 			for (int i = 3; i > 0; i--)
