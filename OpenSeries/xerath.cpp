@@ -346,6 +346,11 @@ namespace xerath {
 			return false;
 		}
 
+		if (ultBuff && spellslot != spellslot::r)
+		{
+			return false;
+		}
+
 		if (!hasEnoughMana(spellslot))
 		{
 			return false;
