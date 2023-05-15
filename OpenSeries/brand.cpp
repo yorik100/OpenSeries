@@ -673,7 +673,7 @@ namespace brand {
 				damage = damage + harvestDamage;
 			}
 			if (buff6 && !buff5) {
-				auto infernalDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275);
+				const auto& infernalDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275);
 				damage = damage + infernalDamage;
 			}
 			if (buff7 && !buff8)
@@ -821,7 +821,7 @@ namespace brand {
 		{
 			for (int i = 3; i > 0; i--)
 			{
-				auto calculatedRDamage = getRDamage(target, i, totalHP - rDamage, isFirstShot, shotsToKill + 1);
+				auto calculatedRDamage = getRDamage(target, i - 1, totalHP - rDamage, isFirstShot, shotsToKill + 1);
 				auto calculatedRMaxDamage = getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + 1);
 				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < 0)
 				{
