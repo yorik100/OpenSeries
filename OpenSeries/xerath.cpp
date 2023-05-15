@@ -910,7 +910,6 @@ namespace xerath {
 		const auto& buff3 = miscBuffs[0];
 		const auto& buff4 = miscBuffs[1];
 		const auto& targetMaxHealth = target->get_max_health();
-		const auto& goofyRuneReady = hasGoofyRune && goofyRuneReadyTime <= gametime->get_time();
 		if (shots <= 0)
 		{
 			const auto& buff1 = miscBuffs[2];
@@ -921,6 +920,8 @@ namespace xerath {
 			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			const auto& buff10 = miscBuffs[8] || (arcanicEntity && arcanicEntity->is_valid());
+			const auto& goofyRuneReady = hasGoofyRune && goofyRuneReadyTime <= gametime->get_time();
+
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
 				damage = damage + harvestDamage;
@@ -944,11 +945,11 @@ namespace xerath {
 				const auto& arcaneComet = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, (30 + 70 / 17 * (level - 1)) + (bonusAD * 0.35) + abilityPower * 0.2);
 				damage = damage + arcaneComet;
 			}
-		}
-		if (goofyRuneReady && firstShot)
-		{
-			const auto& scortchDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 20 / 17 * (level - 1));
-			damage = damage + scortchDamage;
+			if (goofyRuneReady)
+			{
+				const auto& scortchDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 20 / 17 * (level - 1));
+				damage = damage + scortchDamage;
+			}
 		}
 		if (ludenSlot != spellslot::invalid)
 		{
