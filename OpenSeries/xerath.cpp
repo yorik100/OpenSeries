@@ -341,6 +341,11 @@ namespace xerath {
 			return true;
 		}
 
+		if (qBuff && spellslot != spellslot::q)
+		{
+			return false;
+		}
+
 		if (!hasEnoughMana(spellslot))
 		{
 			return false;
