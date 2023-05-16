@@ -65,7 +65,7 @@ namespace brand {
 	std::unordered_map<uint32_t, float> eDamageList;
 	std::unordered_map<uint32_t, rDamageData> rDamageList;
 
-	buff_instance_script miscBuffs[8] = {};
+	buff_instance_script miscBuffs[9] = {};
 
 	static constexpr uint32_t godBuffList[]
 	{
@@ -203,6 +203,7 @@ namespace brand {
 	buff_instance_script elderBuff;
 
 	game_object_script spamETarget;
+	game_object_script arcanicEntity;
 
 	spellslot ludenSlot;
 	spellslot hextechSlot;
@@ -219,10 +220,14 @@ namespace brand {
 	bool isWReady = false;
 	bool isEReady = false;
 	bool isRReady = false;
+	bool hasGoofyRune = false;
+	bool goofyTrigger = false;
 
 	float last_tick = 0;
 	float attackOrderTime = 0;
 	float lastCast = 0;
+	float goofyRuneReadyTime = 0;
+	float scorchBuildup = 0;
 
 	void debugPrint(const std::string& str, ...)
 	{
@@ -652,6 +657,7 @@ namespace brand {
 	{
 		// Get extra damage based off items && runes && drake souls
 		float damage = 0;
+		float magicDamage = 0;
 		const auto& bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
 		const auto& level = myhero->get_level();
 		const auto& abilityPower = myhero->get_total_ability_power();
@@ -668,13 +674,16 @@ namespace brand {
 			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			const auto& buff10 = target->get_buff(buff_hash("BrandAblaze"));
+			const auto& buff11 = miscBuffs[8] || (arcanicEntity && arcanicEntity->is_valid());
+			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || (goofyTrigger && scorchBuildup >= gametime->get_time()));
+
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
-				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
-				damage = damage + harvestDamage;
+				const auto& harvestDamage = 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5;
+				magicDamage = magicDamage + harvestDamage;
 			}
 			if (buff6 && !buff5) {
-				const auto& infernalDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275);
-				damage = damage + infernalDamage;
+				const auto& infernalDamage = 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275;
+				magicDamage = magicDamage + infernalDamage;
 			}
 			if (buff7 && !buff8)
 			{
@@ -688,46 +697,57 @@ namespace brand {
 			}
 			auto passiveCount = buff10 ? buff10->get_count() : 0;
 			passiveCount = std::min(3, passiveCount + passiveStacks);
-			const auto& passiveDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, (targetMaxHealth * 0.025) * passiveCount);
-			damage = damage + passiveDamage;
+			const auto& passiveDamage = (targetMaxHealth * 0.025) * passiveCount;
+			magicDamage = magicDamage + passiveDamage;
 			if ((!buff10 || (buff10 && buff10->get_count() < 3)) && passiveCount == 3)
 			{
 				const auto& damagePercent = (std::min(0.13, 0.0875 + 0.0025 * level) + 0.025);
-				damage = damage + damagePercent;
+				magicDamage = magicDamage + damagePercent;
+			}
+			if (buff11)
+			{
+				const auto& arcaneComet = (30 + 70 / 17 * (level - 1)) + (bonusAD * 0.35) + (abilityPower * 0.2);
+				magicDamage = magicDamage + arcaneComet;
+			}
+			if (goofyRuneReady)
+			{
+				const auto& scorchDamage = 20 + 20 / 17 * (level - 1);
+				magicDamage = magicDamage + scorchDamage;
 			}
 		}
 		if (ludenSlot != spellslot::invalid)
 		{
 			if (firstShot && myhero->get_spell(ludenSlot)->cooldown() <= 0)
 			{
-				const auto& ludensDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 100 + abilityPower * 0.1);
-				damage = damage + ludensDamage;
+				const auto& ludensDamage = 100 + abilityPower * 0.1;
+				magicDamage = magicDamage + ludensDamage;
 			}
 		}
 		if (hextechSlot != spellslot::invalid)
 		{
 			if (firstShot && myhero->get_spell(spellslot::invalid)->cooldown() <= 0)
 			{
-				const auto& alternatorDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + 75 / 17 * (level - 1));
-				damage = damage + alternatorDamage;
+				const auto& alternatorDamage = 50 + 75 / 17 * (level - 1);
+				magicDamage = magicDamage + alternatorDamage;
 			}
 		}
 		if (hasLiandry)
 		{
 			if (shots <= 0)
 			{
-				const auto& liandrysDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04));
-				damage = damage + liandrysDamage;
+				const auto& liandrysDamage = 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04);
+				magicDamage = magicDamage + liandrysDamage;
 			}
 		}
 		if (hasDemonic)
 		{
 			if (shots <= 0)
 			{
-				const auto& demonicDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, targetMaxHealth * 0.04);
-				damage = damage + demonicDamage;
+				const auto& demonicDamage = targetMaxHealth * 0.04;
+				magicDamage = magicDamage + demonicDamage;
 			}
 		}
+		damage = damage + damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, magicDamage);
 		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
 		{
 			damage = damage + (damageDealt) * 0.1;
@@ -822,7 +842,7 @@ namespace brand {
 			for (int i = 3; i > 0; i--)
 			{
 				auto calculatedRDamage = getRDamage(target, i - 1, totalHP - rDamage, isFirstShot, shotsToKill + 1);
-				auto calculatedRMaxDamage = getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + 1);
+				auto calculatedRMaxDamage = i - 1 ? getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + 1) : calculatedRDamage;
 				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < 0)
 				{
 					rDamage = rDamage + calculatedRMaxDamage;
@@ -1181,6 +1201,11 @@ namespace brand {
 			case buff_hash("srx_dragonsoulbuffhextech_cd"):
 			{
 				miscBuffs[7] = buff;
+				break;
+			}
+			case buff_hash("ASSETS/Perks/Styles/Sorcery/ArcaneComet/ArcaneCometSnipe.lua"):
+			{
+				miscBuffs[8] = buff;
 				break;
 			}
 			}
@@ -2115,11 +2140,63 @@ namespace brand {
 		// Get emitter hash
 		const auto& emitterHash = obj->get_emitter_resources_hash();
 
-		// Get Brand W particle & store it
-		if (emitterHash == buff_hash("Brand_W_POF_charge") && obj->get_emitter() && obj->get_emitter()->is_ally())
+		// Get specific particles
+		switch (emitterHash)
 		{
-			particleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
+		case buff_hash("Brand_W_POF_charge"):
+		{
+			if (obj->get_emitter() && obj->get_emitter()->is_ally())
+				particleList.push_back({ .particle = obj, .creationTime = gametime->get_time() });
 			return;
+		}
+		case buff_hash("Brand_P_Stack1_Audio"):
+		case buff_hash("Brand_P_Stack2_Audio"):
+		case buff_hash("Brand_P_Stack3_Audio"):
+		{
+			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
+			{
+				goofyRuneReadyTime = gametime->get_time() + 10.f;
+				goofyTrigger = true;
+			}
+			return;
+		}
+		case buff_hash("Perks_Scorch_Tar"):
+		{
+			if (hasGoofyRune && obj->get_emitter()->is_me())
+			{
+				scorchBuildup = 0;
+				goofyRuneReadyTime = gametime->get_time() + 9.f;
+				goofyTrigger = false;
+			}
+			return;
+		}
+		case buff_hash("Perks_Scorch_Buildup"):
+		{
+			if (hasGoofyRune && obj->get_emitter()->is_me())
+				scorchBuildup = gametime->get_time() + 1.25f;
+			return;
+		}
+		}
+
+		// Manage missiles
+		if (obj->is_missile()) {
+			switch (obj->get_missile_sdata()->get_name_hash())
+			{
+			case spell_hash("Perks_ArcaneComet_Mis"):
+			{
+				const auto& sender = entitylist->get_object(obj->missile_get_sender_id());
+				if (sender->is_me())
+					arcanicEntity = obj;
+				return;
+			}
+			case spell_hash("Perks_ArcaneComet_Mis_Arc"):
+			{
+				const auto& sender = entitylist->get_object(obj->missile_get_sender_id());
+				if (sender->is_me())
+					arcanicEntity = obj;
+				return;
+			}
+			}
 		}
 
 		// Get particles to cast on
@@ -2291,6 +2368,9 @@ namespace brand {
 		);
 		const auto& nexusEntity = *nexusPosIt;
 		nexusPos = nexusEntity->get_position();
+
+		// Get goofy ahh scorch rune
+		hasGoofyRune = myhero->has_perk(8237);
 
 		// Get URF cannon pos
 		urfCannon = myhero->get_team() == game_object_team::order ? vector(13018.f, 14026.f) : vector(1506.f, 676.f);

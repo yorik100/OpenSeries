@@ -265,11 +265,12 @@ namespace xerath {
 	bool isEReady = false;
 	bool isRReady = false;
 	bool hasGoofyRune = false;
+	bool goofyTrigger = false;
 
 	float last_tick = 0;
 	float lastCast = 0;
 	float goofyRuneReadyTime = 0;
-	float scortchBuildup = 0;
+	float scorchBuildup = 0;
 	int rShots = 0;
 
 	void debugPrint(const std::string& str, ...)
@@ -842,7 +843,7 @@ namespace xerath {
 		// Get E pred
 		const auto& totalRadius = std::max(target->get_bounding_radius(), 65.f);
 		e->set_radius(60.f);
-		e->set_range(XERATH_E_RANGE + std::max(target->get_bounding_radius(), 65.f));
+		e->set_range(XERATH_E_RANGE + totalRadius);
 		prediction_output p = e->get_prediction(target);
 		if (p.hitchance <= static_cast<hit_chance>(2)) return p;
 
@@ -905,6 +906,7 @@ namespace xerath {
 	{
 		// Get extra damage based off items && runes && drake souls
 		float damage = 0;
+		float magicDamage = 0;
 		const auto& bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
 		const auto& level = myhero->get_level();
 		const auto& abilityPower = myhero->get_total_ability_power();
@@ -921,15 +923,15 @@ namespace xerath {
 			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			const auto& buff10 = miscBuffs[8] || (arcanicEntity && arcanicEntity->is_valid());
-			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || scortchBuildup >= gametime->get_time());
+			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || (goofyTrigger && scorchBuildup >= gametime->get_time()));
 
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
-				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
-				damage = damage + harvestDamage;
+				const auto& harvestDamage = 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5;
+				magicDamage = magicDamage + harvestDamage;
 			}
 			if (buff6 && !buff5) {
-				const auto& infernalDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275);
-				damage = damage + infernalDamage;
+				const auto& infernalDamage = 80 + bonusAD * 0.225 + abilityPower * 0.15 + myhero->get_max_health() * 0.0275;
+				magicDamage = magicDamage + infernalDamage;
 			}
 			if (buff7 && !buff8)
 			{
@@ -943,47 +945,48 @@ namespace xerath {
 			}
 			if (buff10)
 			{
-				const auto& arcaneComet = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, (30 + 70 / 17 * (level - 1)) + (bonusAD * 0.35) + abilityPower * 0.2);
-				damage = damage + arcaneComet;
+				const auto& arcaneComet = (30 + 70 / 17 * (level - 1)) + (bonusAD * 0.35) + (abilityPower * 0.2);
+				magicDamage = magicDamage + arcaneComet;
 			}
 			if (goofyRuneReady)
 			{
-				const auto& scortchDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 20 / 17 * (level - 1));
-				damage = damage + scortchDamage;
+				const auto& scorchDamage = 20 + 20 / 17 * (level - 1);
+				magicDamage = magicDamage + scorchDamage;
 			}
 		}
 		if (ludenSlot != spellslot::invalid)
 		{
 			if (firstShot && myhero->get_spell(ludenSlot)->cooldown() <= 0)
 			{
-				const auto& ludensDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 100 + abilityPower * 0.1);
-				damage = damage + ludensDamage;
+				const auto& ludensDamage = 100 + abilityPower * 0.1;
+				magicDamage = magicDamage + ludensDamage;
 			}
 		}
 		if (hextechSlot != spellslot::invalid)
 		{
 			if (firstShot && myhero->get_spell(spellslot::invalid)->cooldown() <= 0)
 			{
-				const auto& alternatorDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + 75 / 17 * (level - 1));
-				damage = damage + alternatorDamage;
+				const auto& alternatorDamage = 50 + 75 / 17 * (level - 1);
+				magicDamage = magicDamage + alternatorDamage;
 			}
 		}
 		if (hasLiandry)
 		{
 			if (shots <= 0)
 			{
-				const auto& liandrysDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04));
-				damage = damage + liandrysDamage;
+				const auto& liandrysDamage = 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04);
+				magicDamage = magicDamage + liandrysDamage;
 			}
 		}
 		if (hasDemonic)
 		{
 			if (shots <= 0)
 			{
-				const auto& demonicDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, targetMaxHealth * 0.04);
-				damage = damage + demonicDamage;
+				const auto& demonicDamage = targetMaxHealth * 0.04;
+				magicDamage = magicDamage + demonicDamage;
 			}
 		}
+		damage = damage + damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, magicDamage);
 		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
 		{
 			damage = damage + (damageDealt) * 0.1;
@@ -1119,7 +1122,7 @@ namespace xerath {
 			for (int i = shotAmount; i > 0; i--)
 			{
 				auto calculatedRDamage = getRDamage(target, i - 1, totalHP - rDamage, isFirstShot);
-				auto calculatedRMaxDamage = getRDamage(target, 0, totalHP - rDamage, isFirstShot);
+				auto calculatedRMaxDamage = i - 1 ? getRDamage(target, 0, totalHP - rDamage, isFirstShot) : calculatedRDamage;
 				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < 0)
 				{
 					rDamage = rDamage + calculatedRMaxDamage;
@@ -2432,7 +2435,7 @@ namespace xerath {
 		// Get emitter hash
 		const auto& emitterHash = obj->get_emitter_resources_hash();
 
-		// Get Xerath W and R particles & store them
+		// Get specific particles
 		switch (emitterHash)
 		{
 		case buff_hash("Xerath_W_aoe_green"):
@@ -2482,22 +2485,26 @@ namespace xerath {
 		case buff_hash("Xerath_W_tar"):
 		{
 			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
+			{
 				goofyRuneReadyTime = gametime->get_time() + 10.f;
+				goofyTrigger = true;
+			}
 			return;
 		}
 		case buff_hash("Perks_Scorch_Tar"):
 		{
 			if (hasGoofyRune && obj->get_emitter()->is_me())
 			{
-				scortchBuildup = 0;
+				scorchBuildup = 0;
 				goofyRuneReadyTime = gametime->get_time() + 9.f;
+				goofyTrigger = false;
 			}
 			return;
 		}
 		case buff_hash("Perks_Scorch_Buildup"):
 		{
 			if (hasGoofyRune && obj->get_emitter()->is_me())
-				scortchBuildup = gametime->get_time() + 1.25f;
+				scorchBuildup = gametime->get_time() + 1.25f;
 			return;
 		}
 		}
@@ -2754,6 +2761,7 @@ namespace xerath {
 		q2->set_skillshot(0.52f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q2->set_spell_lock(false);
 
+		// Get goofy ahh scorch rune
 		hasGoofyRune = myhero->has_perk(8237);
 
 		// Get enemy Nexus pos
