@@ -1703,7 +1703,7 @@ namespace brand {
 			if (stasisCast)
 			{
 				// Cast Q on stasis
-				if (stasisQ && (stasisDuration + 0.133) < qLandingTime && castQ(target, "stasis", false, true)) break;
+				if (stasisQ && (stasisDuration + 0.2 - getPing()) < qLandingTime && castQ(target, "stasis", false, true)) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", true)) break;
 			}

@@ -1974,7 +1974,7 @@ namespace xerath {
 			if (stasisCast)
 			{
 				// Cast E on stasis
-				if (stasisE && (stasisDuration + 0.1) < eLandingTime && castE(target, "stasis")) break;
+				if (stasisE && (stasisDuration + 0.2 - getPing()) < eLandingTime && castE(target, "stasis")) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
 				// Cast Q short on stasis
