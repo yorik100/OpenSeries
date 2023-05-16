@@ -1907,7 +1907,7 @@ namespace xerath {
 			else if (canQShort && (particleTime - getPing() + 0.2) <= q->get_delay())
 			{
 				q->cast(obj.castingPos);
-				myhero->update_charged_spell(q2->get_slot(), obj.castingPos, true);
+				myhero->update_charged_spell(q->get_slot(), obj.castingPos, true);
 				hasCasted = true;
 				return;
 			}
