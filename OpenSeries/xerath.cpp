@@ -2521,6 +2521,13 @@ namespace xerath {
 					arcanicEntity = obj;
 				return;
 			}
+			case spell_hash("Perks_ArcaneComet_Mis_Arc"):
+			{
+				const auto& sender = entitylist->get_object(obj->missile_get_sender_id());
+				if (sender->is_me())
+					arcanicEntity = obj;
+				return;
+			}
 			}
 		}
 
