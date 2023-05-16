@@ -964,7 +964,7 @@ namespace xerath {
 		}
 		if (hextechSlot != spellslot::invalid)
 		{
-			if (firstShot && myhero->get_spell(spellslot::invalid)->cooldown() <= 0)
+			if (firstShot && myhero->get_spell(hextechSlot)->cooldown() <= 0)
 			{
 				const auto& alternatorDamage = 50 + 75 / 17 * (level - 1);
 				magicDamage = magicDamage + alternatorDamage;
