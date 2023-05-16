@@ -269,6 +269,7 @@ namespace xerath {
 	float last_tick = 0;
 	float lastCast = 0;
 	float goofyRuneReadyTime = 0;
+	float scortchBuildup = 0;
 	int rShots = 0;
 
 	void debugPrint(const std::string& str, ...)
@@ -920,7 +921,7 @@ namespace xerath {
 			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			const auto& buff10 = miscBuffs[8] || (arcanicEntity && arcanicEntity->is_valid());
-			const auto& goofyRuneReady = hasGoofyRune && goofyRuneReadyTime <= gametime->get_time();
+			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || scortchBuildup >= gametime->get_time());
 
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5);
@@ -2475,22 +2476,9 @@ namespace xerath {
 				}
 				hitByETime[target->get_handle()] = gametime->get_time();
 			}
-			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
-				goofyRuneReadyTime = gametime->get_time() + 10.f;
-			return;
 		}
 		case buff_hash("Xerath_Q_tar"):
-		{
-			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
-				goofyRuneReadyTime = gametime->get_time() + 10.f;
-			return;
-		}
 		case buff_hash("Xerath_w_tar_directhit"):
-		{
-			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
-				goofyRuneReadyTime = gametime->get_time() + 10.f;
-			return;
-		}
 		case buff_hash("Xerath_W_tar"):
 		{
 			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
@@ -2500,13 +2488,16 @@ namespace xerath {
 		case buff_hash("Perks_Scorch_Tar"):
 		{
 			if (hasGoofyRune && obj->get_emitter()->is_me())
-				goofyRuneReadyTime = gametime->get_time() + 9;
+			{
+				scortchBuildup = 0;
+				goofyRuneReadyTime = gametime->get_time() + 9.f;
+			}
 			return;
 		}
-		case buff_hash("Perks_Meteor_AOE_Ring"):
+		case buff_hash("Perks_Scorch_Buildup"):
 		{
-			if (obj->get_emitter()->is_me())
-				arcanicEntity = obj;
+			if (hasGoofyRune && obj->get_emitter()->is_me())
+				scortchBuildup = gametime->get_time() + 1.25f;
 			return;
 		}
 		}
@@ -2521,6 +2512,14 @@ namespace xerath {
 				{
 					eMissileList.push_back(obj);
 				}
+				return;
+			}
+			case spell_hash("Perks_ArcaneComet_Mis"):
+			{
+				const auto& sender = entitylist->get_object(obj->missile_get_sender_id());
+				if (sender->is_me())
+					arcanicEntity = obj;
+				return;
 			}
 			}
 		}
