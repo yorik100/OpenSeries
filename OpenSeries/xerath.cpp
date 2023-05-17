@@ -2789,8 +2789,11 @@ namespace xerath {
 			if (entity && entity->is_valid())
 			{
 				on_create(entity);
+				if (entity->get_active_spell())
+					on_process_spell_cast(entity, entity->get_active_spell());
 				for (const auto& buff : entity->get_bufflist())
-					on_buff_gain(entity, buff);
+					if (buff && buff->is_valid())
+						on_buff_gain(entity, buff);
 			}
 		}
 
