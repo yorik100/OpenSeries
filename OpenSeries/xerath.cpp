@@ -2782,6 +2782,18 @@ namespace xerath {
 		// Call menu creation function
 		createMenu();
 
+		// Trigger on create and on buff
+		for (int i = 0; i <= entitylist->get_max_objects(); ++i)
+		{
+			const auto entity = entitylist->get_object(i);
+			if (entity && entity->is_valid())
+			{
+				on_create(entity);
+				for (const auto& buff : entity->get_bufflist())
+					on_buff_gain(entity, buff);
+			}
+		}
+
 		// Warning if trolling
 		scheduler->delay_action(0.1f, []()
 			{
