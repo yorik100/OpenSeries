@@ -1553,7 +1553,7 @@ namespace brand {
 			if (!canUseQ && !canUseW && !canUseE) continue;
 
 			// Store useful info to use in logic
-			const auto ccTime = stunTime[target->get_handle()];
+			//const auto ccTime = stunTime[target->get_handle()];
 			auto shouldBreak = false;
 
 			// Q cast
