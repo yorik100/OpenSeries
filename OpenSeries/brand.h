@@ -5,12 +5,12 @@ namespace brand
 {
 	inline void debugPrint(const std::string& str, ...);
 	inline bool isUnderTower(const game_object_script& target);
-	inline bool hasEnoughMana(const spellslot& spellslot);
-	inline bool can_cast(const spellslot& spellslot);
+	inline bool hasEnoughMana(const spellslot spellslot);
+	inline bool can_cast(const spellslot spellslot);
 	inline void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness);
 	inline bool isMoving(const game_object_script& target);
 	inline float timeBeforeWHits(const game_object_script& target);
-	inline float timeBeforeWHitsLocation(vector& position);
+	inline float timeBeforeWHitsLocation(vector position);
 	inline float getPing();
 	inline float getGodBuffTime(const game_object_script& target);
 	inline float getNoKillBuffTime(const game_object_script& target);
@@ -20,10 +20,10 @@ namespace brand
 	inline float getTimeToHit(prediction_input& input, prediction_output& predInfo, const bool takePing);
 	inline int alliesAroundTarget(const game_object_script& target, const float range);
 	inline hit_chance getPredIntFromSettings(int hitchance);
-	inline bool castQ(const game_object_script& target, std::string mode, const bool eCombo, bool ignoreHitChance);
-	inline bool castW(const game_object_script& target, std::string mode, bool ignoreHitChance);
-	inline bool castE(const game_object_script& target, std::string mode);
-	inline bool castR(const game_object_script& target, std::string mode);
+	inline bool castQ(const game_object_script& target, const std::string& mode, const bool eCombo, bool ignoreHitChance);
+	inline bool castW(const game_object_script& target, const std::string& mode, bool ignoreHitChance);
+	inline bool castE(const game_object_script& target, const std::string& mode);
+	inline bool castR(const game_object_script& target, const std::string& mode);
 	inline prediction_output getQPred(const game_object_script& target);
 	inline prediction_output getWPred(const game_object_script& target);
 	inline bool qCanBeCasted(const game_object_script& target);
@@ -38,7 +38,7 @@ namespace brand
 	inline bool isYuumiAttached(const game_object_script& target);
 	inline int isCastMoving(const game_object_script& target);
 	inline bool isRecalling(const game_object_script& target);
-	inline bool isValidRecalling(const game_object_script& target, float range, const vector& from);
+	inline bool isValidRecalling(const game_object_script& target, float range, const vector from);
 	inline bool customIsValid(const game_object_script& target, float range, vector from, bool invul);
 	inline bool rCollision(const game_object_script& target);
 	inline bool canRBounce(const game_object_script& target);
