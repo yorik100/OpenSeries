@@ -248,6 +248,7 @@ namespace xerath {
 	game_object_script qTarget;
 	game_object_script rTarget;
 	game_object_script arcanicEntity;
+	game_object_script scorchTarget;
 
 	spellslot ludenSlot;
 	spellslot hextechSlot;
@@ -923,7 +924,7 @@ namespace xerath {
 			const auto& buff8 = miscBuffs[7];
 			const auto& buff9 = elderBuff;
 			const auto& buff10 = miscBuffs[8] || (arcanicEntity && arcanicEntity->is_valid());
-			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || (goofyTrigger && scorchBuildup >= gametime->get_time()));
+			const auto& goofyRuneReady = hasGoofyRune && (goofyRuneReadyTime <= gametime->get_time() || (goofyTrigger && scorchTarget && scorchTarget->is_valid() && scorchTarget->get_handle() == target->get_handle() && scorchBuildup >= gametime->get_time()));
 
 			if (buff1 && !buff2 && predictedHealth / targetMaxHealth < 0.5) {
 				const auto& harvestDamage = 20 + 40 / 17 * (level - 1) + abilityPower * 0.15 + bonusAD * 0.25 + buff1->get_count() * 5;
@@ -2487,6 +2488,7 @@ namespace xerath {
 			if (hasGoofyRune && obj->get_emitter()->is_me() && gametime->get_time() >= goofyRuneReadyTime)
 			{
 				goofyRuneReadyTime = gametime->get_time() + 10.f;
+				scorchTarget = obj->get_particle_attachment_object();
 				goofyTrigger = true;
 			}
 			return;
@@ -2497,6 +2499,7 @@ namespace xerath {
 			{
 				scorchBuildup = 0;
 				goofyRuneReadyTime = gametime->get_time() + 9.f;
+				scorchTarget = nullptr;
 				goofyTrigger = false;
 			}
 			return;
