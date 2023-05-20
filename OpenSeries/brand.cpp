@@ -1476,13 +1476,6 @@ namespace brand {
 			// Q cast
 			if (canUseQ && (ccTime - 0.3) < qLandingTime && castQ(target, "combo", canUseE)) return;
 
-			// W cast
-			if (canUseW)
-			{
-				shouldBreak = true;
-				if (castW(target, "combo")) return;
-			}
-
 			// E cast
 			if (canUseE && !couldUseQ)
 			{
@@ -1494,6 +1487,13 @@ namespace brand {
 				{
 					if (castE(bestETarget, "combobounce")) return;
 				}
+			}
+
+			// W cast
+			if (canUseW)
+			{
+				shouldBreak = true;
+				if (castW(target, "combo")) return;
 			}
 
 			// R cast
@@ -1559,13 +1559,6 @@ namespace brand {
 			// Q cast
 			if (canUseQ && castQ(target, "harass", canUseE)) return;
 
-			// W cast
-			if (canUseW)
-			{
-				shouldBreak = true;
-				if (castW(target, "harass")) return;
-			}
-
 			// E cast
 			if (canUseE && !couldUseQ)
 			{
@@ -1577,6 +1570,13 @@ namespace brand {
 				{
 					if (castE(bestETarget, "harassbounce")) return;
 				}
+			}
+
+			// W cast
+			if (canUseW)
+			{
+				shouldBreak = true;
+				if (castW(target, "harass")) return;
 			}
 
 			if (shouldBreak) break;
