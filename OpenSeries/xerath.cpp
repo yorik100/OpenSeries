@@ -1218,7 +1218,7 @@ namespace xerath {
 	bool isYuumiAttached(const game_object_script& target)
 	{
 		// Check if the target is Yuumi and if it's attached to someone
-		return target->get_spell(spellslot::w)->get_name_hash() == spell_hash("YuumiWEndWrapper");
+		return target->is_ai_hero() && target->get_spell(spellslot::w)->get_name_hash() == spell_hash("YuumiWEndWrapper");
 	}
 
 	int isCastMoving(const game_object_script& target)
