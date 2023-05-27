@@ -1687,7 +1687,7 @@ namespace brand {
 		// Loop through every sorted targets
 		for (const auto& target : targets)
 		{
-			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
+			const auto stasisDuration = target->is_valid() && stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
 			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
