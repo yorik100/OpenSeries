@@ -311,7 +311,7 @@ namespace xerath {
 	bool isUnderTower(const game_object_script& target)
 	{
 		for (const auto& turret : entitylist->get_enemy_turrets())
-			if (target->get_position().distance(turret->get_position()) <= 750 + target->get_bounding_radius())
+			if (turret && turret->is_valid() && target->get_position().distance(turret->get_position()) <= 750 + target->get_bounding_radius())
 				return true;
 		return false;
 	}
@@ -412,7 +412,10 @@ namespace xerath {
 		// Get time to hit before any W particle hits target (including ally W particles, useful in one for all)
 		float returnTimeToHit = FLT_MAX;
 		if (!target || !isSlowable(target)) return returnTimeToHit;
-		for (const auto& particle : particleList) {
+		for (const auto& particle : particleList)
+		{
+			if (!particle.particle || !particle.particle->is_valid()) continue;
+
 			const auto timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME + 0.1F - gametime->get_time();
 			const auto unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
 			if (particle.particle->is_valid() && unitPositionDist <= XERATH_W_OUTER_RADIUS && returnTimeToHit > timeBeforeHit)
@@ -425,7 +428,10 @@ namespace xerath {
 	{
 		// Get time to hit before any W particle hits a specific location (including ally W particles, useful in one for all)
 		float returnTimeToHit = FLT_MAX;
-		for (const auto& particle : particleList) {
+		for (const auto& particle : particleList)
+		{
+			if (!particle.particle || !particle.particle->is_valid()) continue;
+
 			const auto timeBeforeHit = particle.creationTime + XERATH_W_PARTICLE_TIME + 0.1F - gametime->get_time();
 			const auto unitPositionDist = position.distance(particle.particle->get_position());
 			if (particle.particle->is_valid() && unitPositionDist <= XERATH_W_OUTER_RADIUS && returnTimeToHit > timeBeforeHit)
@@ -442,7 +448,7 @@ namespace xerath {
 		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.18F) return true;
 		for (const auto& missile : eMissileList)
 		{
-			if (!missile) continue;
+			if (!missile || !missile->is_valid()) continue;
 
 			if (!aurora_prediction || aurora_prediction->is_hidden() != false)
 				e->set_delay(0);
@@ -459,7 +465,10 @@ namespace xerath {
 	bool willGetHitByR(const game_object_script& target)
 	{
 		if (!target) return false;
-		for (const auto& particle : ultParticleList) {
+		for (const auto& particle : ultParticleList)
+		{
+			if (!particle.particle || !particle.particle->is_valid()) continue;
+
 			const auto timeBeforeHit = particle.creationTime + XERATH_R_PARTICLE_TIME - gametime->get_time();
 			const auto unitPositionDist = prediction->get_prediction(target, std::max(0.f, timeBeforeHit)).get_unit_position().distance(particle.particle->get_position());
 			if (particle.particle->is_valid() && unitPositionDist <= r->get_radius())
@@ -1244,6 +1253,8 @@ namespace xerath {
 	bool customIsValid(const game_object_script& target, float range = FLT_MAX, vector from = vector::zero, bool invul = false)
 	{
 		// Custom isValid
+		if (!target || !target->is_valid())
+			return false;
 
 		// If it's Yuumi that is attached then target is not valid
 		if (isYuumiAttached(target)) return false;
@@ -1543,7 +1554,7 @@ namespace xerath {
 					{
 						for (const auto& target : dummyList)
 						{
-							if (target && x && target->get_handle() == x->get_handle())
+							if (target && target->is_valid() && x && target->get_handle() == x->get_handle())
 								return true;
 						}
 						return false;
@@ -1618,7 +1629,7 @@ namespace xerath {
 			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 
 			// Valid target check
-			const bool isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
+			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
@@ -1677,7 +1688,7 @@ namespace xerath {
 		for (const auto& target : targets)
 		{
 			// Valid target check
-			const bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+			const bool isValidTarget = customIsValid(target) && !target->is_zombie();
 
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
@@ -1754,7 +1765,7 @@ namespace xerath {
 		for (const auto& target : targets)
 		{
 			// Valid target check
-			const bool isValidTarget = target && customIsValid(target) && !target->is_zombie();
+			const bool isValidTarget = customIsValid(target) && !target->is_zombie();
 
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
@@ -1952,7 +1963,7 @@ namespace xerath {
 		{
 			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
-			const bool isValidTarget = target && (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
+			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
 			if (!isValidTarget) continue;
 
@@ -2282,19 +2293,16 @@ namespace xerath {
 		// Misc
 
 		// Draw W on ground
-		if (settings::draws::wRadius->get_bool()) {
-			for (const auto& particle : particleList) {
-				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 255, 255, 255), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
-			}
-		}
+		if (settings::draws::wRadius->get_bool())
+			for (const auto& particle : particleList)
+				if (particle.particle && particle.particle->is_valid())
+					draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 255, 255, 255), XERATH_W_OUTER_RADIUS * std::min(1.f, (1 / (XERATH_W_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 
 		// Draw R on ground
 		if (settings::draws::rRadius->get_bool())
-		{
-			for (const auto& particle : ultParticleList) {
-				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 127, 0, 255), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
-			}
-		}
+			for (const auto& particle : ultParticleList)
+				if (particle.particle && particle.particle->is_valid())
+					draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 127, 0, 255), r->get_radius() * std::min(1.f, (1 / (XERATH_R_PARTICLE_TIME / (gametime->get_time() - particle.creationTime)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 
 		// Draw misc
 		for (const auto& target : entitylist->get_enemy_heroes())
@@ -2340,19 +2348,16 @@ namespace xerath {
 		}
 
 		// Draw W on ground
-		if (settings::draws::wRadius->get_bool()) {
-			for (const auto& particle : particleList) {
-				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 0, 255, 255), XERATH_W_OUTER_RADIUS, 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
-			}
-		}
+		if (settings::draws::wRadius->get_bool())
+			for (const auto& particle : particleList)
+				if (particle.particle && particle.particle->is_valid())
+					draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(0, 0, 255, 255), XERATH_W_OUTER_RADIUS, 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
 
 		// Draw R on ground
 		if (settings::draws::rRadius->get_bool())
-		{
-			for (const auto& particle : ultParticleList) {
-				draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 0, 0, 255), r->get_radius(), 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
-			}
-		}
+			for (const auto& particle : ultParticleList)
+				if (particle.particle && particle.particle->is_valid())
+					draw_manager->add_circle_with_glow(particle.particle->get_position(), MAKE_COLOR(255, 0, 0, 255), r->get_radius(), 2.F, glow_data(0.2f, 0.5f, 1.f, 0.5f));
 
 		// Draw R damage & damage text
 		int index = 0;
