@@ -2768,14 +2768,13 @@ namespace xerath {
 		hasGoofyRune = myhero->has_perk(8237);
 
 		// Get enemy Nexus pos
-
-		const auto& nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](game_object_script x) {
-			return x->is_enemy();
-			}
-		);
-		const auto& nexusEntity = *nexusPosIt;
-		nexusPos = nexusEntity->get_position();
-
+		const auto& nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](const game_object_script& x) { return x != nullptr && x->is_valid() && x->is_enemy(); });
+		if (*nexusPosIt != nullptr)
+		{
+			const auto& nexusEntity = *nexusPosIt;
+			if (nexusEntity->is_valid())
+				nexusPos = nexusEntity->get_position();
+		}
 		// Get URF cannon pos
 		urfCannon = myhero->get_team() == game_object_team::order ? vector(13018.f, 14026.f) : vector(1506.f, 676.f);
 
