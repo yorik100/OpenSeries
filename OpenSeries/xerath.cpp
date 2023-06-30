@@ -1859,7 +1859,7 @@ namespace xerath {
 				if (!obj.target)
 					obj.target = obj.obj->get_particle_target_attachment_object();
 				if (obj.target && obj.obj->get_position().distance(obj.target->get_position()) <= 0) {
-					obj.castingPos = obj.target->get_position().extend(nexusPos, obj.target->get_bounding_radius() + obj.owner->get_bounding_radius());
+					obj.castingPos = obj.target->get_position().extend(nexusPos, obj.target->is_ai_turret() ? 225 : 100);
 				}
 				else
 				{
