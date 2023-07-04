@@ -374,7 +374,7 @@ namespace xerath {
 
 	bool isSlowable(const game_object_script& target)
 	{
-		return !target->get_is_cc_immune() && !target->get_is_unstoppable() && !target->has_buff({ buff_hash("MorganaE"),  buff_hash("bansheesveil"),  buff_hash("itemmagekillerveil"), buff_hash("malzaharpassiveshield"), buff_hash("Highlander") });
+		return !target->get_is_cc_immune() && !target->get_is_unstoppable() && !target->has_buff({ buff_hash("MorganaE"),  buff_hash("bansheesveil"),  buff_hash("itemmagekillerveil"), buff_hash("malzaharpassiveshield"), buff_hash("Highlander"), buff_hash("SejuaniPassiveDefense") });
 	}
 
 	void drawCircle(vector pos, int radius, int quality, bool legsense, unsigned long color, int thickness = 1)
