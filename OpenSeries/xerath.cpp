@@ -456,7 +456,7 @@ namespace xerath {
 			if (!aurora_prediction || aurora_prediction->is_hidden() != false)
 				e->set_delay(0);
 			else
-				e->set_delay(-getPing());
+				e->set_delay(-1.f);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25f + 0.066f);
 			if (eCollisions.empty()) continue;
@@ -1650,8 +1650,10 @@ namespace xerath {
 
 		for (const auto& target : targets)
 		{
+			if (!target->is_valid()) break;
+
 			// Get stasis time
-			const auto stasisDuration = target->is_valid() && stasisInfo[target->get_handle()].stasisTime;
+			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 
 			// Valid target check
 			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
@@ -1920,7 +1922,7 @@ namespace xerath {
 			const auto canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + std::max(50.f, obj.owner->get_bounding_radius()) - 50;
 
 			// Try to cast E if possible
-			if (canE && (particleTime - getPing() + 0.1 <= eLandingTime))
+			if (canE && (particleTime - getPing() + 0.166 <= eLandingTime))
 			{
 				e->cast(obj.castingPos);
 				hasCasted = true;
@@ -1986,7 +1988,10 @@ namespace xerath {
 		// Loop through every sorted targets
 		for (const auto& target : targets)
 		{
-			const auto stasisDuration = target->is_valid() && stasisInfo[target->get_handle()].stasisTime;
+			if (!target->is_valid()) break;
+
+			// Get stasis time
+			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
 			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
@@ -2011,7 +2016,9 @@ namespace xerath {
 			if (stasisCast)
 			{
 				// Cast E on stasis
-				if (stasisE && (stasisDuration + 0.2 - getPing()) < eLandingTime && castE(target, "stasis")) break;
+				if (stasisE && (stasisDuration + 0.266 - getPing()) < eLandingTime && castE(target, "stasis")) break;
+				// Noob check
+				if (stasisE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
 				// Cast Q short on stasis

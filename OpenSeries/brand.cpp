@@ -1648,7 +1648,7 @@ namespace brand {
 			const auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
 
 			// Try to cast Q if possible
-			if (canQ && (particleTime - getPing() + 0.2 <= qLandingTime))
+			if (canQ && (particleTime - getPing() + 0.266 <= qLandingTime))
 			{
 				q->cast(obj.castingPos);
 				hasCasted = true;
@@ -1687,7 +1687,9 @@ namespace brand {
 		// Loop through every sorted targets
 		for (const auto& target : targets)
 		{
-			const auto stasisDuration = target->is_valid() && stasisInfo[target->get_handle()].stasisTime;
+			if (!target->is_valid()) break;
+
+			const auto stasisDuration = stasisInfo[target->get_handle()].stasisTime;
 			// Valid target check
 			const bool isValidTarget = (customIsValid(target) || stasisDuration > 0) && !target->is_zombie();
 			// If not valid then go to next target
@@ -1712,7 +1714,7 @@ namespace brand {
 			if (stasisCast)
 			{
 				// Cast Q on stasis
-				if (stasisQ && (stasisDuration + 0.2 - getPing()) < qLandingTime && castQ(target, "stasis", false, true)) break;
+				if (stasisQ && (stasisDuration + 0.266 - getPing()) < qLandingTime && castQ(target, "stasis", false, true)) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", true)) break;
 			}
@@ -2352,7 +2354,7 @@ namespace brand {
 		
 		// Q
 		q = plugin_sdk->register_spell(spellslot::q, BRAND_Q_RANGE);
-		q->set_skillshot(0.25f, 60.f, 1600.f, { collisionable_objects::minions, collisionable_objects::heroes, collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		q->set_skillshot(0.25f + 0.066f, 60.f, 1600.f, { collisionable_objects::minions, collisionable_objects::heroes, collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
 		q->set_spell_lock(false);
 
 		// W
