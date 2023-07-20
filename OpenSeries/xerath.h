@@ -49,7 +49,7 @@ namespace xerath
 	inline float getW2DamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);
 	inline float getEDamage(const game_object_script& target);
 	inline float getEDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);
-	inline float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot);
+	inline float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot, const int actualShots);
 	inline void draw_dmg_rl(const game_object_script& target, const float damage, unsigned long color);
 	inline void draw_dmg_lr(const game_object_script& target, const float damage, unsigned long color);
 	inline bool isYuumiAttached(const game_object_script& target);

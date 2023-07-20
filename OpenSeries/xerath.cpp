@@ -243,6 +243,7 @@ namespace xerath {
 
 	buff_instance_script ultBuff;
 	buff_instance_script qBuff;
+	buff_instance_script opBuffPlzNerfRiot;
 	buff_instance_script elderBuff;
 
 	game_object_script qTarget;
@@ -272,7 +273,9 @@ namespace xerath {
 	float lastCast = 0;
 	float goofyRuneReadyTime = 0;
 	float scorchBuildup = 0;
+	float opTime = 0;
 	int rShots = 0;
+	int opStacks = 0;
 
 	void debugPrint(const std::string& str, ...)
 	{
@@ -805,7 +808,7 @@ namespace xerath {
 		const auto trueTimeToHit = getTimeToHit(p.input, p, false);
 		const auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, timeToHit + 0.1, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		const auto isCastDash = isCastMoving(target) > 1 && willGetHitByE(target);
-		const auto overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true);
+		const auto overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true, 0);
 		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) || !target->is_visible()) && !isCastDash && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage))
 		{
 			lastCast = gametime->get_time() + 0.133 + getPing();
@@ -1103,13 +1106,14 @@ namespace xerath {
 		return totalDamage;
 	}
 
-	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot)
+	float getRDamage(const game_object_script& target, const int shots, const float predictedHealth, const bool firstShot, const int actualShots)
 	{
 		// Get R damage
 		const auto& spell = myhero->get_spell(spellslot::r);
 		if (spell->level() == 0) return 0;
 		if (spell->cooldown() > (getPing() + 0.033f) && ultParticleList.empty() && !ultBuff) return 0;
-		const float damage = 150 + 50 * spell->level() + myhero->get_total_ability_power() * 0.45;
+		const float opDamage = (15 + 5 * spell->level() + myhero->get_total_ability_power() * 0.05) * actualShots;
+		const float damage = opDamage + 130 + 50 * spell->level() + myhero->get_total_ability_power() * 0.4;
 		const float damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, shots, predictedHealth, damageLibDamage, false, firstShot, false);
 		if (elderBuff && (predictedHealth - totalDamage) / target->get_max_health() < 0.2)
@@ -1126,13 +1130,13 @@ namespace xerath {
 		const auto totalHP = getTotalHP(target);
 		const auto hasUlt = myhero->get_spell(spellslot::r)->level() != 0 && myhero->get_spell(spellslot::r)->cooldown() <= getPing() + 0.033f;
 		const auto rActive = hasUlt || !ultParticleList.empty() || ultBuff;
-		const auto shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 2 + myhero->get_spell(spellslot::r)->level();
+		const auto shotAmount = ultBuff || !ultParticleList.empty() ? rShots : 3 + myhero->get_spell(spellslot::r)->level();
 		if (rActive)
 		{
 			for (int i = shotAmount; i > 0; i--)
 			{
-				const auto calculatedRDamage = getRDamage(target, i - 1, totalHP - rDamage, isFirstShot);
-				const auto calculatedRMaxDamage = i - 1 ? getRDamage(target, 0, totalHP - rDamage, isFirstShot) : calculatedRDamage;
+				const auto calculatedRDamage = getRDamage(target, i - 1, totalHP - rDamage, isFirstShot, shotsToKill + opStacks);
+				const auto calculatedRMaxDamage = i - 1 ? getRDamage(target, 0, totalHP - rDamage, isFirstShot, shotsToKill + opStacks) : calculatedRDamage;
 				if (((totalHP)-(rDamage + calculatedRMaxDamage)) / target->get_max_health() < 0)
 				{
 					rDamage = rDamage + calculatedRMaxDamage;
@@ -1300,6 +1304,11 @@ namespace xerath {
 				qBuff = buff;
 				break;
 			}
+			case buff_hash("XerathRRampUp"):
+			{
+				opBuffPlzNerfRiot = buff;
+				break;
+			}
 			case buff_hash("ElderDragonBuff"):
 			{
 				elderBuff = buff;
@@ -1447,6 +1456,22 @@ namespace xerath {
 		isWReady = can_cast(spellslot::w);
 		isEReady = can_cast(spellslot::e);
 		isRReady = can_cast(spellslot::r);
+
+		// Faster stacks accounting, smaller delay, when buff time resets, it takes extra 100 ms to get the proper count
+		if (opBuffPlzNerfRiot && opBuffPlzNerfRiot->is_valid())
+		{
+			if (opTime != opBuffPlzNerfRiot->get_start())
+			{
+				opStacks++;
+				opTime = opBuffPlzNerfRiot->get_start();
+				//myhero->print_chat(0, "+1 %i %f %f", opStacks, opTime, opBuffPlzNerfRiot->get_start());
+			}
+		}
+		else
+		{
+			opStacks = 0;
+			opTime = 0;
+		}
 
 		// Disable Orb in ult
 		orbwalker->set_movement(!ultBuff);
@@ -1601,7 +1626,7 @@ namespace xerath {
 				}
 				if (accountR)
 				{
-					damageA += getRDamage(a, --shots, getTotalHP(a) - damageA, firstDamage);
+					damageA += getRDamage(a, --shots, getTotalHP(a) - damageA, firstDamage, 0);
 				}
 				const float resistanceA = damagelib->calculate_damage_on_unit(myhero, a, damage_type::magical, 1);
 				const float resistanceB = damagelib->calculate_damage_on_unit(myhero, b, damage_type::magical, 1);
@@ -1645,7 +1670,7 @@ namespace xerath {
 
 			// Storing useful info
 			const auto canUseE = settings::automatic::manualEKey->get_bool() && couldDamageLater(target, trueELandingTime - 0.5, eDamageList[target->get_handle()]) && stasisDuration <= 0 && isEReady && ePredictionList[target->get_handle()].hitchance > hit_chance::impossible;
-			const auto canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true)) && (stasisDuration - getPing()) < 2 - r->get_delay() && ultBuff && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
+			const auto canUseR = couldDamageLater(target, r->get_delay() + 0.8, getRDamage(target, 0, getTotalHP(target), true, 0)) && (stasisDuration - getPing()) < 2 - r->get_delay() && ultBuff && rPredictionList[target->get_handle()].hitchance > hit_chance::impossible;
 			const auto rCombo = settings::combo::rCombo->get_bool() && orbwalker->combo_mode();
 
 			// If can't do anything on target, go next target
@@ -2717,7 +2742,7 @@ namespace xerath {
 			lastCast = 0;
 			if (spell->get_spell_data()->get_name_hash() == spell_hash("XerathLocusOfPower2"))
 			{
-				rShots = 2 + myhero->get_spell(spellslot::r)->level();
+				rShots = 3 + myhero->get_spell(spellslot::r)->level();
 			}
 		}
 	}
@@ -2800,6 +2825,16 @@ namespace xerath {
 						on_buff_gain(entity, buff);
 			}
 		}
+
+		// Get current R broken OP (pls nerf Riot) stacks that shouldn't have been out of PBE, WTF RIOT???
+		const auto& tempBuff = myhero->get_buff(buff_hash("XerathRRampUp"));
+		if (tempBuff)
+			opStacks = tempBuff->get_count();
+
+		// Useful, thanks Roti Gems
+		const auto& tempBuff2 = myhero->get_buff(buff_hash("xerathrshots"));
+		if (tempBuff2)
+			rShots = tempBuff2->get_count();
 
 		// Warning if trolling
 		scheduler->delay_action(0.1f, []()
