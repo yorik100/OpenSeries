@@ -458,7 +458,7 @@ namespace xerath {
 			else
 				e->set_delay(-getPing());
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
-			e->set_delay(0.25);
+			e->set_delay(0.25f + 0.066f);
 			if (eCollisions.empty()) continue;
 			if (eCollisions[0]->get_handle() == target->get_handle()) return true;
 		}
@@ -2776,7 +2776,7 @@ namespace xerath {
 
 		// E
 		e = plugin_sdk->register_spell(spellslot::e, XERATH_E_RANGE);
-		e->set_skillshot(0.25f, 60.f, 1400.f, { collisionable_objects::minions, collisionable_objects::heroes, collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+		e->set_skillshot(0.25f + 0.066f, 60.f, 1400.f, { collisionable_objects::minions, collisionable_objects::heroes, collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
 		e->set_spell_lock(false);
 
 		// R
