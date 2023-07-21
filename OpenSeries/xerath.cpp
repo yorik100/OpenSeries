@@ -1413,6 +1413,24 @@ namespace xerath {
 		}
 	}
 
+	void opBuffHandling()
+	{
+		if (opBuffPlzNerfRiot && opBuffPlzNerfRiot->is_valid())
+		{
+			if (opTime != opBuffPlzNerfRiot->get_start())
+			{
+				opStacks++;
+				opTime = opBuffPlzNerfRiot->get_start();
+				//myhero->print_chat(0, "+1 %i %f %f", opStacks, opTime, opBuffPlzNerfRiot->get_start());
+			}
+		}
+		else
+		{
+			opStacks = 0;
+			opTime = 0;
+		}
+	}
+
 	void calcs()
 	{
 		// Register last time update triggered (for low spec mode)
@@ -1458,20 +1476,7 @@ namespace xerath {
 		isRReady = can_cast(spellslot::r);
 
 		// Faster stacks accounting, smaller delay, when buff time resets, it takes extra 100 ms to get the proper count
-		if (opBuffPlzNerfRiot && opBuffPlzNerfRiot->is_valid())
-		{
-			if (opTime != opBuffPlzNerfRiot->get_start())
-			{
-				opStacks++;
-				opTime = opBuffPlzNerfRiot->get_start();
-				//myhero->print_chat(0, "+1 %i %f %f", opStacks, opTime, opBuffPlzNerfRiot->get_start());
-			}
-		}
-		else
-		{
-			opStacks = 0;
-			opTime = 0;
-		}
+		opBuffHandling();
 
 		// Disable Orb in ult
 		orbwalker->set_movement(!ultBuff);

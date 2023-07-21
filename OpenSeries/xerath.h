@@ -60,6 +60,7 @@ namespace xerath
 	inline bool limitedTick(float msTime);
 	inline void buffLoop();
 	inline void itemLoop();
+	inline void opBuffHandling();
 	inline void calcs();
 	inline bool debuffCantCast();
 	inline bool isCastingSpell();
