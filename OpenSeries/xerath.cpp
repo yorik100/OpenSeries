@@ -1922,7 +1922,7 @@ namespace xerath {
 			const auto canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + std::max(50.f, obj.owner->get_bounding_radius()) - 50;
 
 			// Try to cast E if possible
-			if (canE && (particleTime - getPing() + 0.166 <= eLandingTime))
+			if (canE && (particleTime - getPing() + 0.133 <= eLandingTime))
 			{
 				e->cast(obj.castingPos);
 				hasCasted = true;
@@ -2018,7 +2018,7 @@ namespace xerath {
 				// Cast E on stasis
 				if (stasisE && (stasisDuration + 0.266 - getPing()) < eLandingTime && castE(target, "stasis")) break;
 				// Noob check
-				if (stasisE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range) break;
+				if (stasisE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on stasis
 				if (stasisW && (stasisDuration + 0.2 - getPing()) < w->get_delay() && castW(target, "stasis", wCenter)) break;
 				// Cast Q short on stasis
@@ -2034,6 +2034,8 @@ namespace xerath {
 			if (ccCast) {
 				// Cast E on stun with chain CC logic
 				if (ccE && (ccTime - 0.3) < eLandingTime && castE(target, "stun")) break;
+				// Noob check
+				if (ccE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on stun with chain CC logic
 				if (ccW && (ccTime - 0.3 - getPing()) < w->get_delay() && castW(target, "stun", wCenter)) break;
 			}
@@ -2042,6 +2044,8 @@ namespace xerath {
 			if (dashingCast) {
 				// Cast E on dash
 				if (dashE && castE(target, "dash")) break;
+				// Noob check
+				if (dashE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on dash
 				if (dashW && castW(target, "dash", wCenter)) break;
 				// Cast Q short on dash
@@ -2054,6 +2058,8 @@ namespace xerath {
 			if (castingCast) {
 				// Cast E on casting
 				if (castingE && castE(target, "casting")) break;
+				// Noob check
+				if (castingE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on casting
 				if (castingW && castW(target, "casting", wCenter)) break;
 				// Cast Q on casting
@@ -2064,6 +2070,8 @@ namespace xerath {
 			if (channelingCast) {
 				// Cast E on channel
 				if (channelE && castE(target, "channeling")) break;
+				// Noob check
+				if (channelE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on channel
 				if (channelW && castW(target, "channeling", wCenter)) break;
 			}
