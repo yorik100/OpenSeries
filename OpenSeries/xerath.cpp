@@ -917,6 +917,20 @@ namespace xerath {
 		return range > distance + std::min((int)std::round((target->get_move_speed() * q2->get_delay())), 250);
 	}
 
+	float getBonusHealth(const game_object_script& target)
+	{
+		const uint32_t iLevel = target->get_level();
+		const float flHealthGrowthLevel18 = target->get_hpPerLevel();
+		float flBaseHealthForCurrentLevel = target->get_base_hp();
+		for (int32_t iIndex = 1; iIndex < iLevel; iIndex++) {
+			flBaseHealthForCurrentLevel += (flHealthGrowthLevel18 * (0.035f * (iIndex + 1) + 0.65f));
+		}
+
+		const float flBonusHealth = target->get_max_health() - flBaseHealthForCurrentLevel;
+
+		return flBonusHealth;
+	}
+
 	float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted)
 	{
 		// Get extra damage based off items && runes && drake souls
@@ -925,6 +939,7 @@ namespace xerath {
 		const auto bonusAD = myhero->get_total_attack_damage() - myhero->get_base_attack_damage();
 		const auto level = myhero->get_level();
 		const auto abilityPower = myhero->get_total_ability_power();
+		const auto bonusTargetHealth = getBonusHealth(target);
 		const auto& buff3 = miscBuffs[0];
 		const auto& buff4 = miscBuffs[1];
 		const auto targetMaxHealth = target->get_max_health();
@@ -985,14 +1000,6 @@ namespace xerath {
 				magicDamage = magicDamage + alternatorDamage;
 			}
 		}
-		if (hasLiandry)
-		{
-			if (shots <= 0)
-			{
-				const auto liandrysDamage = 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04);
-				magicDamage = magicDamage + liandrysDamage;
-			}
-		}
 		if (hasDemonic)
 		{
 			if (shots <= 0)
@@ -1000,6 +1007,15 @@ namespace xerath {
 				const auto demonicDamage = targetMaxHealth * 0.04;
 				magicDamage = magicDamage + demonicDamage;
 			}
+		}
+		if (hasLiandry)
+		{
+			if (shots <= 0)
+			{
+				const auto liandrysDamage = 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04);
+				magicDamage = magicDamage + liandrysDamage;
+			}
+			magicDamage = magicDamage * 1 + (1.2 * bonusTargetHealth / 125);
 		}
 		damage = damage + damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, magicDamage);
 		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
@@ -2023,7 +2039,7 @@ namespace xerath {
 			if (stasisCast)
 			{
 				// Cast E on stasis
-				if (stasisE && (stasisDuration + 0.266 - getPing()) < eLandingTime && castE(target, "stasis")) break;
+				if (stasisE && (stasisDuration + 0.3 - getPing()) < eLandingTime && castE(target, "stasis")) break;
 				// Noob check
 				if (stasisE && ePredictionList[target->get_handle()].hitchance > hit_chance::out_of_range && ePredictionList[target->get_handle()].hitchance != hit_chance::low) break;
 				// Cast W on stasis
@@ -2354,13 +2370,13 @@ namespace xerath {
 		// Draw misc
 		for (const auto& target : entitylist->get_enemy_heroes())
 		{
-
+			if (!target->is_valid()) continue;
 			// Draw stasis pred pos
 			const auto& stasisData = stasisInfo[target->get_handle()];
-			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd > gametime->get_time())
 			{
 				const auto castTime = stasisData.stasisEnd - stasisData.stasisStart;
-				draw_manager->add_filled_circle(target->get_position(), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), MAKE_COLOR(255, 127, 0, 64));
+				draw_manager->add_circle_with_glow(target->get_position(), MAKE_COLOR(255, 127, 0, 255), target->get_bounding_radius() * std::min(1.f, (1 / (castTime / (gametime->get_time() - stasisData.stasisStart)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 			}
 		}
 
@@ -2371,7 +2387,7 @@ namespace xerath {
 			{
 				if (!obj.obj->is_valid() || obj.owner->is_dead() || obj.time + obj.castTime <= gametime->get_time() || obj.castingPos == vector::zero) continue;
 
-				draw_manager->add_filled_circle(obj.castingPos, obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), MAKE_COLOR(255, 0, 255, 64));
+				draw_manager->add_circle_with_glow(obj.castingPos, MAKE_COLOR(255, 0, 255, 255), obj.owner->get_bounding_radius() * std::min(1.f, (1 / (obj.castTime / (gametime->get_time() - obj.time)))), 2.F, glow_data(1.f, 0.75f, 0.f, 1.f));
 			}
 		}
 
@@ -2421,7 +2437,7 @@ namespace xerath {
 
 			// Draw stasis pred pos
 			const auto& stasisData = stasisInfo[target->get_handle()];
-			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd < gametime->get_time())
+			if (settings::draws::stasisPos->get_bool() && stasisData.stasisTime > 0 && stasisData.stasisEnd > gametime->get_time())
 			{
 				draw_manager->add_circle(target->get_position(), target->get_bounding_radius(), MAKE_COLOR(255, 255, 0, 255), 2);
 				const auto castTime = stasisData.stasisEnd - stasisData.stasisStart;

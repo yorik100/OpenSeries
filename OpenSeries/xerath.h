@@ -41,6 +41,7 @@ namespace xerath
 	inline prediction_output getQDummyPred(const game_object_script& target);
 	inline prediction_output getQ2Pred(const game_object_script& target);
 	inline bool isValidQ(const game_object_script& target);
+	inline float getBonusHealth(const game_object_script& target);
 	inline float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted);
 	inline float getQDamage(const game_object_script& target);
 	inline float getQDamageAlternative(const game_object_script& target, const int shots, const float predictedHealth, const int firstShot);

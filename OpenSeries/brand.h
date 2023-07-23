@@ -27,6 +27,7 @@ namespace brand
 	inline prediction_output getQPred(const game_object_script& target);
 	inline prediction_output getWPred(const game_object_script& target);
 	inline bool qCanBeCasted(const game_object_script& target);
+	inline float getBonusHealth(const game_object_script& target);
 	inline float getExtraDamage(const game_object_script& target, const int shots, const float predictedHealth, const float damageDealt, const bool isCC, const bool firstShot, const bool isTargeted, const int passiveStacks);
 	inline float getQDamage(const game_object_script& target);
 	inline float getWDamage(const game_object_script& target);
