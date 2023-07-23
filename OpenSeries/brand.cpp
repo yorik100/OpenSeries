@@ -550,6 +550,8 @@ namespace brand {
 		// Cast Q
 		if (hasCasted) return true;
 
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+
 		auto& p = qPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -579,6 +581,8 @@ namespace brand {
 		// Cast W
 		if (hasCasted) return true;
 
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
+
 		auto& p = wPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -599,6 +603,9 @@ namespace brand {
 	{
 		// Cast E
 		if (hasCasted) return true;
+
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
+
 		const auto aliveWhenLanding = target->get_health() - health_prediction->get_incoming_damage(target, e->get_delay() + 0.2, true) > 0 || stasisInfo[target->get_handle()].stasisTime > 0;
 		if (couldDamageLater(target, e->get_delay() - 0.1, eDamageList[target->get_handle()]) && aliveWhenLanding && target->is_visible())
 		{
@@ -613,6 +620,8 @@ namespace brand {
 	{
 		// Cast R
 		if (hasCasted) return true;
+
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::r) return false;
 
 		const auto timeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
 		const auto trueTimeToHit = (myhero->get_position().distance(target->get_position()) / BRAND_R_MIN_SPEED) + r->get_delay() + getPing();
@@ -2392,8 +2401,8 @@ namespace brand {
 		r->set_spell_lock(false);
 
 		// Get enemy Nexus pos
-		const auto& nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](const game_object_script& x) { return x != nullptr && x->is_valid() && x->is_enemy(); });
-		if (*nexusPosIt != nullptr)
+		const auto nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](const game_object_script& x) { return x != nullptr && x->is_valid() && x->is_enemy(); });
+		if (nexusPosIt != entitylist->get_all_nexus().end())
 		{
 			const auto& nexusEntity = *nexusPosIt;
 			if (nexusEntity->is_valid())

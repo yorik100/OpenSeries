@@ -448,7 +448,7 @@ namespace xerath {
 		// Get if target will get hit by E
 		if (!target || !isStunnable(target)) return false;
 		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
-		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.18F) return true;
+		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.22F) return true;
 		for (const auto& missile : eMissileList)
 		{
 			if (!missile || !missile->is_valid()) continue;
@@ -692,6 +692,8 @@ namespace xerath {
 		// Cast Q short
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+
 		auto& p = qPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -715,6 +717,8 @@ namespace xerath {
 		// Cast Q dummy
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+
 		auto& p = qDummyPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -735,6 +739,8 @@ namespace xerath {
 	{
 		// Cast Q charged
 		if (hasCasted || lastCast > gametime->get_time()) return true;
+
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = q2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -761,6 +767,8 @@ namespace xerath {
 		// Cast W
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
+
 		auto& p = !wCenter ? wPredictionList[target->get_handle()] : w2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
 
@@ -782,6 +790,8 @@ namespace xerath {
 	{
 		// Cast E
 		if (hasCasted || lastCast > gametime->get_time()) return true;
+
+		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
 
 		auto& p = ePredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -2804,7 +2814,7 @@ namespace xerath {
 
 		// Q
 		q = plugin_sdk->register_spell(spellslot::q, XERATH_MIN_Q_RANGE);
-		q->set_skillshot(0.55f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
+		q->set_skillshot(0.52f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q->set_spell_lock(false);
 
 		// W
@@ -2836,8 +2846,8 @@ namespace xerath {
 		hasGoofyRune = myhero->has_perk(8237);
 
 		// Get enemy Nexus pos
-		const auto& nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](const game_object_script& x) { return x != nullptr && x->is_valid() && x->is_enemy(); });
-		if (*nexusPosIt != nullptr)
+		const auto nexusPosIt = std::find_if(entitylist->get_all_nexus().begin(), entitylist->get_all_nexus().end(), [](const game_object_script& x) { return x != nullptr && x->is_valid() && x->is_enemy(); });
+		if (nexusPosIt != entitylist->get_all_nexus().end())
 		{
 			const auto& nexusEntity = *nexusPosIt;
 			if (nexusEntity->is_valid())
