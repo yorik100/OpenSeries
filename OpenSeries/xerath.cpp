@@ -544,7 +544,8 @@ namespace xerath {
 			}
 		}
 		// Get guardian angel revive time if there is one
-		const float GATime = (buffTime <= 0 && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		const auto reviveTime = guardianReviveTime[target->get_handle()];
+		const float GATime = (buffTime <= 0 && reviveTime ? reviveTime - gametime->get_time() : 0);
 		if (buffTime < GATime)
 		{
 			buffTime = GATime;
@@ -592,12 +593,13 @@ namespace xerath {
 			}
 		}
 		// Get guardian angel revive time if there is one
-		const float GATime = (stasisTime <= 0 && guardianReviveTime[target->get_handle()] ? guardianReviveTime[target->get_handle()] - gametime->get_time() : 0);
+		const auto reviveTime = guardianReviveTime[target->get_handle()];
+		const float GATime = (stasisTime <= 0 && reviveTime ? reviveTime - gametime->get_time() : 0);
 		if (stasisTime < GATime)
 		{
 			stasisTime = GATime;
-			stasisStart = guardianReviveTime[target->get_handle()] - 4;
-			stasisEnd = guardianReviveTime[target->get_handle()];
+			stasisStart = reviveTime - 4;
+			stasisEnd = reviveTime;
 		}
 		const stasisStruct& stasisInfo = { .stasisTime = stasisTime, .stasisStart = stasisStart, .stasisEnd = stasisEnd };
 		const buffList& buffStruct = { .godBuff = godBuffTime, .noKillBuff = noKillBuffTime, .stasis = stasisInfo };
