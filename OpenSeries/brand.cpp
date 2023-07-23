@@ -442,6 +442,8 @@ namespace brand {
 			}
 		}
 		// Get guardian angel revive time if there is one
+		if (buffTime > 0)
+			guardianReviveTime[target->get_handle()] = 0.f;
 		const auto reviveTime = guardianReviveTime[target->get_handle()];
 		const float GATime = (buffTime <= 0 && reviveTime ? reviveTime - gametime->get_time() : 0);
 		if (buffTime < GATime)
@@ -491,6 +493,8 @@ namespace brand {
 			}
 		}
 		// Get guardian angel revive time if there is one
+		if (stasisTime > 0)
+			guardianReviveTime[target->get_handle()] = 0.f;
 		const auto reviveTime = guardianReviveTime[target->get_handle()];
 		const float GATime = (stasisTime <= 0 && reviveTime ? reviveTime - gametime->get_time() : 0);
 		if (stasisTime < GATime)
@@ -1332,8 +1336,6 @@ namespace brand {
 			// Remove guardian angel time if target finished revive
 			if (!target->is_playing_animation(buff_hash("Death")))
 				guardianReviveTime[target->get_handle()] = -1;
-
-			if (!target->is_visible()) continue;
 
 			// Get every important buff times
 			const buffList listOfNeededBuffs = combinedBuffChecks(target);
