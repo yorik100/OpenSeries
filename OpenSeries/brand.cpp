@@ -187,7 +187,7 @@ namespace brand {
 
 	static constexpr float SERVER_TICKRATE = 1000.f / 30.f;
 	static constexpr float BRAND_W_PARTICLE_TIME = 0.6f;
-	static constexpr float BRAND_Q_RANGE = 1050;
+	static constexpr float BRAND_Q_RANGE = 1040;
 	static constexpr float BRAND_W_RANGE = 900;
 	static constexpr float BRAND_E_RANGE = 670;
 	static constexpr float BRAND_E_MAX_BOUNCE_RANGE = 600;
