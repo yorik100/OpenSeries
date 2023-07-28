@@ -904,27 +904,31 @@ namespace brand {
 		// Draw damage on HP bar from right to left
 		if (target != nullptr && target->is_valid() && target->is_hpbar_recently_rendered())
 		{
-			auto bar_pos = target->get_hpbar_pos();
+			vector4 bar_pos_dummy;
+			vector4 useless;
+			target->get_health_bar_position(bar_pos_dummy, useless);
+
+			auto bar_pos = vector(useless.x, useless.y);
 
 			if (bar_pos.is_valid() && !target->is_dead() && target->is_visible())
 			{
 				const auto health = target->get_real_health();
 
-				bar_pos = vector(bar_pos.x + (105 * (health / target->get_max_health())), bar_pos.y -= 10);
+				bar_pos = vector(bar_pos.x + (useless.z * (health / target->get_max_health())), bar_pos.y);
 
-				auto damage_size = (105 * (damage / target->get_max_health()));
+				auto damage_size = (useless.z * (damage / target->get_max_health()));
 
 				if (damage >= health)
 				{
-					damage_size = (105 * (health / target->get_max_health()));
+					damage_size = (useless.z * (health / target->get_max_health()));
 				}
 
-				if (damage_size > 105)
+				if (damage_size > useless.z)
 				{
-					damage_size = 105;
+					damage_size = useless.z;
 				}
 
-				const auto size = vector(bar_pos.x + (damage_size * -1), bar_pos.y + 11);
+				const auto size = vector(bar_pos.x + (damage_size * -1), bar_pos.y + useless.w);
 
 				draw_manager->add_filled_rect(bar_pos, size, color);
 			}
