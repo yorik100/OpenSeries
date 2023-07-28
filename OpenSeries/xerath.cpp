@@ -2465,8 +2465,12 @@ namespace xerath {
 					draw_dmg_rl(target, rDamageList[target->get_handle()].damage, MAKE_COLOR(255, 170, 0, 150));
 				}
 				if (settings::draws::rDamageText->get_bool()) {
-					auto bar_pos = target->get_hpbar_pos();
-					bar_pos = vector(bar_pos.x + 130, bar_pos.y -= 40);
+					vector4 bar_pos_dummy;
+					vector4 useless;
+					target->get_health_bar_position(bar_pos_dummy, useless);
+
+					auto bar_pos = vector(useless.x, useless.y);
+					bar_pos = vector(bar_pos.x + 130, bar_pos.y -= 30);
 					if (rDamageList[target->get_handle()].kills)
 					{
 						draw_manager->add_text_on_screen(bar_pos, D3DCOLOR_ARGB(255, 255, 0, 0), 20, "Killable -> %d %s", rDamageList[target->get_handle()].shots, rDamageList[target->get_handle()].shots > 1 ? "shots" : "shot");
