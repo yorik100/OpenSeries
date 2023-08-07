@@ -447,7 +447,7 @@ namespace xerath {
 	{
 		// Get if target will get hit by E
 		if (!target || !isStunnable(target)) return false;
-		if (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathMageSpear")) return true;
 		if (hitByETime[target->get_handle()] && gametime->get_time() - hitByETime[target->get_handle()] < 0.22F) return true;
 		for (const auto& missile : eMissileList)
 		{
@@ -2822,7 +2822,7 @@ namespace xerath {
 
 		// Q
 		q = plugin_sdk->register_spell(spellslot::q, XERATH_MIN_Q_RANGE);
-		q->set_skillshot(0.52f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
+		q->set_skillshot(0.52f, 72.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q->set_spell_lock(false);
 
 		// W
