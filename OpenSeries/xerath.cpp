@@ -2843,12 +2843,12 @@ namespace xerath {
 
 		// Q dummy
 		qCharge = plugin_sdk->register_spell(spellslot::q, XERATH_MAX_Q_RANGE);
-		qCharge->set_skillshot(0.52f, 70.f, 1250, {}, skillshot_type::skillshot_line);
+		qCharge->set_skillshot(0.52f, 72.f, 1250, {}, skillshot_type::skillshot_line);
 		qCharge->set_spell_lock(false);
 
 		// Q charged
 		q2 = plugin_sdk->register_spell(spellslot::q, XERATH_MIN_Q_RANGE);
-		q2->set_skillshot(0.52f, 70.f, FLT_MAX, {}, skillshot_type::skillshot_line);
+		q2->set_skillshot(0.52f, 72.f, FLT_MAX, {}, skillshot_type::skillshot_line);
 		q2->set_spell_lock(false);
 
 		// Get goofy ahh scorch rune
