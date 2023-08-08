@@ -692,7 +692,7 @@ namespace xerath {
 		// Cast Q short
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = qPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -717,7 +717,7 @@ namespace xerath {
 		// Cast Q dummy
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = qDummyPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -730,6 +730,7 @@ namespace xerath {
 		{
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
+			debugPrint("[%i:%02d] Charging long Q on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, target->get_model_cstr());
 			return true;
 		}
 		return false;
@@ -740,7 +741,7 @@ namespace xerath {
 		// Cast Q charged
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = q2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -767,7 +768,7 @@ namespace xerath {
 		// Cast W
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
 
 		auto& p = !wCenter ? wPredictionList[target->get_handle()] : w2PredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -791,7 +792,7 @@ namespace xerath {
 		// Cast E
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
-		if (myhero->get_active_spell() && !myhero->get_active_spell()->spell_has_been_casted() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
+		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
 
 		auto& p = ePredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
@@ -1634,7 +1635,7 @@ namespace xerath {
 				float damageA = 0;
 				bool firstDamage = false;
 				int shots = 0;
-				const auto accountQ = isQReady || (myhero->get_active_spell() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == 2320506602);
+				const auto accountQ = isQReady || (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spell_data()->get_name_hash() == spell_hash("XerathArcanopulse2"));
 				const auto accountW = isWReady || timeBeforeWHits(a) < FLT_MAX;
 				const auto accountE = isEReady || willGetHitByE(a);
 				const auto accountR = ultBuff || willGetHitByR(a);
