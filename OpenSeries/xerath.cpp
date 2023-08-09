@@ -826,7 +826,6 @@ namespace xerath {
 		const auto overKill = willGetHitByR(target) && getTotalHP(target) <= getRDamage(target, 0, getTotalHP(target), true, 0);
 		if ((p.hitchance >= getPredIntFromSettings(settings::hitchance::rHitchance->get_int()) || !target->is_visible()) && !isCastDash && !overKill && (!willGetHitByE(target) || !isMoving(target)) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, rDamageList[target->get_handle()].damage))
 		{
-			lastCast = gametime->get_time() + 0.133 + getPing();
 			r->cast(p.get_cast_position());
 			debugPrint("[%i:%02d] Casted R2 on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
