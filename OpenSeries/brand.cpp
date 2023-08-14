@@ -160,6 +160,8 @@ namespace brand {
 			TreeEntry* eExtraHarass;
 		}
 		namespace automatic {
+			TreeEntry* autoCast;
+			TreeEntry* pokeFarm;
 			TreeEntry* towerCheck;
 			TreeEntry* attackCheck;
 			TreeEntry* fowPred;
@@ -223,6 +225,7 @@ namespace brand {
 	bool isRReady = false;
 	bool hasGoofyRune = false;
 	bool goofyTrigger = false;
+	bool pokeLogic = false;
 
 	float last_tick = 0;
 	float attackOrderTime = 0;
@@ -1320,6 +1323,9 @@ namespace brand {
 		// Allows casting a spell for this update
 		hasCasted = false;
 
+		// Store poke value
+		pokeLogic = settings::automatic::autoCast->get_bool() && (!settings::automatic::pokeFarm->get_bool() || !orbwalker->should_wait());
+
 		// Get ready spells
 		isQReady = can_cast(spellslot::q);
 		isWReady = can_cast(spellslot::w);
@@ -1700,7 +1706,7 @@ namespace brand {
 	void automatic()
 	{
 		// Check if you didn't already cast
-		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero))) return;
+		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero)) || !pokeLogic) return;
 
 		// Store every settings
 		const auto ccQ = settings::automatic::qStun->get_bool() && isQReady;
@@ -1986,6 +1992,8 @@ namespace brand {
 
 		// Misc tab
 		const auto miscTab = mainMenu->add_tab("open.brand.misc", "Misc");
+		settings::automatic::autoCast = miscTab->add_checkbox("open.brand.misc.autocast", "Autocast toggle", true);
+		settings::automatic::pokeFarm = miscTab->add_checkbox("open.brand.misc.pokefarm", "Don't auto poke if can miss farm", false);
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.brand.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::attackCheck = miscTab->add_checkbox("open.brand.misc.attackcheck", "Don't cancel auto to cast", false);
 		settings::automatic::fowPred = miscTab->add_checkbox("open.brand.misc.fowpred", "AuroraPred FoW prediction", true);

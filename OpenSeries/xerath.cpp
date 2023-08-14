@@ -179,6 +179,8 @@ namespace xerath {
 			TreeEntry* eHarass;
 		}
 		namespace automatic {
+			TreeEntry* autoCast;
+			TreeEntry* pokeFarm;
 			TreeEntry* manualEKey;
 			TreeEntry* manualRKey;
 			TreeEntry* rRange;
@@ -268,6 +270,7 @@ namespace xerath {
 	bool isRReady = false;
 	bool hasGoofyRune = false;
 	bool goofyTrigger = false;
+	bool pokeLogic = false;
 
 	float last_tick = 0;
 	float lastCast = 0;
@@ -1497,6 +1500,9 @@ namespace xerath {
 		// Allows casting a spell for this update
 		hasCasted = evade->is_evading();
 
+		// Store poke value
+		pokeLogic = settings::automatic::autoCast->get_bool() && (!settings::automatic::pokeFarm->get_bool() || !orbwalker->should_wait());
+
 		// Get buffs
 		buffLoop();
 
@@ -2000,7 +2006,7 @@ namespace xerath {
 	void automatic()
 	{
 		// Check if you didn't already cast
-		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero))) return;
+		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero)) && !pokeLogic) return;
 
 		// Store every settings
 		const auto ccE = settings::automatic::eStun->get_bool() && isEReady;
@@ -2252,6 +2258,8 @@ namespace xerath {
 
 		// Misc tab
 		const auto miscTab = mainMenu->add_tab("open.xerath.misc", "Misc");
+		settings::automatic::autoCast = miscTab->add_checkbox("open.xerath.misc.autocast", "Autocast toggle", true);
+		settings::automatic::pokeFarm = miscTab->add_checkbox("open.xerath.misc.pokefarm", "Don't auto poke if can miss farm", false);
 		settings::automatic::manualEKey = miscTab->add_hotkey("open.xerath.misc.manuale", "Manual E key", TreeHotkeyMode::Hold, 0x4A, false);
 		settings::automatic::manualRKey = miscTab->add_hotkey("open.xerath.misc.manualr", "Manual R key", TreeHotkeyMode::Hold, 0x54, false);
 		settings::automatic::rRange = miscTab->add_slider("open.xerath.misc.manualrrange", "Ult near mouse range", 0, 0, 1500);
