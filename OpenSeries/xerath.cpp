@@ -1933,7 +1933,7 @@ namespace xerath {
 				}
 				else
 				{
-					obj.castingPos = obj.obj->get_position().extend(nexusPos, obj.owner->get_bounding_radius());
+					obj.castingPos = obj.obj->get_position().extend(nexusPos, 100);
 				}
 				if (obj.castingPos.is_wall() || obj.castingPos.is_building())
 					obj.castingPos = navmesh->get_nearest_passable_cell_center(obj.castingPos);
