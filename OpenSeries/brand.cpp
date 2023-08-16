@@ -2318,7 +2318,7 @@ namespace brand {
 			const auto& target = obj->get_particle_attachment_object();
 			if (nexusPos != vector::zero)
 			{
-				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
+				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.f, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
@@ -2328,7 +2328,7 @@ namespace brand {
 			const auto& target = obj->get_particle_target_attachment_object();
 			if (nexusPos != vector::zero)
 			{
-				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.1, .castingPos = vector::zero, .isTeleport = true };
+				const particleStruct& particleData = { .obj = obj, .target = target, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 4.f, .castingPos = vector::zero, .isTeleport = true };
 				particlePredList.push_back(particleData);
 				return;
 			}
