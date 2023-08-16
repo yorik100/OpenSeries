@@ -1674,17 +1674,20 @@ namespace brand {
 			}
 
 			// Check if cast position isn't too far enough
-			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > BRAND_Q_RANGE) continue;
+			if (myhero->get_position().distance(obj.castingPos) > qPredictionList[obj.owner->get_handle()].input.range) continue;
 
 			// Gathering enough data to cast on particles
 			const auto distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius());
 			const auto qLandingTime = std::max(q->get_delay(), (distance / q->get_speed()) + q->get_delay());
+			const auto effectiveWRange = w->range() + w->get_radius();
+			const auto effectiveWRadius = myhero->get_position().distance(obj.castingPos) <= w->range() ? w->get_radius() : std::max(1.f, w->get_radius() + w->range() - myhero->get_position().distance(obj.castingPos));
+			const auto effectiveWDeviation = w->get_radius() - effectiveWRadius;
 			const auto particleTime = (obj.time + obj.castTime) - gametime->get_time();
 			const auto qCanDodge = obj.owner->get_move_speed() * ((qLandingTime - particleTime) + getPing()) > q->get_radius() + obj.owner->get_bounding_radius();
-			const auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
+			const auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > effectiveWRadius;
 			const auto& collisionList = q->get_collision(myhero->get_position(), { obj.castingPos });
-			const auto canQ = particleQ && !qCanDodge && timeBeforeWHitsLocation(obj.castingPos) < FLT_MAX && collisionList.empty();
-			const auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
+			const auto canQ = particleQ && !qCanDodge && timeBeforeWHitsLocation(obj.castingPos) < FLT_MAX && collisionList.empty() && myhero->get_position().distance(obj.castingPos) <= qPredictionList[obj.owner->get_handle()].input.range;
+			const auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= effectiveWRange;
 
 			// Try to cast Q if possible
 			if (canQ && (particleTime - getPing() + 0.266 <= qLandingTime))
@@ -1696,7 +1699,7 @@ namespace brand {
 			// Try to cast W if possible
 			else if (canW && (particleTime - getPing() + 0.1) <= w->get_delay())
 			{
-				w->cast(obj.castingPos);
+				w->cast(obj.castingPos.extend(myhero->get_position(), effectiveWDeviation));
 				hasCasted = true;
 				return;
 			}

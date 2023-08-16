@@ -236,7 +236,7 @@ namespace xerath {
 	static constexpr float XERATH_R_PARTICLE_TIME = 0.65f;
 	static constexpr float XERATH_MAX_Q_RANGE = 1450;
 	static constexpr float XERATH_MIN_Q_RANGE = 700;
-	static constexpr float XERATH_W_RANGE = 1000;
+	static constexpr float XERATH_W_RANGE = 990;
 	static constexpr float XERATH_E_RANGE = 1060;
 	static constexpr float XERATH_R_RANGE = 5000;
 
@@ -1946,23 +1946,29 @@ namespace xerath {
 			}
 
 			// Check if cast position isn't too far enough
-			if ((myhero->get_position().distance(obj.castingPos) - obj.owner->get_bounding_radius()) > std::max(XERATH_MAX_Q_RANGE, ePredictionList[obj.owner->get_handle()].input.range)) continue;
+			if (particleR ? myhero->get_position().distance(obj.castingPos) > r->range() + r->get_radius() : myhero->get_position().distance(obj.castingPos) > std::max(XERATH_MAX_Q_RANGE + std::max(obj.owner->get_bounding_radius(), 50.f) - 50, q2PredictionList[obj.owner->get_handle()].input.range)) continue;
 
 			// Gathering enough data to cast on particles
 			const auto distance = myhero->get_position().distance(obj.castingPos) - (obj.owner->get_bounding_radius());
 			const auto eLandingTime = std::max(e->get_delay(), (distance / e->get_speed()) + e->get_delay());
 			const auto particleTime = (obj.time + obj.castTime) - gametime->get_time();
+			const auto effectiveWRange = w->range() + XERATH_W_OUTER_RADIUS;
+			const auto effectiveWRadius = myhero->get_position().distance(obj.castingPos) <= w->range() ? XERATH_W_OUTER_RADIUS : std::max(1.f, XERATH_W_OUTER_RADIUS + w->range() - myhero->get_position().distance(obj.castingPos));
+			const auto effectiveWDeviation = XERATH_W_OUTER_RADIUS - effectiveWRadius;
+			const auto effectiveRRange = r->range() + r->get_radius();
+			const auto effectiveRRadius = myhero->get_position().distance(obj.castingPos) <= r->range() ? r->get_radius() : std::max(1.f, r->get_radius() + r->range() - myhero->get_position().distance(obj.castingPos));
+			const auto effectiveRDeviation = r->get_radius() - effectiveRRadius;
 			const auto eCanDodge = obj.owner->get_move_speed() * ((eLandingTime - particleTime) + getPing()) > e->get_radius() + obj.owner->get_bounding_radius();
-			const auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > w->get_radius();
-			const auto rCanDodge = obj.owner->get_move_speed() * ((r->get_delay() - particleTime) + getPing()) > r->get_radius();
+			const auto wCanDodge = obj.owner->get_move_speed() * ((w->get_delay() - particleTime) + getPing()) > effectiveWRadius;
+			const auto rCanDodge = obj.owner->get_move_speed() * ((r->get_delay() - particleTime) + getPing()) > effectiveRRadius;
 			const auto qShortCanDodge = obj.owner->get_move_speed() * ((q->get_delay() - particleTime) + getPing()) > q->get_radius();
 			const auto qCanDodge = obj.owner->get_move_speed() * ((q2->get_delay() - particleTime) + getPing()) > q2->get_radius();
 			const auto& collisionList = e->get_collision(myhero->get_position(), { obj.castingPos });
 			const auto canE = particleE && !eCanDodge && myhero->get_position().distance(obj.castingPos) <= ePredictionList[obj.owner->get_handle()].input.range && collisionList.empty();
-			const auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= w->range();
-			const auto canR = particleR && !rCanDodge && myhero->get_position().distance(obj.castingPos) <= r->range();
-			const auto canQShort = particleQShort && !qShortCanDodge && myhero->get_position().distance(obj.castingPos) <= XERATH_MIN_Q_RANGE + std::max(50.f, obj.owner->get_bounding_radius());
-			const auto canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + std::max(50.f, obj.owner->get_bounding_radius()) - 50;
+			const auto canW = particleW && !wCanDodge && myhero->get_position().distance(obj.castingPos) <= effectiveWRange;
+			const auto canR = particleR && !rCanDodge && myhero->get_position().distance(obj.castingPos) <= effectiveRRange;
+			const auto canQShort = particleQShort && !qShortCanDodge && myhero->get_position().distance(obj.castingPos) <= qPredictionList[obj.owner->get_handle()].input.range;
+			const auto canQ = particleQ && !qCanDodge && myhero->get_position().distance(obj.castingPos) <= std::max(charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5) + std::max(50.f, obj.owner->get_bounding_radius()) - 50, q2PredictionList[obj.owner->get_handle()].input.range);
 
 			// Try to cast E if possible
 			if (canE && (particleTime - getPing() + 0.133 <= eLandingTime))
@@ -1974,14 +1980,14 @@ namespace xerath {
 			// Try to cast W if possible
 			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
-				w->cast(obj.castingPos);
+				w->cast(obj.castingPos.extend(myhero->get_position(), effectiveWDeviation));
 				hasCasted = true;
 				return;
 			}
 			// Try to cast R if possible
 			else if (canR && !rTarget && (particleTime - getPing() + 0.2) <= r->get_delay())
 			{
-				r->cast(obj.castingPos);
+				r->cast(obj.castingPos.extend(myhero->get_position(), effectiveRDeviation));
 				hasCasted = true;
 				return;
 			}
@@ -2835,7 +2841,7 @@ namespace xerath {
 
 		// W
 		w = plugin_sdk->register_spell(spellslot::w, XERATH_W_RANGE);
-		w->set_skillshot(XERATH_W_PARTICLE_TIME, 275.f, FLT_MAX, {}, skillshot_type::skillshot_circle);
+		w->set_skillshot(XERATH_W_PARTICLE_TIME, XERATH_W_OUTER_RADIUS, FLT_MAX, {}, skillshot_type::skillshot_circle);
 		w->set_spell_lock(false);
 
 		// E
