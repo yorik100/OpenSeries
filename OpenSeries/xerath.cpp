@@ -698,7 +698,7 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = qPredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = q->get_delay() + getPing();
 		const auto trueTimeToHit = q->get_delay();
@@ -723,7 +723,7 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = qDummyPredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = q->get_delay() + getPing();
 		const auto trueTimeToHit = q->get_delay();
@@ -747,7 +747,7 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
 		auto& p = q2PredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = q->get_delay() + getPing();
 		const auto trueTimeToHit = q->get_delay();
@@ -774,7 +774,7 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
 
 		auto& p = !wCenter ? wPredictionList[target->get_handle()] : w2PredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = w->get_delay() + getPing();
 		const auto trueTimeToHit = w->get_delay();
@@ -798,7 +798,7 @@ namespace xerath {
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
 
 		auto& p = ePredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = getTimeToHit(p.input, p, true);
 		const auto trueTimeToHit = getTimeToHit(p.input, p, false);
@@ -820,7 +820,7 @@ namespace xerath {
 		if (hasCasted || lastCast > gametime->get_time()) return true;
 
 		auto& p = rPredictionList[target->get_handle()];
-		if (p.get_cast_position().distance(myhero) > p.input.range) return false;
+		if (p.get_cast_position().distance(myhero) > p.input.range + 0.01) return false;
 
 		const auto timeToHit = getTimeToHit(p.input, p, true);
 		const auto trueTimeToHit = getTimeToHit(p.input, p, false);
