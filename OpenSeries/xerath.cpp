@@ -236,7 +236,7 @@ namespace xerath {
 	static constexpr float XERATH_R_PARTICLE_TIME = 0.65f;
 	static constexpr float XERATH_MAX_Q_RANGE = 1450;
 	static constexpr float XERATH_MIN_Q_RANGE = 700;
-	static constexpr float XERATH_W_RANGE = 990;
+	static constexpr float XERATH_W_RANGE = 995;
 	static constexpr float XERATH_E_RANGE = 1060;
 	static constexpr float XERATH_R_RANGE = 5000;
 
