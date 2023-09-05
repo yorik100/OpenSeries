@@ -742,7 +742,7 @@ namespace xerath {
 	bool castQLong(const game_object_script& target, const std::string& mode)
 	{
 		// Cast Q charged
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
@@ -1498,7 +1498,7 @@ namespace xerath {
 		rTarget = game_object_script{};
 
 		// Allows casting a spell for this update
-		hasCasted = evade->is_evading();
+		hasCasted = false;
 
 		// Store poke value
 		pokeLogic = settings::automatic::autoCast->get_bool() && (!settings::automatic::pokeFarm->get_bool() || !orbwalker->should_wait());
