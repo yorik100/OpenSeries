@@ -2012,7 +2012,7 @@ namespace xerath {
 	void automatic()
 	{
 		// Check if you didn't already cast
-		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero)) && !pokeLogic) return;
+		if (hasCasted || (settings::automatic::towerCheck->get_bool() && isUnderTower(myhero)) || !pokeLogic) return;
 
 		// Store every settings
 		const auto ccE = settings::automatic::eStun->get_bool() && isEReady;
