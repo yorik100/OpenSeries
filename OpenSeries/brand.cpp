@@ -847,7 +847,7 @@ namespace brand {
 		// Get E damage
 		if (!isEReady) return 0;
 		const auto& spell = myhero->get_spell(spellslot::e);
-		const float damage = 45 + 25 * spell->level() + myhero->get_total_ability_power() * 0.55;
+		const float damage = 40 + 25 * spell->level() + myhero->get_total_ability_power() * 0.55;
 		const float damageLibDamage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, damage);
 		float totalDamage = damageLibDamage + getExtraDamage(target, 0, target->get_health(), damageLibDamage, true, true, true, 1);
 		const float totalHP = getTotalHP(target);
