@@ -188,7 +188,7 @@ namespace xerath {
 			TreeEntry* avoidShields;
 			TreeEntry* towerCheck;
 			TreeEntry* attackCheck;
-			TreeEntry* fowPred;
+			// TreeEntry* fowPred;
 			TreeEntry* qShortFollowup;
 			TreeEntry* wFollowup;
 			TreeEntry* eStun;
@@ -256,7 +256,7 @@ namespace xerath {
 	spellslot ludenSlot;
 	spellslot hextechSlot;
 
-	TreeTab* aurora_prediction;
+	// TreeTab* ferris_prediction;
 
 	bool hasCasted = false;
 	bool hasRylai = false;
@@ -456,10 +456,10 @@ namespace xerath {
 		{
 			if (!missile || !missile->is_valid()) continue;
 
-			if (!aurora_prediction || aurora_prediction->is_hidden() != false)
-				e->set_delay(0);
-			else
-				e->set_delay(-1.f);
+			//if (!ferris_prediction || ferris_prediction->is_hidden() != false)
+			e->set_delay(0);
+			//else
+			//	e->set_delay(-1.f);
 			const auto& eCollisions = e->get_collision(missile->get_position(), {missile->missile_get_end_position()});
 			e->set_delay(0.25f + 0.066f);
 			if (eCollisions.empty()) continue;
@@ -1303,8 +1303,8 @@ namespace xerath {
 		if (from == vector::zero)
 			from = myhero->get_position();
 
-		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
-			return true;
+		//if (ferris_prediction && ferris_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
+		//	return true;
 
 		const auto isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
@@ -1489,8 +1489,8 @@ namespace xerath {
 		),
 			ultParticleList.end());
 
-		// Get aurora pred menu
-		aurora_prediction = menu->get_tab("aurora_prediction");
+		// Get ferris pred menu
+		// ferris_prediction = menu->get_tab("ferris_prediction");
 
 		// Reset targets
 		glowRemove();
@@ -2274,7 +2274,7 @@ namespace xerath {
 		settings::automatic::avoidShields = miscTab->add_checkbox("open.xerath.misc.avoidshields", "Try to avoid shields", true);
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.xerath.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::attackCheck = miscTab->add_checkbox("open.xerath.misc.attackcheck", "Don't cancel auto to cast", false);
-		settings::automatic::fowPred = miscTab->add_checkbox("open.xerath.misc.fowpred", "AuroraPred FoW prediction", true);
+		// settings::automatic::fowPred = miscTab->add_checkbox("open.xerath.misc.fowpred", "AuroraPred FoW prediction", true);
 		settings::automatic::qShortFollowup = miscTab->add_checkbox("open.xerath.misc.qshortfollowup", "Auto short Q on targets hit in FoW by E", true);
 		settings::automatic::wFollowup = miscTab->add_checkbox("open.xerath.misc.wfollowup", "Auto W on targets hit in FoW by E", true);
 		settings::automatic::eStun = miscTab->add_checkbox("open.xerath.misc.estun", "Auto E on stun", true);
@@ -2907,15 +2907,15 @@ namespace xerath {
 			rShots = tempBuff2->get_count();
 
 		// Warning if trolling
-		scheduler->delay_action(0.1f, []()
-			{
-				aurora_prediction = menu->get_tab("aurora_prediction");
-				if (!aurora_prediction || aurora_prediction->is_hidden() != false)
-				{
-					myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performances !</font>");
-				}
-			}
-		);
+		//scheduler->delay_action(0.1f, []()
+		//	{
+		//		ferris_prediction = menu->get_tab("ferris_prediction");
+		//		if (!ferris_prediction || ferris_prediction->is_hidden() != false)
+		//		{
+		//			myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performances !</font>");
+		//		}
+		//	}
+		//);
 
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update, event_prority::high);

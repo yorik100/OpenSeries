@@ -164,7 +164,7 @@ namespace brand {
 			TreeEntry* pokeFarm;
 			TreeEntry* towerCheck;
 			TreeEntry* attackCheck;
-			TreeEntry* fowPred;
+			// TreeEntry* fowPred;
 			TreeEntry* qeLogic;
 			TreeEntry* qStun;
 			TreeEntry* wStun;
@@ -211,7 +211,7 @@ namespace brand {
 	spellslot ludenSlot;
 	spellslot hextechSlot;
 
-	TreeTab* aurora_prediction;
+	// TreeTab* ferris_prediction;
 
 	bool hasCasted = false;
 	bool hasRylai = false;
@@ -1017,8 +1017,8 @@ namespace brand {
 		if (from == vector::zero)
 			from = myhero->get_position();
 
-		if (aurora_prediction && aurora_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
-			return true;
+		//if (ferris_prediction && ferris_prediction->is_hidden() == false && settings::automatic::fowPred->get_bool() && prediction->get_prediction(target, 0.F).hitchance > hit_chance::impossible && from.distance(target) <= range)
+		//	return true;
 
 		const auto isCastingImmortalitySpell = (target->get_active_spell() && std::find(std::begin(immuneSpells), std::end(immuneSpells), target->get_active_spell()->get_spell_data()->get_name_hash()) != std::end(immuneSpells)) || target->has_buff(buff_hash("AkshanE2"));
 		const auto isValid = !isCastingImmortalitySpell && ((target->is_valid_target(range, from, invul) && target->is_targetable() && target->is_targetable_to_team(myhero->get_team()) && !target->is_invulnerable()));
@@ -1317,8 +1317,8 @@ namespace brand {
 		// Manage auto attacks
 		orbwalker->set_attack((attackOrderTime > gametime->get_time() - 0.066) ? ((orbwalker->combo_mode()) ? false : true) : true);
 
-		// Get aurora pred menu
-		aurora_prediction = menu->get_tab("aurora_prediction");
+		// Get ferris pred menu
+		// ferris_prediction = menu->get_tab("ferris_prediction");
 
 		// Allows casting a spell for this update
 		hasCasted = false;
@@ -1999,7 +1999,7 @@ namespace brand {
 		settings::automatic::pokeFarm = miscTab->add_checkbox("open.brand.misc.pokefarm", "Don't auto poke if can miss farm", false);
 		settings::automatic::towerCheck = miscTab->add_checkbox("open.brand.misc.towercheck", "Don't auto cast under turret", false);
 		settings::automatic::attackCheck = miscTab->add_checkbox("open.brand.misc.attackcheck", "Don't cancel auto to cast", false);
-		settings::automatic::fowPred = miscTab->add_checkbox("open.brand.misc.fowpred", "AuroraPred FoW prediction", true);
+		// settings::automatic::fowPred = miscTab->add_checkbox("open.brand.misc.fowpred", "FerrisPred FoW prediction", true);
 		settings::automatic::qeLogic = miscTab->add_checkbox("open.brand.misc.qelogic", "Try to Q-E", false);
 		settings::automatic::qStun = miscTab->add_checkbox("open.brand.misc.qstun", "Auto Q on stun", true);
 		settings::automatic::wStun = miscTab->add_checkbox("open.brand.misc.wstun", "Auto W on stun", true);
@@ -2453,15 +2453,15 @@ namespace brand {
 		}
 
 		// Warning if trolling
-		scheduler->delay_action(0.1f, []()
-			{
-				aurora_prediction = menu->get_tab("aurora_prediction");
-				if (!aurora_prediction || aurora_prediction->is_hidden() != false)
-				{
-					myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performances !</font>");
-				}
-			}
-		);
+		//scheduler->delay_action(0.1f, []()
+		//	{
+		//		 ferris_prediction = menu->get_tab("ferris_prediction");
+		//		if (!ferris_prediction || ferris_prediction->is_hidden() != false)
+		//		{
+		//			myhero->print_chat(0, "<font color=\"#2dce89\">[OpenSeries]</font> <font color=\"#fd5d93\">Load and select Aurora Prediction for better performances !</font>");
+		//		}
+		//	}
+		//);
 
 		// Add events
 		event_handler<events::on_update>::add_callback(on_update, event_prority::high);
