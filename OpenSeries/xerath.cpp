@@ -129,7 +129,7 @@ namespace xerath {
 	//};
 
 	static constexpr float qMana[] { 80, 90, 100, 110, 120 };
-	static constexpr float wMana[] { 70, 80, 90, 100, 110 };
+	static constexpr float wMana[] { 80, 90, 100, 110, 120 };
 	static constexpr float eMana[] { 60, 65, 70, 75, 80 };
 	static constexpr float rMana[] { 100, 100, 100 };
 
