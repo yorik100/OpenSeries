@@ -999,14 +999,14 @@ namespace xerath {
 				magicDamage = magicDamage + scorchDamage;
 			}
 		}
-		if (ludenSlot != spellslot::invalid)
-		{
-			if (firstShot && myhero->get_spell(ludenSlot)->cooldown() <= 0)
-			{
-				const auto ludensDamage = 100 + abilityPower * 0.1;
-				magicDamage = magicDamage + ludensDamage;
-			}
-		}
+		//if (ludenSlot != spellslot::invalid)
+		//{
+		//	if (firstShot && myhero->get_spell(ludenSlot)->cooldown() <= 0)
+		//	{
+		//		const auto ludensDamage = 100 + abilityPower * 0.1;
+		//		magicDamage = magicDamage + ludensDamage;
+		//	}
+		//}
 		if (hextechSlot != spellslot::invalid)
 		{
 			if (firstShot && myhero->get_spell(hextechSlot)->cooldown() <= 0)
@@ -1015,25 +1015,24 @@ namespace xerath {
 				magicDamage = magicDamage + alternatorDamage;
 			}
 		}
-		if (hasDemonic)
-		{
-			if (shots <= 0)
-			{
-				const auto demonicDamage = targetMaxHealth * 0.04;
-				magicDamage = magicDamage + demonicDamage;
-			}
-		}
+		//if (hasDemonic)
+		//{
+		//	if (shots <= 0)
+		//	{
+		//		const auto demonicDamage = targetMaxHealth * 0.04;
+		//		magicDamage = magicDamage + demonicDamage;
+		//	}
+		//}
 		if (hasLiandry)
 		{
 			if (shots <= 0)
 			{
-				const auto liandrysDamage = 50 + (abilityPower * 0.06) + (targetMaxHealth * 0.04);
+				const auto liandrysDamage = targetMaxHealth * 0.06;
 				magicDamage = magicDamage + liandrysDamage;
 			}
-			magicDamage = magicDamage * 1 + (1.2 * bonusTargetHealth / 125);
 		}
 		damage = damage + damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, magicDamage);
-		if (hasHorizon && (isCC || hasRylai || (!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
+		if (hasHorizon && ((!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
 		{
 			damage = damage + (damageDealt) * 0.1;
 		}
