@@ -1011,7 +1011,7 @@ namespace xerath {
 		{
 			if (firstShot && myhero->get_spell(hextechSlot)->cooldown() <= 0)
 			{
-				const auto alternatorDamage = 50 + 75 / 17 * (level - 1);
+				const auto alternatorDamage = 65;
 				magicDamage = magicDamage + alternatorDamage;
 			}
 		}
@@ -1415,21 +1415,21 @@ namespace xerath {
 
 			switch (item->get_item_id())
 			{
-			case (int)ItemId::Ludens_Tempest:
-			{
-				ludenSlot = (spellslot)i;
-				break;
-			}
+			//case (int)ItemId::Ludens_Tempest:
+			//{
+			//	ludenSlot = (spellslot)i;
+			//	break;
+			//}
 			case (int)ItemId::Hextech_Alternator:
 			{
 				hextechSlot = (spellslot)i;
 				break;
 			}
-			case (int)ItemId::Liandrys_Anguish:
-			{
-				hasLiandry = true;
-				break;
-			}
+			//case (int)ItemId::Liandrys_Anguish:
+			//{
+			//	hasLiandry = true;
+			//	break;
+			//}
 			case (int)ItemId::Demonic_Embrace:
 			{
 				hasDemonic = true;
@@ -1440,11 +1440,11 @@ namespace xerath {
 				hasHorizon = true;
 				break;
 			}
-			case (int)ItemId::Rylais_Crystal_Scepter:
-			{
-				hasRylai = true;
-				break;
-			}
+			//case (int)ItemId::Rylais_Crystal_Scepter:
+			//{
+			//	hasRylai = true;
+			//	break;
+			//}
 			}
 		}
 	}
