@@ -13,6 +13,7 @@ namespace xerath
 	inline bool isMoving(const game_object_script& target);
 	inline float timeBeforeWHits(const game_object_script& target);
 	inline float timeBeforeWHitsLocation(vector position);
+	inline bool isDodgingWRE(const game_object_script& target);
 	inline bool willGetHitByE(const game_object_script& target);
 	inline bool willGetHitByR(const game_object_script& target);
 	inline float getPing();
