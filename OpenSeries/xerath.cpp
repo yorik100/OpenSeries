@@ -957,7 +957,7 @@ namespace xerath {
 		
 		// Changing charging Q range
 		float range = charged_range(XERATH_MAX_Q_RANGE, XERATH_MIN_Q_RANGE, 1.5);
-		// Substract 50 range is not fully charged
+		// Substract 50 range if not fully charged
 		range = (range < XERATH_MAX_Q_RANGE ? range - 50 : range);
 		q2->set_range(range + std::max(target->get_bounding_radius(), 50.f));
 
