@@ -777,7 +777,7 @@ namespace xerath {
 		{
 			qCharge->cast(p.get_cast_position());
 			hasCasted = true;
-			debugPrint("[%i:%02d] Charging long Q on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, target->get_model_cstr());
+			debugPrint("[%i:%02d] Charging long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
 		return false;
