@@ -2696,38 +2696,38 @@ namespace xerath {
 		{
 		case buff_hash("TwistedFate_R_Gatemarker_Red"):
 		{
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 1.5, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Ekko_R_ChargeIndicator"):
 		{
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.5, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Pantheon_R_Update_Indicator_Enemy"):
 		{
 			const auto castPos = obj->get_position() + obj->get_particle_rotation_forward() * 1350;
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = castPos };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.2, .castingPos = navmesh->get_nearest_passable_cell_center(castPos) };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Galio_R_Tar_Ground_Enemy"):
 		{
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 2.75, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("Evelynn_R_Landing"):
 		{
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.85, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
 		case buff_hash("TahmKench_W_ImpactWarning_Enemy"):
 		{
-			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = 0.8, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
@@ -2740,7 +2740,7 @@ namespace xerath {
 			}
 		case 1882371666:
 		{
-			const particleStruct& particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = obj->get_position().distance(urfCannon) / 2800, .castingPos = obj->get_position() };
+			const particleStruct& particleData = { .obj = obj, .target = obj->get_particle_attachment_object(), .owner = obj->get_emitter(), .time = gametime->get_time(), .castTime = obj->get_position().distance(urfCannon) / 2800, .castingPos = navmesh->get_nearest_passable_cell_center(obj->get_position()) };
 			particlePredList.push_back(particleData);
 			return;
 		}
