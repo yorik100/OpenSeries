@@ -985,6 +985,8 @@ namespace brand {
 			return 2;
 		if (target->get_spell(spellslot::e)->get_name_hash() == spell_hash("SkarnerE") && target->has_buff(buff_hash("SkarnerE")))
 			return 2;
+		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("TahmKenchW") && target->is_playing_animation(buff_hash("Spell2_Channel")))
+			return 2;
 		if (target->get_spell(spellslot::r)->get_name_hash() == spell_hash("SionR") && target->has_buff(buff_hash("SionR")))
 			return 1;
 		return 0;
