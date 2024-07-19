@@ -977,19 +977,65 @@ namespace brand {
 
 	int isCastMoving(const game_object_script& target)
 	{
+		// Check if the target is casting a special movement spell
 		if (!target->is_ai_hero())
 			return 0;
-		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("NunuW_Recast") && target->is_playing_animation(buff_hash("Spell2")))
-			return 2;
-		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("AurelionSolWToggle") && target->is_playing_animation(buff_hash("Spell2")))
-			return 2;
+
+		switch (target->get_spell(spellslot::w)->get_name_hash())
+		{
+		case spell_hash("NunuW_Recast"):
+			if (target->is_playing_animation(buff_hash("Spell2"))) {
+				return 2;
+			}
+			break;
+
+		case spell_hash("AurelionSolWToggle"):
+			if (target->is_playing_animation(buff_hash("Spell2"))) {
+				return 2;
+			}
+			break;
+
+		case spell_hash("TahmKenchW"):
+			if (target->is_playing_animation(buff_hash("Spell2_Channel"))) {
+				return 2;
+			}
+			break;
+		}
+
 		if (target->get_spell(spellslot::e)->get_name_hash() == spell_hash("SkarnerE") && target->has_buff(buff_hash("SkarnerE")))
 			return 2;
-		if (target->get_spell(spellslot::w)->get_name_hash() == spell_hash("TahmKenchW") && target->is_playing_animation(buff_hash("Spell2_Channel")))
-			return 2;
+
 		if (target->get_spell(spellslot::r)->get_name_hash() == spell_hash("SionR") && target->has_buff(buff_hash("SionR")))
 			return 1;
+
 		return 0;
+	}
+
+	bool isNoSlowCasting(const game_object_script& target)
+	{
+		// Check if the target is casting a special movement spell where being slowed doesn't matter
+		if (!target->is_ai_hero())
+			return false;
+
+		switch (target->get_spell(spellslot::w)->get_name_hash())
+		{
+		case spell_hash("NunuW_Recast"):
+			if (target->is_playing_animation(buff_hash("Spell2"))) {
+				return true;
+			}
+			break;
+
+		case spell_hash("TahmKenchW"):
+			if (target->is_playing_animation(buff_hash("Spell2_Channel"))) {
+				return true;
+			}
+			break;
+		}
+
+		if (target->get_spell(spellslot::e)->get_name_hash() == spell_hash("SkarnerE") && target->has_buff(buff_hash("SkarnerE")))
+			return true;
+
+		return false;
 	}
 
 	bool isRecalling(const game_object_script& target)
