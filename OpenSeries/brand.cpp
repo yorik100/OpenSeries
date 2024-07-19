@@ -1011,33 +1011,6 @@ namespace brand {
 		return 0;
 	}
 
-	bool isNoSlowCasting(const game_object_script& target)
-	{
-		// Check if the target is casting a special movement spell where being slowed doesn't matter
-		if (!target->is_ai_hero())
-			return false;
-
-		switch (target->get_spell(spellslot::w)->get_name_hash())
-		{
-		case spell_hash("NunuW_Recast"):
-			if (target->is_playing_animation(buff_hash("Spell2"))) {
-				return true;
-			}
-			break;
-
-		case spell_hash("TahmKenchW"):
-			if (target->is_playing_animation(buff_hash("Spell2_Channel"))) {
-				return true;
-			}
-			break;
-		}
-
-		if (target->get_spell(spellslot::e)->get_name_hash() == spell_hash("SkarnerE") && target->has_buff(buff_hash("SkarnerE")))
-			return true;
-
-		return false;
-	}
-
 	bool isRecalling(const game_object_script& target)
 	{
 		// Get if target is recalling
