@@ -736,7 +736,7 @@ namespace xerath {
 	bool castQShort(const game_object_script& target, const std::string& mode)
 	{
 		// Cast Q short
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
@@ -761,7 +761,7 @@ namespace xerath {
 	bool castQCharge(const game_object_script& target, const std::string& mode)
 	{
 		// Cast Q dummy
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::q) return false;
 
@@ -811,7 +811,7 @@ namespace xerath {
 	bool castW(const game_object_script& target, const std::string& mode, bool wCenter = false)
 	{
 		// Cast W
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::w) return false;
 
@@ -835,7 +835,7 @@ namespace xerath {
 	bool castE(const game_object_script& target, const std::string& mode)
 	{
 		// Cast E
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		if (myhero->get_active_spell() && myhero->get_active_spell()->cast_start_time() + 0.1 > gametime->get_time() && myhero->get_active_spell()->get_spellslot() == spellslot::e) return false;
 
@@ -860,7 +860,7 @@ namespace xerath {
 	bool castR(const game_object_script& target, const std::string& mode)
 	{
 		// Cast R
-		if (hasCasted || lastCast > gametime->get_time()) return true;
+		if (hasCasted || lastCast > gametime->get_time() || evade->is_evading()) return true;
 
 		auto& p = rPredictionList[target->get_handle()];
 		if (p.get_cast_position().distance(myhero->get_position()) > p.input.range + 0.01) return false;
