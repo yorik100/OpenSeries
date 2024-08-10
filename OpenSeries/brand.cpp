@@ -572,7 +572,6 @@ namespace brand {
 	 		q->cast(p.get_cast_position());
 			if (performECombo)
 				spamETarget = target;
-	 		hasCasted = true;
 			debugPrint("[%i:%02d] Casted Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 	 	}
@@ -595,7 +594,6 @@ namespace brand {
 		if ((ignoreHitChance || p.hitchance >= getPredIntFromSettings(settings::hitchance::wHitchance->get_int()) || !target->is_visible()) && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
-			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
@@ -1715,14 +1713,12 @@ namespace brand {
 			if (canQ && (particleTime - getPing() + 0.266 <= qLandingTime))
 			{
 				q->cast(obj.castingPos);
-				hasCasted = true;
 				return;
 			}
 			// Try to cast W if possible
 			else if (canW && (particleTime - getPing() + 0.1) <= w->get_delay())
 			{
 				w->cast(obj.castingPos.extend(myhero->get_position(), effectiveWDeviation));
-				hasCasted = true;
 				return;
 			}
 		}
@@ -2396,7 +2392,10 @@ namespace brand {
 
 	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process)
 	{
+		if (!process) return;
+
 		lastCast = gametime->get_time() + 0.133 + getPing();
+		hasCasted = true;
 	}
 
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)

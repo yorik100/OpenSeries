@@ -752,7 +752,6 @@ namespace xerath {
 		{
 			q->cast(p.get_cast_position());
 			myhero->update_charged_spell(q->get_slot(), p.get_cast_position(), true);
-			hasCasted = true;
 			debugPrint("[%i:%02d] Casted short Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
@@ -776,7 +775,6 @@ namespace xerath {
 		if (p.hitchance > hit_chance::out_of_range && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			qCharge->cast(p.get_cast_position());
-			hasCasted = true;
 			debugPrint("[%i:%02d] Charging long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
@@ -804,7 +802,6 @@ namespace xerath {
 		if ((p.hitchance >= getPredIntFromSettings(finalval) || !target->is_visible()) && !isCastDash && aliveWhenLanding && ((!willGetHitByE(target) && wTime >= timeToHit) || !isMoving(target)) && couldDamageLater(target, trueTimeToHit - 0.2, qDamageList[target->get_handle()]))
 		{
 			myhero->update_charged_spell(q2->get_slot(), p.get_cast_position(), true);
-			hasCasted = true;
 			debugPrint("[%i:%02d] Casted long Q on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
@@ -829,7 +826,6 @@ namespace xerath {
 		if ((p.hitchance >= getPredIntFromSettings(finalval) || !target->is_visible()) && (!willGetHitByE(target) || !isMoving(target)) && !isCastDash && aliveWhenLanding && couldDamageLater(target, trueTimeToHit - 0.2, wDamageList[target->get_handle()]))
 		{
 			w->cast(p.get_cast_position());
-			hasCasted = true;
 			debugPrint("[%i:%02d] Casted W on hitchance %i on target %s", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, p.hitchance, target->get_model_cstr());
 			return true;
 		}
@@ -2044,21 +2040,18 @@ namespace xerath {
 			if (canE && (particleTime - getPing() + 0.133 <= eLandingTime))
 			{
 				e->cast(obj.castingPos);
-				hasCasted = true;
 				return;
 			}
 			// Try to cast W if possible
 			else if (canW && !canE && (particleTime - getPing() + 0.2) <= w->get_delay())
 			{
 				w->cast(obj.castingPos.extend(myhero->get_position(), effectiveWDeviation));
-				hasCasted = true;
 				return;
 			}
 			// Try to cast R if possible
 			else if (canR && !rTarget && (particleTime - getPing() + 0.2) <= r->get_delay())
 			{
 				r->cast(obj.castingPos.extend(myhero->get_position(), effectiveRDeviation));
-				hasCasted = true;
 				return;
 			}
 			// Try to cast short Q if possible
@@ -2066,14 +2059,12 @@ namespace xerath {
 			{
 				q->cast(obj.castingPos);
 				myhero->update_charged_spell(q->get_slot(), obj.castingPos, true);
-				hasCasted = true;
 				return;
 			}
 			// Try to cast Q if possible
 			else if (canQ && (particleTime - getPing() + 0.2) <= q2->get_delay())
 			{
 				myhero->update_charged_spell(q2->get_slot(), obj.castingPos, true);
-				hasCasted = true;
 				return;
 			}
 		}
@@ -2635,17 +2626,14 @@ namespace xerath {
 							{
 								q->cast(pos);
 								myhero->update_charged_spell(q->get_slot(), pos, true);
-								hasCasted = true;
 							}
 						}
 					);
-					hasCasted = true;
 				}
 				if (settings::automatic::qShortFollowup->get_bool() && !hasCasted && isQReady && !target->is_dead() && !target->is_visible() && myhero->get_position().distance(pos) <= XERATH_MIN_Q_RANGE)
 				{
 					q->cast(pos);
 					myhero->update_charged_spell(q->get_slot(), pos, true);
-					hasCasted = true;
 				}
 				hitByETime[target->get_handle()] = gametime->get_time();
 			}
@@ -2872,7 +2860,10 @@ namespace xerath {
 	void on_cast_spell(spellslot spellSlot, game_object_script target, vector& pos, vector& pos2, bool isCharge, bool* process)
 	{
 		//debugPrint("[%i:%02d] Spellcast on spellslot : %i", (int)gametime->get_time() / 60, (int)gametime->get_time() % 60, spellSlot);
+		if (!process) return;
+
 		lastCast = gametime->get_time() + 0.133 + getPing();
+		hasCasted = true;
 	}
 
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
