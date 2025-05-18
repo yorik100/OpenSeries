@@ -1076,10 +1076,10 @@ namespace xerath {
 			}
 		}
 		damage = damage + damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, magicDamage);
-		if (hasHorizon && ((!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
-		{
-			damage = damage + (damageDealt) * 0.1;
-		}
+		//if (hasHorizon && ((!isTargeted && myhero->get_position().distance(target->get_position()) > 700) || target->get_buff(buff_hash("4628marker"))))
+		//{
+		//	damage = damage + (damageDealt) * 0.1;
+		//}
 		if (buff3 || buff4)
 		{
 			damage = damage + (damage + damageDealt) * 0.09;
